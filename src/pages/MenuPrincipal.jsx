@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import { SECCIONES } from '../data/menu.js'
-import SeccionFresco from '../components/SeccionFresco.jsx'
-import SeccionMarinados from '../components/SeccionMarinados.jsx'
-import SeccionPreparados from '../components/SeccionPreparados.jsx'
-import SeccionMilanesas from '../components/SeccionMilanesas.jsx'
-import SeccionComplementos from '../components/SeccionComplementos.jsx'
-import SeccionBowls from '../components/SeccionBowls.jsx'
+import SeccionFresco from '../Components/SeccionFresco.jsx'
+import SeccionMarinados from '../Components/SeccionMarinados.jsx'
+import SeccionPreparados from '../Components/SeccionPreparados.jsx'
+import SeccionMilanesas from '../Components/SeccionMilanesas.jsx'
+import SeccionComplementos from "../Components/SeccionComplementos.jsx";
+import SeccionBowls from '../Components/SeccionBowls.jsx'
 import '../styles/menu.css'
 
 const COMPONENTES = {
