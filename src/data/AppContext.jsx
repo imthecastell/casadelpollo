@@ -52,9 +52,11 @@ export function AppProvider({ children }) {
       price: item.precioTotal || item.precio || item.price || 0
     }))
 
-    const total = carrito.reduce((sum, item) => {
-      return sum + (item.precioTotal || item.precio || item.price || 0)
-    }, 0)
+   const total = carrito.reduce((sum, item) => {
+  const precio = parseFloat(item.precioTotal || item.precio || item.price || 0)
+  const cantidad = parseInt(item.cantidad || 1)
+  return sum + (precio * cantidad)
+}, 0)
 
     await createOrder({
       branch_id: sucursalActiva.id,
