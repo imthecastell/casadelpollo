@@ -1,15 +1,22 @@
 import { useApp } from '../data/AppContext.jsx'
-import { SUCURSALES } from '../data/menu.js'
 import '../styles/selector.css'
 
 export default function SelectorSucursal() {
-  const { setSucursalActiva, setVista } = useApp()
+  const { setSucursalActiva, setVista, sucursales, cargando } = useApp()
 
   const elegirSucursal = (sucursal) => {
-    if (!sucursal.activa) return
+    if (!sucursal.active) return
     setSucursalActiva(sucursal)
     setVista('menu')
   }
+
+  if (cargando) return (
+    <div className="selector-bg">
+      <div className="selector-contenido">
+        <div style={{ textAlign: 'center', padding: '60px 0' }}>Cargando...</div>
+      </div>
+    </div>
+  )
 
   return (
     <div className="selector-bg">
@@ -23,18 +30,18 @@ export default function SelectorSucursal() {
         <div className="selector-pregunta">¿En qué sucursal recoges tu pedido?</div>
 
         <div className="selector-lista">
-          {SUCURSALES.map(s => (
+          {sucursales.map(s => (
             <button
               key={s.id}
-              className={`sucursal-card ${!s.activa ? 'sucursal-inactiva' : ''}`}
+              className={`sucursal-card ${!s.active ? 'sucursal-inactiva' : ''}`}
               onClick={() => elegirSucursal(s)}
             >
               <div className="sucursal-info">
-                <div className="sucursal-nombre">{s.nombre}</div>
-                <div className="sucursal-direccion">{s.direccion}</div>
-                {!s.activa && <div className="sucursal-pronto">Próximamente</div>}
+                <div className="sucursal-nombre">{s.name}</div>
+                <div className="sucursal-direccion">{s.address}</div>
+                {!s.active && <div className="sucursal-pronto">Próximamente</div>}
               </div>
-              {s.activa && <span className="sucursal-flecha">→</span>}
+              {s.active && <span className="sucursal-flecha">→</span>}
             </button>
           ))}
         </div>

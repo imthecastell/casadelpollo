@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
-import { SECCIONES } from '../data/menu.js'
 
 const MIN = 200
 const MAX = 2000
@@ -13,15 +12,14 @@ function calcularTiempo(gramos) {
 }
 
 export default function SeccionMarinados() {
-  const { agregarAlCarrito, sucursalActiva } = useApp()
-  const seccion = SECCIONES.find(s => s.id === 'marinados')
+  const { agregarAlCarrito, sucursalActiva, productos } = useApp()
   const [seleccion, setSeleccion] = useState(null)
   const [gramos, setGramos] = useState(300)
   const [recogida, setRecogida] = useState('crudo')
   const [agregado, setAgregado] = useState(false)
 
-  const productos = seccion.productos.filter(
-    p => p.disponible[sucursalActiva?.id]
+  const productosSeccion = productos.filter(
+    p => p.category_name === 'Marinados' && p.available !== false
   )
 
   const tiempoEstimado = calcularTiempo(gramos)
@@ -39,12 +37,13 @@ export default function SeccionMarinados() {
     if (!seleccion) return
     agregarAlCarrito({
       tipo: 'marinado',
-      nombre: seleccion.nombre,
+      nombre: seleccion.name,
       gramos,
       recogida,
       tiempoEstimado: recogida === 'cocinado' ? tiempoEstimado : null,
       necesitaHora: true,
-      resumen: `${seleccion.nombre} ${gramos}g · ${recogida === 'crudo' ? 'Crudo' : `Cocinado ~${tiempoEstimado} min`}`
+      precio: seleccion.price,
+      resumen: `${seleccion.name} ${gramos}g · ${recogida === 'crudo' ? 'Crudo' : `Cocinado ~${tiempoEstimado} min`}`
     })
     setAgregado(true)
     setTimeout(() => {
@@ -57,18 +56,18 @@ export default function SeccionMarinados() {
 
   return (
     <div>
-      <div className="seccion-titulo">{seccion.emoji} {seccion.nombre}</div>
+      <div className="seccion-titulo">🍯 Marinados</div>
       <p className="seccion-desc">Elige tu marinado y la cantidad · precio por kg</p>
 
-      {productos.map(p => (
+      {productosSeccion.map(p => (
         <div key={p.id}>
           <button
             className={`card-marinado ${seleccion?.id === p.id ? 'card-marinado-activo' : ''}`}
             onClick={() => setSeleccion(seleccion?.id === p.id ? null : p)}
           >
             <div>
-              <div className="producto-nombre">{p.nombre}</div>
-              <div className="producto-precio">${p.precioKg}/kg</div>
+              <div className="producto-nombre">{p.name}</div>
+              <div className="producto-precio">${p.price}/kg</div>
             </div>
             {seleccion?.id === p.id && <div className="card-check">✓</div>}
           </button>
@@ -121,7 +120,7 @@ export default function SeccionMarinados() {
                 className={`btn-primario ${agregado ? 'btn-agregado' : ''}`}
                 onClick={handleAgregar}
               >
-                {agregado ? '✓ Agregado' : `Agregar ${gramos}g de ${seleccion.nombre}`}
+                {agregado ? '✓ Agregado' : `Agregar ${gramos}g de ${seleccion.name}`}
               </button>
             </div>
           )}

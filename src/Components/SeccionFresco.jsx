@@ -1,15 +1,13 @@
 import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
-import { SECCIONES } from '../data/menu.js'
 
 export default function SeccionFresco() {
-  const { agregarAlCarrito, sucursalActiva } = useApp()
-  const seccion = SECCIONES.find(s => s.id === 'fresco')
+  const { agregarAlCarrito, productos } = useApp()
   const [cantidades, setCantidades] = useState({})
   const [agregado, setAgregado] = useState(null)
 
-  const productos = seccion.productos.filter(
-    p => p.disponible[sucursalActiva?.id]
+  const productosSeccion = productos.filter(
+    p => p.category_name === 'Pollo Fresco' && p.available !== false
   )
 
   const cambiar = (id, delta) => {
@@ -24,10 +22,11 @@ export default function SeccionFresco() {
     if (cantidad === 0) return
     agregarAlCarrito({
       tipo: 'pieza',
-      nombre: producto.nombre,
+      nombre: producto.name,
       cantidad,
-      precioKg: producto.precioKg,
-      resumen: `${producto.nombre} × ${cantidad} pz · $${producto.precioKg}/kg (se pesa al entregar)`
+      precioKg: producto.price,
+      precio: producto.price,
+      resumen: `${producto.name} × ${cantidad} pz · $${producto.price}/kg (se pesa al entregar)`
     })
     setCantidades(prev => ({ ...prev, [producto.id]: 0 }))
     setAgregado(producto.id)
@@ -36,14 +35,13 @@ export default function SeccionFresco() {
 
   return (
     <div>
-      <div className="seccion-titulo">{seccion.emoji} {seccion.nombre}</div>
+      <div className="seccion-titulo">🐔 Pollo Fresco</div>
       <p className="seccion-desc">Precio por kg · se cobra al pesar en el local</p>
-
-      {productos.map(p => (
+      {productosSeccion.map(p => (
         <div key={p.id} className="producto-row">
           <div className="producto-info">
-            <div className="producto-nombre">{p.nombre}</div>
-            <div className="producto-precio">${p.precioKg}/kg</div>
+            <div className="producto-nombre">{p.name}</div>
+            <div className="producto-precio">${p.price}/kg</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
             <div style={{ fontSize: 11, color: 'var(--texto-suave)', fontWeight: 500 }}>piezas</div>
