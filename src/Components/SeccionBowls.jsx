@@ -1,35 +1,35 @@
 import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
-import { SECCIONES } from '../data/menu.js'
 
 const TIEMPO_BOWL = 20
-
-const BASES_BOWL = ['arroz-blanco', 'arroz-jardinera', 'pasta-poblana', 'pasta-tomate', 'ensalada']
+const BASES_NOMBRES = ['Arroz basmati blanco', 'Arroz basmati a la jardinera', 'Pasta poblana', 'Pasta de tomate', 'Ensalada']
 
 function calcularLugares(numBowls) {
   return Math.ceil(numBowls / 2)
 }
 
-function BowlBuilder({ numero, onAgregar }) {
+function BowlBuilder({ numero, onAgregar, productos }) {
   const [base, setBase] = useState(null)
   const [marinado, setMarinado] = useState(null)
   const [agregado, setAgregado] = useState(false)
 
-  const complementos = SECCIONES.find(s => s.id === 'complementos')
-  const marinados = SECCIONES.find(s => s.id === 'marinados')
-  const bases = complementos.productos.filter(p => BASES_BOWL.includes(p.id))
-  const opcionesMarinado = marinados.productos
+  const bases = productos.filter(p => BASES_NOMBRES.includes(p.name))
+  const marinados = productos.filter(p => p.category_name === 'Marinados')
   const listo = base && marinado
+
+const precioTotal = 110
 
   const handleAgregar = () => {
     if (!listo) return
     onAgregar({
       tipo: 'bowl',
-      base: base.nombre,
-      marinado: marinado.nombre,
+      base: base.name,
+      marinado: marinado.name,
       tiempoEstimado: TIEMPO_BOWL,
       necesitaHora: true,
-      resumen: `Bowl #${numero}: ${base.nombre} + ${marinado.nombre} · ~${TIEMPO_BOWL} min`
+      precio: precioTotal,
+precioTotal: precioTotal,
+      resumen: `Bowl #${numero}: ${base.name} + ${marinado.name} · ~${TIEMPO_BOWL} min`
     })
     setAgregado(true)
     setTimeout(() => {
@@ -55,7 +55,7 @@ function BowlBuilder({ numero, onAgregar }) {
               onClick={() => setBase(b)}
             >
               <span style={{ fontSize: 16 }}>🥗</span>
-              <div className="recogida-titulo">{b.nombre}</div>
+              <div className="recogida-titulo">{b.name} · ${b.price}</div>
             </button>
           ))}
         </div>
@@ -64,14 +64,14 @@ function BowlBuilder({ numero, onAgregar }) {
       <div>
         <label className="config-label">Marinado (200g)</label>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {opcionesMarinado.map(m => (
+          {marinados.map(m => (
             <button
               key={m.id}
               className={`recogida-opt ${marinado?.id === m.id ? 'recogida-activo' : ''}`}
               onClick={() => setMarinado(m)}
             >
               <span style={{ fontSize: 16 }}>🍯</span>
-              <div className="recogida-titulo">{m.nombre}</div>
+              <div className="recogida-titulo">{m.name} · ${m.price}/kg</div>
             </button>
           ))}
         </div>
@@ -79,7 +79,7 @@ function BowlBuilder({ numero, onAgregar }) {
 
       {listo && (
         <div style={{ background: '#f0f9f4', border: '1.5px solid #2a7a4b33', borderRadius: 'var(--radio)', padding: '10px 14px', fontSize: 13, color: 'var(--verde)', fontWeight: 500 }}>
-          {base.nombre} + {marinado.nombre} · listo en ~{TIEMPO_BOWL} min
+          {base.name} + {marinado.name} · listo en ~{TIEMPO_BOWL} min · ${precioTotal.toFixed(2)}
         </div>
       )}
 
@@ -96,7 +96,7 @@ function BowlBuilder({ numero, onAgregar }) {
 }
 
 export default function SeccionBowls() {
-  const { agregarAlCarrito } = useApp()
+  const { agregarAlCarrito, productos } = useApp()
   const [bowls, setBowls] = useState([1])
   const lugares = calcularLugares(bowls.length)
 
@@ -112,7 +112,7 @@ export default function SeccionBowls() {
       )}
 
       {bowls.map((num, i) => (
-        <BowlBuilder key={i} numero={num} onAgregar={agregarAlCarrito} />
+        <BowlBuilder key={i} numero={num} onAgregar={agregarAlCarrito} productos={productos} />
       ))}
 
       <button

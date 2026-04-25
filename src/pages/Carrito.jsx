@@ -21,18 +21,22 @@ export default function Carrito() {
     return lugaresLibres >= Math.max(lugaresBowls, 1)
   })
 
-  const tiempoMax = carrito.reduce((max, item) => {
-    const t = item.tiempoEstimado || 0
-    return t > max ? t : max
-  }, 0)
-
   const puedeConfirmar = nombre.trim().length > 0 && telefono.trim().length > 0 && horaSeleccionada
+
+  const totalEstimado = carrito.reduce((sum, item) => {
+  if (item.tipo === 'pieza' || item.tipo === 'preparado') return sum
+  const precio = parseFloat(item.precioTotal || item.precio || item.price || 0)
+  const cantidad = parseInt(item.cantidad || 1)
+  return sum + (precio * cantidad)
+}, 0)
+
+const tieneItemsPorKg = carrito.some(i => i.tipo === 'pieza' || i.tipo === 'preparado')
 
   const handleConfirmar = () => {
     if (!puedeConfirmar) return
     setConfirmando(true)
     setTimeout(() => {
-      confirmarPedido(horaSeleccionada)
+      confirmarPedido(horaSeleccionada, { nombre, telefono, notas })
     }, 800)
   }
 
@@ -146,6 +150,12 @@ export default function Carrito() {
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: 'var(--texto-suave)', marginBottom: 6 }}>
                 <span>Total de items</span>
                 <span style={{ fontWeight: 600, color: 'var(--texto)' }}>{totalItems}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16, marginBottom: 6 }}>
+                <span style={{ fontWeight: 700, color: 'var(--texto)' }}>Total estimado</span>
+                <span style={{ fontWeight: 800, color: 'var(--rojo)', fontFamily: 'Syne, sans-serif' }}>
+                  ${totalEstimado.toFixed(2)}
+                </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: 'var(--texto-suave)' }}>
                 <span>Pago</span>

@@ -12,8 +12,9 @@ export function AppProvider({ children }) {
   const [sucursales, setSucursales] = useState([])
   const [productos, setProductos] = useState([])
   const [cargando, setCargando] = useState(true)
+  const [ultimoNumeroOrden, setUltimoNumeroOrden] = useState(null)
+  const [ultimaHora, setUltimaHora] = useState(null)
 
-  // Cargar sucursales al inicio
   useEffect(() => {
     getBranches()
       .then(data => setSucursales(data))
@@ -21,7 +22,6 @@ export function AppProvider({ children }) {
       .finally(() => setCargando(false))
   }, [])
 
-  // Cargar productos cuando se selecciona sucursal
   useEffect(() => {
     if (sucursalActiva) {
       getProductsByBranch(sucursalActiva.id)
@@ -40,38 +40,43 @@ export function AppProvider({ children }) {
 
   const limpiarCarrito = () => setCarrito([])
 
-  const confirmarPedido = async (horaEntrega) => {
-  if (horaEntrega) {
-    setSlots(prev => reservarSlot(prev, horaEntrega))
+  const confirmarPedido = async (horaEntrega, datosCliente) => {
+    if (horaEntrega) {
+      setSlots(prev => reservarSlot(prev, horaEntrega))
+    }
+
+    try {
+      const items = carrito.map(item => ({
+        product_name: item.resumen || item.nombre || 'Producto',
+        quantity: item.cantidad || 1,
+        price: parseFloat(item.precioTotal || item.precio || item.price || 0)
+      }))
+
+      const total = carrito.reduce((sum, item) => {
+        const precio = parseFloat(item.precioTotal || item.precio || item.price || 0)
+        const cantidad = parseInt(item.cantidad || 1)
+        return sum + (precio * cantidad)
+      }, 0)
+
+      const orden = await createOrder({
+        branch_id: sucursalActiva.id,
+        customer_name: datosCliente?.nombre || 'Cliente',
+        customer_phone: datosCliente?.telefono || '',
+        customer_notes: datosCliente?.notas || '',
+        pickup_time: horaEntrega,
+        items,
+        total
+      })
+
+      setUltimoNumeroOrden(orden.order_number)
+      setUltimaHora(horaEntrega)
+    } catch (e) {
+      console.error('Error al crear pedido:', e)
+    }
+
+    limpiarCarrito()
+    setVista('confirmado')
   }
-
-  try {
-    const items = carrito.map(item => ({
-      product_name: item.resumen || item.nombre || item.name || 'Producto',
-      quantity: item.cantidad || 1,
-      price: item.precioTotal || item.precio || item.price || 0
-    }))
-
-   const total = carrito.reduce((sum, item) => {
-  const precio = parseFloat(item.precioTotal || item.precio || item.price || 0)
-  const cantidad = parseInt(item.cantidad || 1)
-  return sum + (precio * cantidad)
-}, 0)
-
-    await createOrder({
-      branch_id: sucursalActiva.id,
-      customer_name: 'Cliente',
-      customer_phone: '',
-      items,
-      total
-    })
-  } catch (e) {
-    console.error('Error al crear pedido:', e)
-  }
-
-  limpiarCarrito()
-  setVista('confirmado')
-}
 
   const totalItems = carrito.reduce((sum, item) => {
     if (item.tipo === 'milanesa' || item.tipo === 'pieza' || item.tipo === 'complemento') {
@@ -93,6 +98,8 @@ export function AppProvider({ children }) {
       setVista,
       slots,
       totalItems,
+      ultimoNumeroOrden,
+      ultimaHora,
       sucursales,
       productos,
       cargando,

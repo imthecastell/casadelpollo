@@ -14,17 +14,28 @@ export function generarSlots(fecha) {
   const [hAp, mAp] = apertura.split(':').map(Number)
   const [hCi, mCi] = cierre.split(':').map(Number)
 
+  const ahora = new Date()
+  const horaActual = ahora.getHours()
+  const minutoActual = ahora.getMinutes()
+  const minutosActuales = horaActual * 60 + minutoActual
+
   let hora = hAp
   let minuto = mAp
 
   while (hora < hCi || (hora === hCi && minuto <= mCi)) {
     const label = `${String(hora).padStart(2, '0')}:${String(minuto).padStart(2, '0')}`
-    slots.push({
-      hora: label,
-      capacidadTotal: AIRFRYER_CONFIG.slotsCapacidad,
-      ordenesReservadas: 0,
-      disponible: true,
-    })
+    const minutosSlot = hora * 60 + minuto
+
+    // Solo agregar slots que sean al menos 30 minutos en el futuro
+    if (minutosSlot >= minutosActuales + 30) {
+      slots.push({
+        hora: label,
+        capacidadTotal: AIRFRYER_CONFIG.slotsCapacidad,
+        ordenesReservadas: 0,
+        disponible: true,
+      })
+    }
+
     minuto += AIRFRYER_CONFIG.intervaloMinutos
     if (minuto >= 60) {
       minuto -= 60

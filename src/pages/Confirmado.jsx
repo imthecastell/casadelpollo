@@ -1,7 +1,26 @@
 import { useApp } from '../data/AppContext.jsx'
+import { useRef } from 'react'
 
 export default function Confirmado() {
-  const { setVista, sucursalActiva } = useApp()
+  const { setVista, sucursalActiva, ultimoNumeroOrden, ultimaHora } = useApp()
+  const reciboRef = useRef(null)
+
+  const descargarRecibo = async () => {
+    const elemento = reciboRef.current
+    if (!elemento) return
+
+    // Usar html2canvas para capturar el recibo
+    const script = document.createElement('script')
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
+    script.onload = async () => {
+      const canvas = await window.html2canvas(elemento, { backgroundColor: '#3d1c02' })
+      const link = document.createElement('a')
+      link.download = `pedido-${ultimoNumeroOrden || 'recibo'}.png`
+      link.href = canvas.toDataURL('image/png')
+      link.click()
+    }
+    document.head.appendChild(script)
+  }
 
   return (
     <div className="app-wrapper" style={{
@@ -19,27 +38,71 @@ export default function Confirmado() {
         ¡Pedido recibido!
       </div>
 
-      <p style={{ fontSize: 15, color: 'var(--gris)', marginBottom: 8, lineHeight: 1.6 }}>
-        Tu pedido fue enviado a la sucursal
-      </p>
-
-      <p style={{
-        fontFamily: 'Syne, sans-serif', fontWeight: 700,
-        fontSize: 18, color: 'var(--dorado-claro)', marginBottom: 32
+      {/* Recibo descargable */}
+      <div ref={reciboRef} style={{
+        background: '#3d1c02', borderRadius: 16,
+        padding: '24px', marginBottom: 24,
+        width: '100%', maxWidth: 320,
+        border: '2px solid rgba(255,255,255,0.15)'
       }}>
-        {sucursalActiva?.nombre}
-      </p>
+        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>
+          Casa del Pollo
+        </div>
+        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 16 }}>
+          Sucursal {sucursalActiva?.name || sucursalActiva?.nombre}
+        </div>
 
-      <div style={{
-        background: 'rgba(255,255,255,0.08)',
-        borderRadius: 'var(--radio-lg)', padding: '20px 24px',
-        marginBottom: 32, width: '100%', maxWidth: 320
-      }}>
-        <p style={{ fontSize: 13, color: 'var(--gris)', lineHeight: 1.7 }}>
-          Preséntate en el local a la hora indicada.
-          El pago se realiza al recoger tu pedido.
+        {ultimoNumeroOrden && (
+          <div style={{
+            background: '#E63946', borderRadius: 12,
+            padding: '12px 24px', marginBottom: 16
+          }}>
+            <p style={{ fontSize: 11, color: 'white', marginBottom: 4, opacity: 0.8 }}>
+              NÚMERO DE ORDEN
+            </p>
+            <p style={{
+              fontFamily: 'Syne, sans-serif', fontWeight: 900,
+              fontSize: 52, color: 'white', lineHeight: 1
+            }}>
+              {ultimoNumeroOrden}
+            </p>
+          </div>
+        )}
+
+        {ultimaHora && (
+          <div style={{
+            background: 'rgba(255,255,255,0.1)', borderRadius: 8,
+            padding: '10px 16px', marginBottom: 8
+          }}>
+            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', marginBottom: 2 }}>
+              HORA DE RECOGIDA
+            </p>
+            <p style={{
+              fontFamily: 'Syne, sans-serif', fontWeight: 800,
+              fontSize: 24, color: 'white'
+            }}>
+              🕐 {ultimaHora}
+            </p>
+          </div>
+        )}
+
+        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', marginTop: 12 }}>
+          Pago en el local al recoger
         </p>
       </div>
+
+      <button
+        onClick={descargarRecibo}
+        style={{
+          background: 'rgba(255,255,255,0.15)', color: 'var(--crema)',
+          border: '1.5px solid rgba(255,255,255,0.3)',
+          padding: '12px 24px', borderRadius: 'var(--radio)',
+          fontFamily: 'DM Sans, sans-serif', fontSize: 14,
+          cursor: 'pointer', marginBottom: 12, width: '100%', maxWidth: 280
+        }}
+      >
+        📥 Guardar recibo
+      </button>
 
       <button
         className="btn-primario"
