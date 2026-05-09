@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600;700&family=Lato:wght@400;700&family=Montserrat:wght@400;600;700;800&family=Nunito:wght@400;600;700;800&family=Open+Sans:wght@400;600;700&family=Oswald:wght@400;600;700&family=Outfit:wght@400;600;700;800&family=Playfair+Display:wght@600;700;800&family=Poppins:wght@400;600;700;800&family=Raleway:wght@400;600;700;800&family=Roboto:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&family=Space+Grotesk:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -18,6 +18,14 @@
   --texto-suave: #7a5c44;
   --blanco: #ffffff;
   --verde: #2a7a4b;
+  --app-bg: var(--crema);
+  --card-bg: var(--blanco);
+  --button-bg: var(--rojo);
+  --button-text: #ffffff;
+  --navbar-bg: var(--cafe);
+  --navbar-text: var(--crema);
+  --font-title: 'Syne';
+  --font-body: 'DM Sans';
   --radio: 12px;
   --radio-lg: 18px;
   --sombra: 0 2px 12px rgba(61,31,0,0.10);
@@ -25,8 +33,8 @@
 }
 
 body {
-  font-family: 'DM Sans', sans-serif;
-  background-color: var(--crema);
+  font-family: var(--font-body), sans-serif;
+  background-color: var(--app-bg);
   color: var(--texto);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
@@ -36,12 +44,14 @@ body {
   max-width: 480px;
   margin: 0 auto;
   min-height: 100vh;
-  background: var(--crema);
+  background-color: var(--app-bg);
+  background-size: cover;
+  background-position: center;
   position: relative;
 }
 
 .header {
-  background: var(--cafe);
+  background: var(--navbar-bg);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -55,10 +65,10 @@ body {
 }
 
 .logo-nombre {
-  font-family: 'Syne', sans-serif;
+  font-family: var(--font-title), sans-serif;
   font-weight: 800;
   font-size: 18px;
-  color: var(--crema);
+  color: var(--navbar-text);
   letter-spacing: -0.3px;
 }
 
@@ -71,7 +81,8 @@ body {
 
 .logo-sucursal {
   font-size: 11px;
-  color: var(--gris);
+  color: var(--navbar-text);
+  opacity: 0.76;
   margin-top: 1px;
 }
 
@@ -79,12 +90,12 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: var(--rojo);
+  background: var(--button-bg);
   border: none;
   border-radius: 50px;
   padding: 8px 14px;
-  color: white;
-  font-family: 'DM Sans', sans-serif;
+  color: var(--button-text);
+  font-family: var(--font-body), sans-serif;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -112,11 +123,11 @@ body {
 .btn-primario {
   width: 100%;
   padding: 15px;
-  background: var(--rojo);
-  color: white;
+  background: var(--button-bg);
+  color: var(--button-text);
   border: none;
   border-radius: var(--radio);
-  font-family: 'Syne', sans-serif;
+  font-family: var(--font-title), sans-serif;
   font-weight: 700;
   font-size: 15px;
   cursor: pointer;
@@ -132,7 +143,7 @@ body {
   color: var(--rojo);
   border: 2px solid var(--rojo);
   border-radius: var(--radio);
-  font-family: 'Syne', sans-serif;
+  font-family: var(--font-title), sans-serif;
   font-weight: 700;
   font-size: 15px;
   cursor: pointer;
@@ -143,7 +154,7 @@ body {
 .btn-agregado { background: var(--verde) !important; }
 
 .seccion-titulo {
-  font-family: 'Syne', sans-serif;
+  font-family: var(--font-title), sans-serif;
   font-weight: 800;
   font-size: 20px;
   color: var(--texto);
@@ -158,7 +169,7 @@ body {
 
 .config-label {
   display: block;
-  font-family: 'Syne', sans-serif;
+  font-family: var(--font-title), sans-serif;
   font-weight: 700;
   font-size: 12px;
   text-transform: uppercase;
@@ -197,7 +208,7 @@ body {
 .cantidad-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
 .cantidad-num {
-  font-family: 'Syne', sans-serif;
+  font-family: var(--font-title), sans-serif;
   font-weight: 800;
   font-size: 18px;
   color: var(--texto);

@@ -23,3 +23,9 @@ export async function getDesign(branchId) {
   const res = await fetch(`${API_URL}/api/design/${branchId}`);
   return res.json();
 }
+
+export async function getPromotions(branchId) {
+  const query = branchId ? `?branch_id=${branchId}` : '';
+  const res = await fetch(`${API_URL}/api/promotions${query}`);
+  return res.json();
+}

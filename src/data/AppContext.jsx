@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { generarSlots, reservarSlot } from './slots.js'
-import { getBranches, getProductsByBranch, createOrder } from './api.js'
+import { getBranches, getProductsByBranch, createOrder, getDesign, getPromotions } from './api.js'
 
 const AppContext = createContext()
 
@@ -11,6 +11,8 @@ export function AppProvider({ children }) {
   const [slots, setSlots] = useState(() => generarSlots(new Date()))
   const [sucursales, setSucursales] = useState([])
   const [productos, setProductos] = useState([])
+  const [promociones, setPromociones] = useState([])
+  const [diseno, setDiseno] = useState({})
   const [cargando, setCargando] = useState(true)
   const [ultimoNumeroOrden, setUltimoNumeroOrden] = useState(null)
   const [ultimaHora, setUltimaHora] = useState(null)
@@ -20,6 +22,10 @@ export function AppProvider({ children }) {
       .then(data => setSucursales(data))
       .catch(() => setSucursales([]))
       .finally(() => setCargando(false))
+
+    getPromotions()
+      .then(data => setPromociones(Array.isArray(data) ? data : []))
+      .catch(() => setPromociones([]))
   }, [])
 
   useEffect(() => {
@@ -27,8 +33,39 @@ export function AppProvider({ children }) {
       getProductsByBranch(sucursalActiva.id)
         .then(data => setProductos(data))
         .catch(() => setProductos([]))
+
+      getDesign(sucursalActiva.id)
+        .then(data => setDiseno(data || {}))
+        .catch(() => setDiseno({}))
+
+      getPromotions(sucursalActiva.id)
+        .then(data => setPromociones(Array.isArray(data) ? data : []))
+        .catch(() => setPromociones([]))
     }
   }, [sucursalActiva])
+
+  useEffect(() => {
+    const root = document.documentElement
+    const themeMap = {
+      primary_color: '--rojo',
+      secondary_color: '--crema',
+      accent_color: '--dorado',
+      background_color: '--app-bg',
+      card_color: '--card-bg',
+      button_color: '--button-bg',
+      button_text_color: '--button-text',
+      navbar_color: '--navbar-bg',
+      text_color: '--texto',
+      secondary_text_color: '--navbar-text',
+      border_radius: '--radio',
+      font_title: '--font-title',
+      font_body: '--font-body',
+    }
+
+    Object.entries(themeMap).forEach(([field, variable]) => {
+      if (diseno[field]) root.style.setProperty(variable, diseno[field])
+    })
+  }, [diseno])
 
   const agregarAlCarrito = (item) => {
     setCarrito(prev => [...prev, { ...item, id: Date.now() + Math.random() }])
@@ -102,6 +139,8 @@ export function AppProvider({ children }) {
       ultimaHora,
       sucursales,
       productos,
+      promociones,
+      diseno,
       cargando,
     }}>
       {children}
