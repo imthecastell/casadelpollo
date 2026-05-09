@@ -135,6 +135,12 @@
   margin-bottom: 8px;
 }
 
+.subseccion-menu {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 18px;
+}
+
 .producto-info { flex: 1; }
 
 .producto-nombre {

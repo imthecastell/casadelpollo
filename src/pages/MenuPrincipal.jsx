@@ -4,7 +4,6 @@ import { SECCIONES } from '../data/menu.js'
 import SeccionFresco from '../Components/SeccionFresco.jsx'
 import SeccionMarinados from '../Components/SeccionMarinados.jsx'
 import SeccionPreparados from '../Components/SeccionPreparados.jsx'
-import SeccionMilanesas from '../Components/SeccionMilanesas.jsx'
 import SeccionComplementos from "../Components/SeccionComplementos.jsx";
 import SeccionBowls from '../Components/SeccionBowls.jsx'
 import '../styles/menu.css'
@@ -15,14 +14,14 @@ const ENTRADAS = [
     titulo: 'Pollo fresco y marinados',
     descripcion: 'Piezas frescas, marinados, preparados, milanesas y complementos.',
     accion: 'Ver pollo',
-    tabs: ['fresco', 'marinados', 'preparados', 'milanesas', 'complementos'],
+    tab: 'fresco',
   },
   {
     id: 'bowls',
     titulo: 'Bowls',
     descripcion: 'Arma tu bowl con base y marinado listo para recoger.',
     accion: 'Armar bowls',
-    tabs: ['bowls'],
+    tab: 'bowls',
   },
 ]
 
@@ -30,25 +29,21 @@ const COMPONENTES = {
   fresco: SeccionFresco,
   marinados: SeccionMarinados,
   preparados: SeccionPreparados,
-  milanesas: SeccionMilanesas,
   complementos: SeccionComplementos,
   bowls: SeccionBowls,
 }
 
 export default function MenuPrincipal() {
   const { sucursalActiva, setVista, totalItems, diseno, promociones } = useApp()
-  const [entradaActiva, setEntradaActiva] = useState(null)
+  const [mostrarAtajos, setMostrarAtajos] = useState(true)
   const [tabActiva, setTabActiva] = useState(null)
 
   const SeccionActiva = COMPONENTES[tabActiva]
   const banner = promociones.find(p => p.type === 'banner')
-  const tabsVisibles = entradaActiva
-    ? SECCIONES.filter(seccion => entradaActiva.tabs.includes(seccion.id))
-    : []
 
   const elegirEntrada = (entrada) => {
-    setEntradaActiva(entrada)
-    setTabActiva(entrada.tabs[0])
+    setMostrarAtajos(false)
+    setTabActiva(entrada.tab)
   }
 
   return (
@@ -69,13 +64,9 @@ export default function MenuPrincipal() {
           </button>
         </div>
 
-        {entradaActiva && (
+        {!mostrarAtajos && (
           <div className="menu-tabs">
-            <button className="menu-tab menu-tab-volver" onClick={() => { setEntradaActiva(null); setTabActiva(null) }}>
-              <span>&lt;</span>
-              <span>Inicio</span>
-            </button>
-            {tabsVisibles.map(s => (
+            {SECCIONES.map(s => (
               <button
                 key={s.id}
                 className={`menu-tab ${tabActiva === s.id ? 'menu-tab-activo' : ''}`}
@@ -97,7 +88,7 @@ export default function MenuPrincipal() {
             {banner.description && <span>{banner.description}</span>}
           </section>
         )}
-        {!entradaActiva ? (
+        {mostrarAtajos ? (
           <section className="menu-entrada-grid">
             <div>
               <div className="seccion-titulo">Menu</div>

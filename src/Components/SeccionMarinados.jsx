@@ -23,6 +23,7 @@ export default function SeccionMarinados() {
   )
 
   const tiempoEstimado = calcularTiempo(gramos)
+  const precioTotal = seleccion ? (gramos / 1000) * parseFloat(seleccion.price || 0) : 0
 
   const cambiarGramos = (delta) => {
     setGramos(prev => {
@@ -43,7 +44,8 @@ export default function SeccionMarinados() {
       tiempoEstimado: recogida === 'cocinado' ? tiempoEstimado : null,
       necesitaHora: true,
       precio: seleccion.price,
-      resumen: `${seleccion.name} ${gramos}g · ${recogida === 'crudo' ? 'Crudo' : `Cocinado ~${tiempoEstimado} min`}`
+      precioTotal,
+      resumen: `${seleccion.name} ${gramos}g · ${recogida === 'crudo' ? 'Crudo' : `Cocinado ~${tiempoEstimado} min`} · $${precioTotal.toFixed(2)}`
     })
     setAgregado(true)
     setTimeout(() => {

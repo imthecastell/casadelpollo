@@ -25,8 +25,9 @@ export default function SeccionComplementos() {
       nombre: producto.name,
       cantidad,
       precio: producto.price,
+      precioTotal: parseFloat(producto.price || 0) * cantidad,
       unidad: producto.description || 'porción',
-      resumen: `${producto.name} × ${cantidad} ${producto.description || 'porción'}`
+      resumen: `${producto.name} × ${cantidad} ${producto.description || 'porción'} · $${(parseFloat(producto.price || 0) * cantidad).toFixed(2)}`
     })
     setCantidades(prev => ({ ...prev, [producto.id]: 0 }))
     setAgregado(producto.id)

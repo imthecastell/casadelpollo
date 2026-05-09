@@ -90,6 +90,8 @@ export function AppProvider({ children }) {
       }))
 
       const total = carrito.reduce((sum, item) => {
+        if (item.tipo === 'pieza' || item.tipo === 'preparado' || item.tipo === 'milanesa') return sum
+        if (item.precioTotal !== undefined) return sum + parseFloat(item.precioTotal || 0)
         const precio = parseFloat(item.precioTotal || item.precio || item.price || 0)
         const cantidad = parseInt(item.cantidad || 1)
         return sum + (precio * cantidad)
