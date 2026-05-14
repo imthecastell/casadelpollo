@@ -29,3 +29,8 @@ export async function getPromotions(branchId) {
   const res = await fetch(`${API_URL}/api/promotions${query}`);
   return res.json();
 }
+
+export async function getBanners(tipo) {
+  const res = await fetch(`${API_URL}/api/banners?tipo=${tipo}`);
+  return res.json();
+}

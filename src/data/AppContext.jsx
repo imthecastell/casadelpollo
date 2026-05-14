@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { generarSlots, reservarSlot } from './slots.js'
-import { getBranches, getProductsByBranch, createOrder, getDesign, getPromotions } from './api.js'
+import { getBranches, getProductsByBranch, createOrder, getDesign, getPromotions, getBanners } from './api.js'
 
 const AppContext = createContext()
 
@@ -12,6 +12,7 @@ export function AppProvider({ children }) {
   const [sucursales, setSucursales] = useState([])
   const [productos, setProductos] = useState([])
   const [promociones, setPromociones] = useState([])
+  const [banners, setBanners] = useState([])
   const [diseno, setDiseno] = useState({})
   const [cargando, setCargando] = useState(true)
   const [ultimoNumeroOrden, setUltimoNumeroOrden] = useState(null)
@@ -26,6 +27,10 @@ export function AppProvider({ children }) {
     getPromotions()
       .then(data => setPromociones(Array.isArray(data) ? data : []))
       .catch(() => setPromociones([]))
+
+    getBanners('bienvenida')
+      .then(data => setBanners(Array.isArray(data) ? data : []))
+      .catch(() => setBanners([]))
   }, [])
 
   useEffect(() => {
@@ -61,7 +66,6 @@ export function AppProvider({ children }) {
       font_title: '--font-title',
       font_body: '--font-body',
     }
-
     Object.entries(themeMap).forEach(([field, variable]) => {
       if (diseno[field]) root.style.setProperty(variable, diseno[field])
     })
@@ -81,14 +85,12 @@ export function AppProvider({ children }) {
     if (horaEntrega) {
       setSlots(prev => reservarSlot(prev, horaEntrega))
     }
-
     try {
       const items = carrito.map(item => ({
         product_name: item.resumen || item.nombre || 'Producto',
         quantity: item.cantidad || 1,
         price: parseFloat(item.precioTotal || item.precio || item.price || 0)
       }))
-
       const total = carrito.reduce((sum, item) => {
         if (item.tipo === 'pieza' || item.tipo === 'preparado' || item.tipo === 'milanesa') return sum
         if (item.precioTotal !== undefined) return sum + parseFloat(item.precioTotal || 0)
@@ -96,7 +98,6 @@ export function AppProvider({ children }) {
         const cantidad = parseInt(item.cantidad || 1)
         return sum + (precio * cantidad)
       }, 0)
-
       const orden = await createOrder({
         branch_id: sucursalActiva.id,
         customer_name: datosCliente?.nombre || 'Cliente',
@@ -106,13 +107,11 @@ export function AppProvider({ children }) {
         items,
         total
       })
-
       setUltimoNumeroOrden(orden.order_number)
       setUltimaHora(horaEntrega)
     } catch (e) {
       console.error('Error al crear pedido:', e)
     }
-
     limpiarCarrito()
     setVista('confirmado')
   }
@@ -126,24 +125,13 @@ export function AppProvider({ children }) {
 
   return (
     <AppContext.Provider value={{
-      sucursalActiva,
-      setSucursalActiva,
-      carrito,
-      agregarAlCarrito,
-      eliminarDelCarrito,
-      limpiarCarrito,
-      confirmarPedido,
-      vista,
-      setVista,
-      slots,
-      totalItems,
-      ultimoNumeroOrden,
-      ultimaHora,
-      sucursales,
-      productos,
-      promociones,
-      diseno,
-      cargando,
+      sucursalActiva, setSucursalActiva,
+      carrito, agregarAlCarrito, eliminarDelCarrito, limpiarCarrito, confirmarPedido,
+      vista, setVista,
+      slots, totalItems,
+      ultimoNumeroOrden, ultimaHora,
+      sucursales, productos, promociones, banners,
+      diseno, cargando,
     }}>
       {children}
     </AppContext.Provider>

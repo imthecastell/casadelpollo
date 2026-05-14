@@ -1,9 +1,22 @@
+import { useState, useEffect } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import '../styles/selector.css'
 
 export default function SelectorSucursal() {
-  const { setSucursalActiva, setVista, sucursales, cargando, promociones } = useApp()
+  const { setSucursalActiva, setVista, sucursales, cargando, promociones, banners } = useApp()
+  const [bannerActivo, setBannerActivo] = useState(0)
+
+  // Carrusel automático cada 4 segundos
+  useEffect(() => {
+    if (banners.length <= 1) return
+    const interval = setInterval(() => {
+      setBannerActivo(prev => (prev + 1) % banners.length)
+    }, 4000)
+    return () => clearInterval(interval)
+  }, [banners.length])
+
   const banner = promociones.find(p => p.type === 'banner') || promociones[0]
+  const bannerImg = banners[bannerActivo]?.imagen_url || banner?.image_url
 
   const elegirSucursal = (sucursal) => {
     if (!sucursal.active) return
@@ -22,7 +35,7 @@ export default function SelectorSucursal() {
 
   return (
     <div className="selector-bg">
-      {banner?.image_url && <img className="selector-bg-img" src={banner.image_url} alt="" />}
+      {bannerImg && <img className="selector-bg-img" src={bannerImg} alt="" />}
       <div className="selector-overlay" />
 
       <div className="selector-contenido">
@@ -32,7 +45,33 @@ export default function SelectorSucursal() {
           <div className="selector-logo-sub">Marinados artesanales</div>
         </div>
 
-        {banner && (
+        {banners.length > 0 && (
+          <section className="promo-bienvenida">
+            {banners[bannerActivo]?.titulo && <h1>{banners[bannerActivo].titulo}</h1>}
+            {banners.length > 1 && (
+              <div style={{ display:'flex', gap:'6px', justifyContent:'center', marginTop:'8px' }}>
+                {banners.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setBannerActivo(i)}
+                    style={{
+                      width: i === bannerActivo ? '20px' : '8px',
+                      height: '8px',
+                      borderRadius: '4px',
+                      border: 'none',
+                      background: i === bannerActivo ? 'white' : 'rgba(255,255,255,0.4)',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s',
+                      padding: 0,
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {!banners.length && banner && (
           <section className="promo-bienvenida">
             <span className="promo-etiqueta">Promocion activa</span>
             <h1>{banner.title}</h1>
