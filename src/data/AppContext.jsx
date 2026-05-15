@@ -129,7 +129,7 @@ getBanners('menu')
   }, 0)
 
   return (
-    <<AppContext.Provider value={{
+    <AppContext.Provider value={{
   sucursalActiva, setSucursalActiva,
   carrito, agregarAlCarrito, eliminarDelCarrito, limpiarCarrito, confirmarPedido,
   vista, setVista,
@@ -142,7 +142,7 @@ getBanners('menu')
   bannersMenu,
   diseno,
   cargando,
-}}>>
+}}>
       {children}
     </AppContext.Provider>
   )
