@@ -238,42 +238,7 @@
 }
 /* HERO FONDO PREMIUM */
 
-.hero-fondo {
-  position: relative;
-  width: 100%;
-  height: 280px;
-  overflow: hidden;
-  margin-top: -12px;
-  margin-bottom: 10px;
-  border-radius: 0 0 34px 34px;
-}
 
-.hero-fondo-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transform: scale(1.03);
-  filter:
-    saturate(1.05)
-    contrast(1.02)
-    brightness(0.96);
-}
-
-.hero-fondo-overlay {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(
-      to bottom,
-      rgba(0,0,0,0.12) 0%,
-      rgba(0,0,0,0.05) 28%,
-      rgba(245,242,238,0.0) 58%,
-      rgba(245,242,238,0.88) 82%,
-      #f5f2ee 100%
-    );
-  backdrop-filter: blur(2px);
-}
 
 .menu-promo {
   background: var(--card-bg);
@@ -292,6 +257,7 @@
   font-family: var(--font-title), sans-serif;
   font-size: 15px;
 }
+
 
 .menu-promo span {
   color: var(--texto-suave);
@@ -443,4 +409,60 @@
 .menu-dot-active {
   width: 24px;
   background: white;
+}
+/* HERO PREMIUM FULLSCREEN */
+
+.hero-fondo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 520px;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.hero-fondo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transform: scale(1.03);
+  filter:
+    saturate(1.08)
+    contrast(1.02)
+    brightness(0.88);
+}
+
+.hero-fondo-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(230,57,70,0.65) 0%,
+      rgba(230,57,70,0.32) 18%,
+      rgba(230,57,70,0.08) 42%,
+      rgba(245,242,238,0.0) 62%,
+      rgba(245,242,238,0.92) 84%,
+      #f5f2ee 100%
+    );
+}
+
+/* CONTENIDO ENCIMA */
+
+.app-wrapper {
+  position: relative;
+}
+
+.header {
+  position: relative;
+  z-index: 5;
+  background: transparent !important;
+  backdrop-filter: blur(10px);
+}
+
+.pagina {
+  position: relative;
+  z-index: 2;
 }
