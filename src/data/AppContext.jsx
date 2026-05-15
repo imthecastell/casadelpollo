@@ -17,6 +17,7 @@ export function AppProvider({ children }) {
   const [cargando, setCargando] = useState(true)
   const [ultimoNumeroOrden, setUltimoNumeroOrden] = useState(null)
   const [ultimaHora, setUltimaHora] = useState(null)
+  const [bannersMenu, setBannersMenu] = useState([])
 
   useEffect(() => {
     getBranches()
@@ -29,8 +30,12 @@ export function AppProvider({ children }) {
       .catch(() => setPromociones([]))
 
     getBanners('bienvenida')
-      .then(data => setBanners(Array.isArray(data) ? data : []))
-      .catch(() => setBanners([]))
+  .then(data => setBanners(Array.isArray(data) ? data : []))
+  .catch(() => setBanners([]))
+
+getBanners('menu')
+  .then(data => setBannersMenu(Array.isArray(data) ? data : []))
+  .catch(() => setBannersMenu([]))
   }, [])
 
   useEffect(() => {
@@ -124,15 +129,20 @@ export function AppProvider({ children }) {
   }, 0)
 
   return (
-    <AppContext.Provider value={{
-      sucursalActiva, setSucursalActiva,
-      carrito, agregarAlCarrito, eliminarDelCarrito, limpiarCarrito, confirmarPedido,
-      vista, setVista,
-      slots, totalItems,
-      ultimoNumeroOrden, ultimaHora,
-      sucursales, productos, promociones, banners,
-      diseno, cargando,
-    }}>
+    <<AppContext.Provider value={{
+  sucursalActiva, setSucursalActiva,
+  carrito, agregarAlCarrito, eliminarDelCarrito, limpiarCarrito, confirmarPedido,
+  vista, setVista,
+  slots, totalItems,
+  ultimoNumeroOrden, ultimaHora,
+  sucursales,
+  productos,
+  promociones,
+  banners,
+  bannersMenu,
+  diseno,
+  cargando,
+}}>>
       {children}
     </AppContext.Provider>
   )
