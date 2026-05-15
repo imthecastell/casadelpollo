@@ -44,7 +44,10 @@ export default function MenuPrincipal() {
     setTabActiva(entrada.tab)
   }
 
-  const bannerMenuActual = bannersMenu[bannerActivo]
+ const bannerMenuActual = bannersMenu[bannerActivo]
+
+console.log('BANNERS MENU:', bannersMenu)
+console.log('BANNER ACTUAL:', bannerMenuActual)
 
   return (
     <div
