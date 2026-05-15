@@ -81,6 +81,7 @@ export default function MenuPrincipal() {
       </header>
 
       <main className="pagina slide-up">
+{/* Imagen hero antigua desactivada */}
 {/* {diseno?.header_image && <img className="menu-hero-img" src={diseno.header_image} alt="" />} */}
 {/* HERO BANNER CINEMÁTICO */}
 {bannersMenu.length > 0 && bannerMenuActual?.imagen_url && (
