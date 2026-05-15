@@ -236,14 +236,43 @@
   color: var(--texto-suave);
   margin-top: 2px;
 }
+/* HERO FONDO PREMIUM */
 
-.menu-hero-img {
+.hero-fondo {
+  position: relative;
   width: 100%;
-  aspect-ratio: 16 / 7;
+  height: 280px;
+  overflow: hidden;
+  margin-top: -12px;
+  margin-bottom: 10px;
+  border-radius: 0 0 34px 34px;
+}
+
+.hero-fondo-img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  border-radius: var(--radio);
-  box-shadow: var(--sombra);
-  margin-bottom: 14px;
+  display: block;
+  transform: scale(1.03);
+  filter:
+    saturate(1.05)
+    contrast(1.02)
+    brightness(0.96);
+}
+
+.hero-fondo-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(0,0,0,0.12) 0%,
+      rgba(0,0,0,0.05) 28%,
+      rgba(245,242,238,0.0) 58%,
+      rgba(245,242,238,0.88) 82%,
+      #f5f2ee 100%
+    );
+  backdrop-filter: blur(2px);
 }
 
 .menu-promo {
@@ -365,78 +394,53 @@
   line-height: 1.35;
   padding: 10px 14px;
 }
+/* CARRUSEL BANNERS */
 
-/* HERO BANNER CINEMÁTICO */
-
-.hero-banner {
+.menu-banner-slider {
   position: relative;
-  width: 100%;
-  height: 320px;
+  margin-bottom: 18px;
+  border-radius: 22px;
   overflow: hidden;
-  margin-bottom: 24px;
-  border-radius: 0 0 32px 32px;
-  cursor: pointer;
+  box-shadow: var(--sombra-lg);
 }
 
-.hero-banner-img {
+.menu-banner-img {
   width: 100%;
-  height: 100%;
+  aspect-ratio: 16 / 7;
   object-fit: cover;
   display: block;
 }
 
-.hero-banner-overlay {
+.menu-banner-caption {
   position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(
-      to bottom,
-      rgba(0,0,0,0.12) 0%,
-      rgba(0,0,0,0.05) 30%,
-      rgba(245,242,238,0.0) 60%,
-      rgba(245,242,238,0.92) 88%,
-      #f5f2ee 100%
-    );
-  backdrop-filter: blur(2px);
-}
-
-.hero-banner-content {
-  position: absolute;
-  bottom: 70px;
-  left: 24px;
-  right: 24px;
-  z-index: 5;
-}
-
-.hero-banner-content h2 {
+  left: 18px;
+  bottom: 18px;
+  background: rgba(0,0,0,0.45);
   color: white;
-  font-size: 2rem;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 13px;
   font-weight: 700;
-  text-shadow: 0 4px 18px rgba(0,0,0,0.35);
-  margin: 0;
+  backdrop-filter: blur(10px);
 }
 
-.hero-banner-dots {
+.menu-banner-dots {
   position: absolute;
-  bottom: 24px;
-  left: 0;
-  width: 100%;
+  right: 16px;
+  bottom: 16px;
   display: flex;
-  justify-content: center;
-  gap: 8px;
-  z-index: 5;
+  gap: 6px;
 }
 
-.hero-dot {
+.menu-dot {
   width: 8px;
   height: 8px;
   border-radius: 999px;
   border: none;
   background: rgba(255,255,255,0.45);
-  transition: all 0.3s ease;
 }
 
-.hero-dot-active {
+.menu-dot-active {
   width: 24px;
   background: white;
 }

@@ -46,8 +46,6 @@ export default function MenuPrincipal() {
 
  const bannerMenuActual = bannersMenu[bannerActivo]
 
-console.log('BANNERS MENU:', bannersMenu)
-console.log('BANNER ACTUAL:', bannerMenuActual)
 
   return (
     <div
@@ -84,55 +82,48 @@ console.log('BANNER ACTUAL:', bannerMenuActual)
       </header>
 
       <main className="pagina slide-up">
-{/* Imagen hero antigua desactivada */}
-{/* {diseno?.header_image && <img className="menu-hero-img" src={diseno.header_image} alt="" />} */}
-{/* HERO BANNER CINEMÁTICO */}
-{bannersMenu.length > 0 && bannerMenuActual?.imagen_url && (
-  <div
-    className="hero-banner"
-    onClick={() => {
-      if (bannerMenuActual?.link_url) {
-        window.open(
-          bannerMenuActual.link_url,
-          '_blank',
-          'noopener,noreferrer'
-        )
-      }
-    }}
-  >
+{diseno?.header_image && (
+  <div className="hero-fondo">
     <img
-src="https://images.unsplash.com/photo-1587593810167-a84920ea0781?q=80&w=1200"      alt={bannerMenuActual.titulo || 'Banner'}
-      className="hero-banner-img"
+      className="hero-fondo-img"
+      src={diseno.header_image}
+      alt=""
+    />
+    <div className="hero-fondo-overlay" />
+  </div>
+)}
+  {/* Carrusel banners menú */}
+{bannersMenu.length > 0 && bannerMenuActual?.imagen_url && (
+  <section className="menu-banner-slider">
+    <img
+      src={bannerMenuActual.imagen_url}
+      alt={bannerMenuActual.titulo || 'Banner'}
+      className="menu-banner-img"
     />
 
-    <div className="hero-banner-overlay" />
-
-    <div className="hero-banner-content">
-      {bannerMenuActual?.titulo && (
-        <h2>{bannerMenuActual.titulo}</h2>
-      )}
-    </div>
+    {bannerMenuActual?.titulo && (
+      <div className="menu-banner-caption">
+        {bannerMenuActual.titulo}
+      </div>
+    )}
 
     {bannersMenu.length > 1 && (
-      <div className="hero-banner-dots">
+      <div className="menu-banner-dots">
         {bannersMenu.map((_, i) => (
           <button
             key={i}
             type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              setBannerActivo(i)
-            }}
+            onClick={() => setBannerActivo(i)}
             className={
               i === bannerActivo
-                ? 'hero-dot hero-dot-active'
-                : 'hero-dot'
+                ? 'menu-dot menu-dot-active'
+                : 'menu-dot'
             }
           />
         ))}
       </div>
     )}
-  </div>
+  </section>
 )}
 
         {/* Fallback promociones antiguas */}
