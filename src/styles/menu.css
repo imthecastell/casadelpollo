@@ -365,3 +365,76 @@
   line-height: 1.35;
   padding: 10px 14px;
 }
+/* HERO BANNER */
+
+.hero-banner {
+  position: relative;
+  width: 100%;
+  height: 320px;
+  overflow: hidden;
+  margin-top: -10px;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+
+.hero-banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: saturate(1.05) contrast(1.02);
+}
+
+.hero-banner-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(230, 57, 70, 0.45) 0%,
+      rgba(230, 57, 70, 0.15) 25%,
+      rgba(245, 242, 238, 0) 55%,
+      rgba(245, 242, 238, 0.95) 88%,
+      #f5f2ee 100%
+    );
+  backdrop-filter: blur(2px);
+}
+
+.hero-banner-content {
+  position: absolute;
+  bottom: 60px;
+  left: 24px;
+  right: 24px;
+  z-index: 3;
+  color: white;
+}
+
+.hero-banner-content h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  text-shadow: 0 4px 18px rgba(0,0,0,0.35);
+}
+
+.hero-banner-dots {
+  position: absolute;
+  bottom: 24px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  z-index: 4;
+}
+
+.hero-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255,255,255,0.45);
+  transition: all 0.3s ease;
+}
+
+.hero-dot-active {
+  width: 24px;
+  background: white;
+}

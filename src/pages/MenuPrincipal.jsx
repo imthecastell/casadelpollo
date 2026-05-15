@@ -81,28 +81,56 @@ export default function MenuPrincipal() {
       </header>
 
       <main className="pagina slide-up">
-        {diseno?.header_image && <img className="menu-hero-img" src={diseno.header_image} alt="" />}
+{/* {diseno?.header_image && <img className="menu-hero-img" src={diseno.header_image} alt="" />} */}
+{/* HERO BANNER CINEMÁTICO */}
+{bannersMenu.length > 0 && bannerMenuActual?.imagen_url && (
+  <div
+    className="hero-banner"
+    onClick={() => {
+      if (bannerMenuActual?.link_url) {
+        window.open(
+          bannerMenuActual.link_url,
+          '_blank',
+          'noopener,noreferrer'
+        )
+      }
+    }}
+  >
+    <img
+      src={bannerMenuActual.imagen_url}
+      alt={bannerMenuActual.titulo || 'Banner'}
+      className="hero-banner-img"
+    />
 
-        {/* Banner menú desde admin */}
-        {bannersMenu.length > 0 && (
-          <section className="menu-promo" style={{ cursor: bannerMenuActual?.link_url ? 'pointer' : 'default' }}
-            onClick={() => bannerMenuActual?.link_url && window.open(bannerMenuActual.link_url, '_blank')}
-          >
-            {bannerMenuActual?.imagen_url && (
-              <img src={bannerMenuActual.imagen_url} alt={bannerMenuActual.titulo} style={{ width:'100%', borderRadius:'8px', marginBottom:'8px', maxHeight:'120px', objectFit:'cover' }} />
-            )}
-            {bannerMenuActual?.titulo && <strong>{bannerMenuActual.titulo}</strong>}
-            {bannersMenu.length > 1 && (
-              <div style={{ display:'flex', gap:'4px', justifyContent:'center', marginTop:'6px' }}>
-                {bannersMenu.map((_, i) => (
-                  <button key={i} onClick={e => { e.stopPropagation(); setBannerActivo(i) }}
-                    style={{ width: i === bannerActivo ? '16px' : '6px', height:'6px', borderRadius:'3px', border:'none', background: i === bannerActivo ? 'var(--rojo, #E63946)' : '#ccc', cursor:'pointer', padding:0, transition:'all 0.3s' }}
-                  />
-                ))}
-              </div>
-            )}
-          </section>
-        )}
+    <div className="hero-banner-overlay" />
+
+    <div className="hero-banner-content">
+      {bannerMenuActual?.titulo && (
+        <h2>{bannerMenuActual.titulo}</h2>
+      )}
+    </div>
+
+    {bannersMenu.length > 1 && (
+      <div className="hero-banner-dots">
+        {bannersMenu.map((_, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              setBannerActivo(i)
+            }}
+            className={
+              i === bannerActivo
+                ? 'hero-dot hero-dot-active'
+                : 'hero-dot'
+            }
+          />
+        ))}
+      </div>
+    )}
+  </div>
+)}
 
         {/* Fallback promociones antiguas */}
         {bannersMenu.length === 0 && banner && (
