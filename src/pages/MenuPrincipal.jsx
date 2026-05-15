@@ -101,8 +101,7 @@ console.log('BANNER ACTUAL:', bannerMenuActual)
     }}
   >
     <img
-      src={bannerMenuActual.imagen_url}
-      alt={bannerMenuActual.titulo || 'Banner'}
+src="https://images.unsplash.com/photo-1587593810167-a84920ea0781?q=80&w=1200"      alt={bannerMenuActual.titulo || 'Banner'}
       className="hero-banner-img"
     />
 
