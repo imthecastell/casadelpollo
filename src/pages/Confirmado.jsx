@@ -25,7 +25,7 @@ export default function Confirmado() {
 
   return (
     <>
-    <BannerPopup />
+    <BannerPopup delay={2500} />
     <div className="app-wrapper" style={{
       minHeight: '100vh', display: 'flex',
       flexDirection: 'column', alignItems: 'center',

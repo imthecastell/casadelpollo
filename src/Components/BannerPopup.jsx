@@ -1,11 +1,19 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 
-export default function BannerPopup() {
+export default function BannerPopup({ delay = 0 }) {
   const { bannersPopup } = useApp()
   const [cerrado, setCerrado] = useState(false)
+  const [visible, setVisible] = useState(delay === 0)
 
-  if (cerrado || bannersPopup.length === 0) return null
+  useEffect(() => {
+    if (delay > 0) {
+      const t = setTimeout(() => setVisible(true), delay)
+      return () => clearTimeout(t)
+    }
+  }, [delay])
+
+  if (cerrado || bannersPopup.length === 0 || !visible) return null
 
   const banner = bannersPopup[0]
 
