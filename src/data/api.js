@@ -34,3 +34,8 @@ export async function getBanners(tipo) {
   const res = await fetch(`${API_URL}/api/banners?tipo=${tipo}`);
   return res.json();
 }
+
+export async function getSchedule() {
+  const res = await fetch(`${API_URL}/api/schedule`);
+  return res.json();
+}

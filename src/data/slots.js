@@ -1,14 +1,18 @@
 import { AIRFRYER_CONFIG } from './menu.js'
 
-export function generarSlots(fecha) {
+const DIAS_ES = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado']
+
+export function generarSlots(fecha, schedule = null) {
   const dia = new Date(fecha).getDay()
-  const esSabado = dia === 6
-  const esDomingo = dia === 0
+  const nombreDia = DIAS_ES[dia]
 
-  if (esDomingo) return []
+  const horarioDia = schedule?.find(h => h.dia === nombreDia)
 
-  const apertura = '10:00'
-  const cierre = esSabado ? '18:00' : '20:00'
+  if (horarioDia && !horarioDia.activo) return []
+  if (!horarioDia && dia === 0) return []
+
+  const apertura = horarioDia?.apertura?.slice(0, 5) || '10:00'
+  const cierre = horarioDia?.cierre?.slice(0, 5) || (dia === 6 ? '18:00' : '20:00')
 
   const slots = []
   const [hAp, mAp] = apertura.split(':').map(Number)

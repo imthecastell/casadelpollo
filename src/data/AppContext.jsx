@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { generarSlots, reservarSlot } from './slots.js'
-import { getBranches, getProductsByBranch, createOrder, getDesign, getPromotions, getBanners } from './api.js'
+import { getBranches, getProductsByBranch, createOrder, getDesign, getPromotions, getBanners, getSchedule } from './api.js'
 
 const AppContext = createContext()
 
@@ -8,6 +8,7 @@ export function AppProvider({ children }) {
   const [sucursalActiva, setSucursalActiva] = useState(null)
   const [carrito, setCarrito] = useState([])
   const [vista, setVista] = useState('sucursales')
+  const [schedule, setSchedule] = useState(null)
   const [slots, setSlots] = useState(() => generarSlots(new Date()))
   const [sucursales, setSucursales] = useState([])
   const [productos, setProductos] = useState([])
@@ -46,6 +47,15 @@ export function AppProvider({ children }) {
     getBanners('aviso')
       .then(data => setBannersAviso(Array.isArray(data) ? data : []))
       .catch(() => setBannersAviso([]))
+
+    getSchedule()
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setSchedule(data)
+          setSlots(generarSlots(new Date(), data))
+        }
+      })
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
