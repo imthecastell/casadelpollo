@@ -25,13 +25,13 @@ function minutosDeHora(hora) {
 }
 
 function precioItem(item) {
-  if (item.tipo === 'pieza') return 'Al pesar'
-  if (item.tipo === 'preparado' || item.tipo === 'milanesa') {
+  const tipo = item.precio_tipo || item.tipo
+  if (tipo === 'pieza' || tipo === 'al_pesar') return 'Al pesar'
+  if (tipo === 'preparado' || tipo === 'milanesa' || tipo === 'por_pieza') {
     return `$${parseFloat(item.precio || item.precioKg || 0).toFixed(2)}/kg`
   }
-
   const precio = parseFloat(item.precioTotal || item.precio || item.price || 0)
-  return `$${precio.toFixed(2)}`
+  return precio > 0 ? `$${precio.toFixed(2)}` : 'Al pesar'
 }
 
 export default function Carrito() {

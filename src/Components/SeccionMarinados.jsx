@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
+import AvisoAirfryer from './AvisoAirfryer.jsx'
 
 const MIN = 200
 const MAX = 2000
@@ -17,6 +18,7 @@ export default function SeccionMarinados() {
   const [gramos, setGramos] = useState(300)
   const [recogida, setRecogida] = useState('crudo')
   const [agregado, setAgregado] = useState(false)
+  const [mostrarAviso, setMostrarAviso] = useState(false)
 
   const productosSeccion = productos.filter(
     p => p.category_name === 'Marinados' && p.available !== false
@@ -56,8 +58,16 @@ export default function SeccionMarinados() {
     }, 1200)
   }
 
+  const elegirRecogida = (modo) => {
+    setRecogida(modo)
+    if (modo === 'cocinado' && seleccion?.se_puede_cocinar !== false) {
+      setMostrarAviso(true)
+    }
+  }
+
   return (
     <div>
+      {mostrarAviso && <AvisoAirfryer onCerrar={() => setMostrarAviso(false)} />}
       <div className="seccion-titulo">🍯 Marinados</div>
       <p className="seccion-desc">Elige tu marinado y la cantidad · precio por kg</p>
 
@@ -90,13 +100,13 @@ export default function SeccionMarinados() {
                 </div>
               </div>
 
-              {sucursalActiva?.tieneMarinadosCocinados && (
+              {seleccion?.se_puede_cocinar !== false && sucursalActiva?.tieneMarinadosCocinados && (
                 <div>
                   <label className="config-label">Como lo quieres?</label>
                   <div className="recogida-opts">
                     <button
                       className={`recogida-opt ${recogida === 'crudo' ? 'recogida-activo' : ''}`}
-                      onClick={() => setRecogida('crudo')}
+                      onClick={() => elegirRecogida('crudo')}
                     >
                       <span style={{ fontSize: 20 }}>📦</span>
                       <div>
@@ -106,7 +116,7 @@ export default function SeccionMarinados() {
                     </button>
                     <button
                       className={`recogida-opt ${recogida === 'cocinado' ? 'recogida-activo' : ''}`}
-                      onClick={() => setRecogida('cocinado')}
+                      onClick={() => elegirRecogida('cocinado')}
                     >
                       <span style={{ fontSize: 20 }}>🔥</span>
                       <div>

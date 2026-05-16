@@ -19,6 +19,7 @@ export function AppProvider({ children }) {
   const [ultimaHora, setUltimaHora] = useState(null)
   const [bannersMenu, setBannersMenu] = useState([])
   const [bannersPopup, setBannersPopup] = useState([])
+  const [bannersAviso, setBannersAviso] = useState([])
 
   useEffect(() => {
     getBranches()
@@ -41,6 +42,10 @@ export function AppProvider({ children }) {
     getBanners('popup')
       .then(data => setBannersPopup(Array.isArray(data) ? data : []))
       .catch(() => setBannersPopup([]))
+
+    getBanners('aviso')
+      .then(data => setBannersAviso(Array.isArray(data) ? data : []))
+      .catch(() => setBannersAviso([]))
   }, [])
 
   useEffect(() => {
@@ -146,6 +151,7 @@ export function AppProvider({ children }) {
   banners,
   bannersMenu,
   bannersPopup,
+  bannersAviso,
   diseno,
   cargando,
 }}>
