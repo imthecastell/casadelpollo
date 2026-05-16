@@ -3,21 +3,22 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --rojo: #c1121f;
-  --rojo-oscuro: #8b0000;
-  --rojo-claro: #e63946;
-  --crema: #fdf8f0;
-  --crema-oscura: #f0e8d8;
-  --cafe: #3d2b1f;
-  --cafe-medio: #6b3f2a;
-  --dorado: #d4a017;
-  --dorado-claro: #f0c040;
-  --gris-claro: #f5f0ea;
-  --gris: #c4b8aa;
-  --texto: #2a1a08;
-  --texto-suave: #7a5c44;
+  /* Paleta campo dorado al atardecer */
+  --rojo: #a06818;           /* ámbar cálido — acción principal */
+  --rojo-oscuro: #7a4e10;    /* ámbar oscuro */
+  --rojo-claro: #c07e20;     /* ámbar claro para hover */
+  --crema: #f4edd8;          /* marfil cálido — fondo */
+  --crema-oscura: #e5d8b8;   /* marfil más oscuro */
+  --cafe: #101c09;           /* verde bosque muy oscuro */
+  --cafe-medio: #2a4015;     /* verde bosque medio */
+  --dorado: #c8a020;         /* oro del pasto seco */
+  --dorado-claro: #e8c840;   /* oro brillante */
+  --gris-claro: #ede6d0;     /* fondo suave cálido */
+  --gris: #a89868;           /* gris cálido para bordes */
+  --texto: #1a280a;          /* texto verde oscuro */
+  --texto-suave: #566238;    /* texto oliva suave */
   --blanco: #ffffff;
-  --verde: #2a7a4b;
+  --verde: #3a6b20;          /* verde campo (bowls, éxito) */
   --app-bg: var(--crema);
   --card-bg: var(--blanco);
   --button-bg: var(--rojo);
@@ -28,8 +29,8 @@
   --font-body: 'DM Sans';
   --radio: 12px;
   --radio-lg: 18px;
-  --sombra: 0 2px 12px rgba(61,31,0,0.10);
-  --sombra-lg: 0 4px 24px rgba(61,31,0,0.15);
+  --sombra: 0 2px 12px rgba(16,28,9,0.10);
+  --sombra-lg: 0 4px 24px rgba(16,28,9,0.15);
 }
 
 body {
@@ -54,11 +55,11 @@ body {
   body {
     background: var(--cafe);
     background-image:
-      radial-gradient(ellipse at 20% 50%, rgba(212,160,23,0.08) 0%, transparent 60%),
-      radial-gradient(ellipse at 80% 20%, rgba(193,18,31,0.10) 0%, transparent 50%);
+      radial-gradient(ellipse at 20% 60%, rgba(200,160,32,0.12) 0%, transparent 55%),
+      radial-gradient(ellipse at 78% 18%, rgba(58,107,32,0.14) 0%, transparent 50%);
   }
   .app-wrapper {
-    box-shadow: 0 0 80px rgba(0,0,0,0.45);
+    box-shadow: 0 0 80px rgba(0,0,0,0.50);
   }
 }
 
@@ -114,7 +115,7 @@ body {
   position: relative;
   transition: background 0.2s;
 }
-.carrito-btn:hover { background: var(--rojo-claro); }
+.carrito-btn:hover { background: var(--rojo-claro); filter: brightness(1.08); }
 
 .carrito-badge {
   position: absolute;
@@ -145,7 +146,7 @@ body {
   cursor: pointer;
   transition: all 0.2s;
 }
-.btn-primario:hover { background: var(--rojo-claro); transform: translateY(-1px); }
+.btn-primario:hover { filter: brightness(1.10); transform: translateY(-1px); }
 .btn-primario:disabled { background: var(--gris); cursor: not-allowed; transform: none; }
 
 .btn-secundario {
@@ -161,7 +162,7 @@ body {
   cursor: pointer;
   transition: all 0.2s;
 }
-.btn-secundario:hover { background: #fff0f0; }
+.btn-secundario:hover { background: rgba(160,104,24,0.08); }
 
 .btn-agregado { background: var(--verde) !important; }
 
@@ -216,7 +217,7 @@ body {
   box-shadow: 0 1px 4px rgba(0,0,0,0.08);
   line-height: 1;
 }
-.cantidad-btn:hover:not(:disabled) { background: var(--rojo); color: white; }
+.cantidad-btn:hover:not(:disabled) { background: var(--rojo); color: var(--crema); }
 .cantidad-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
 .cantidad-num {
