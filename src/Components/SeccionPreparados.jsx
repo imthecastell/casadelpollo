@@ -46,7 +46,8 @@ export default function SeccionPreparados() {
   const productosSeccion = productos.filter(
     p => p.category_name === 'Preparados' && p.available !== false
   )
-  const esAlbondiga = (nombre) => nombre.toLowerCase().includes('albondiga')
+  const esAlbondiga = (nombre) =>
+    nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').includes('albondiga')
 
   const milaneasSimples = MILANESAS.simples.filter(m => m.available !== false)
   const empapeladas = MILANESAS.empapeladas.filter(m => m.available !== false)

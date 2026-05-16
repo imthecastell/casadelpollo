@@ -3,15 +3,19 @@ import { useApp } from '../data/AppContext.jsx'
 
 const STORAGE_KEY = 'aviso_airfryer_visto'
 
+const FALLBACK = {
+  titulo: 'Cocinado en Air Fryer',
+  descripcion: 'Nuestros marinados y preparados se cocinan en air fryer sin grasas añadidas. El tiempo estimado de cocción se agrega automáticamente a tu pedido.',
+}
+
 export default function AvisoAirfryer({ onCerrar }) {
   const { bannersAviso } = useApp()
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    if (bannersAviso.length === 0) return
     const visto = sessionStorage.getItem(STORAGE_KEY)
     if (!visto) setVisible(true)
-  }, [bannersAviso])
+  }, [])
 
   const cerrar = () => {
     sessionStorage.setItem(STORAGE_KEY, '1')
@@ -19,9 +23,9 @@ export default function AvisoAirfryer({ onCerrar }) {
     if (onCerrar) onCerrar()
   }
 
-  if (!visible || bannersAviso.length === 0) return null
+  if (!visible) return null
 
-  const aviso = bannersAviso[0]
+  const aviso = bannersAviso[0] || FALLBACK
 
   return (
     <div

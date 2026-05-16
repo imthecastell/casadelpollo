@@ -8,7 +8,7 @@ export function generarSlots(fecha) {
   if (esDomingo) return []
 
   const apertura = '10:00'
-  const cierre = esSabado ? '15:00' : '15:30'
+  const cierre = esSabado ? '18:00' : '20:00'
 
   const slots = []
   const [hAp, mAp] = apertura.split(':').map(Number)
