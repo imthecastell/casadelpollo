@@ -21,9 +21,12 @@ const COMPONENTES = {
   bowls: SeccionBowls,
 }
 
+const TABS_POLLO = SECCIONES.filter(s => s.id !== 'bowls')
+
 export default function MenuPrincipal() {
   const { sucursalActiva, setVista, totalItems, diseno, promociones, bannersMenu = [] } = useApp()
   const [mostrarAtajos, setMostrarAtajos] = useState(true)
+  const [entrada, setEntrada] = useState(null)
   const [tabActiva, setTabActiva] = useState(null)
   const [bannerActivo, setBannerActivo] = useState(0)
 
@@ -40,9 +43,16 @@ export default function MenuPrincipal() {
     return () => clearInterval(interval)
   }, [bannersMenu.length])
 
-  const elegirEntrada = (entrada) => {
+  const elegirEntrada = (e) => {
+    setEntrada(e.id)
     setMostrarAtajos(false)
-    setTabActiva(entrada.tab)
+    setTabActiva(e.tab)
+  }
+
+  const volverAlMenu = () => {
+    setMostrarAtajos(true)
+    setEntrada(null)
+    setTabActiva(null)
   }
 
   return (
@@ -58,9 +68,21 @@ export default function MenuPrincipal() {
 
       <header className="header">
         <div className="header-inner">
-          <div>
-            <div className="logo-nombre">Casa del Pollo</div>
-            <div className="logo-sucursal">Sucursal {sucursalActiva?.name}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {!mostrarAtajos && (
+              <button
+                onClick={volverAlMenu}
+                style={{ background: 'none', border: 'none', color: 'var(--dorado-claro)', fontSize: 14, fontFamily: 'var(--font-body), sans-serif', cursor: 'pointer', fontWeight: 500, padding: 0, whiteSpace: 'nowrap' }}
+              >
+                &lt;- Menú
+              </button>
+            )}
+            {mostrarAtajos && (
+              <div>
+                <div className="logo-nombre">Casa del Pollo</div>
+                <div className="logo-sucursal">Sucursal {sucursalActiva?.name}</div>
+              </div>
+            )}
           </div>
           <button className="carrito-btn" onClick={() => setVista('carrito')}>
             🛒
@@ -69,9 +91,9 @@ export default function MenuPrincipal() {
           </button>
         </div>
 
-        {!mostrarAtajos && (
+        {!mostrarAtajos && entrada === 'pollo' && (
           <div className="menu-tabs">
-            {SECCIONES.map(s => (
+            {TABS_POLLO.map(s => (
               <button
                 key={s.id}
                 className={`menu-tab ${tabActiva === s.id ? 'menu-tab-activo' : ''}`}
@@ -115,18 +137,19 @@ export default function MenuPrincipal() {
         {mostrarAtajos ? (
           <section className="menu-entrada-grid">
             <div>
-              <div className="seccion-titulo">Menu</div>
-              <p className="seccion-desc">Elige como quieres empezar tu pedido.</p>
+              <div className="seccion-titulo">¿Qué vas a pedir hoy?</div>
+              <p className="seccion-desc">Sucursal {sucursalActiva?.name}</p>
             </div>
-            {ENTRADAS.map(entrada => (
-              <button key={entrada.id} className={`menu-entrada-card menu-entrada-${entrada.id}`} onClick={() => elegirEntrada(entrada)}>
-                <span className="menu-entrada-label">{entrada.id === 'pollo' ? 'Mostrador' : 'Cocina'}</span>
-                <strong>{entrada.titulo}</strong>
-                <span>{entrada.descripcion}</span>
-                <em>{entrada.accion} -&gt;</em>
+            {ENTRADAS.map(e => (
+              <button key={e.id} className={`menu-entrada-card menu-entrada-${e.id}`} onClick={() => elegirEntrada(e)}>
+                <strong>{e.titulo}</strong>
+                <span>{e.descripcion}</span>
+                <em>{e.accion} -&gt;</em>
               </button>
             ))}
           </section>
+        ) : entrada === 'bowls' ? (
+          <SeccionBowls />
         ) : (
           SeccionActiva && <SeccionActiva />
         )}

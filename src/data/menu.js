@@ -33,18 +33,18 @@ export const SUCURSALES = [
 
 export const MILANESAS = {
   basicas: [
-    { id: 'natural', nombre: 'Natural / Aplanada', precioKg: 125 },
-    { id: 'empanizada', nombre: 'Empanizada', precioKg: 130 },
+    { id: 'natural', nombre: 'Natural / Aplanada', precioKg: 125, available: true },
+    { id: 'empanizada', nombre: 'Empanizada', precioKg: 130, available: true },
   ],
   empapeladas: [
-    { id: 'pimienta-limon', nombre: 'Pimienta limon', precioKg: 135 },
-    { id: 'bbq-coreano', nombre: 'BBQ coreano', precioKg: 135 },
-    { id: 'mantequilla-romero', nombre: 'Mantequilla romero y ajo', precioKg: 135 },
-    { id: 'chipotle', nombre: 'Chipotle', precioKg: 135 },
-    { id: 'habanero-mango', nombre: 'Habanero mango', precioKg: 135 },
-    { id: 'ajo-parmesano', nombre: 'Ajo parmesano', precioKg: 135 },
-    { id: 'finas-hierbas', nombre: 'Finas hierbas', precioKg: 135 },
-    { id: 'tamarindo', nombre: 'Tamarindo', precioKg: 135 },
+    { id: 'pimienta-limon', nombre: 'Pimienta limón', precioKg: 135, available: true },
+    { id: 'bbq-coreano', nombre: 'BBQ coreano', precioKg: 135, available: true },
+    { id: 'mantequilla-romero', nombre: 'Mantequilla romero y ajo', precioKg: 135, available: true },
+    { id: 'chipotle', nombre: 'Chipotle', precioKg: 135, available: true },
+    { id: 'habanero-mango', nombre: 'Habanero mango', precioKg: 135, available: true },
+    { id: 'ajo-parmesano', nombre: 'Ajo parmesano', precioKg: 135, available: true },
+    { id: 'finas-hierbas', nombre: 'Finas hierbas', precioKg: 135, available: true },
+    { id: 'tamarindo', nombre: 'Tamarindo', precioKg: 135, available: true },
   ],
 }
 

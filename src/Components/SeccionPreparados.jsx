@@ -13,7 +13,7 @@ export default function SeccionPreparados() {
   )
 
   const esAlbondiga = (nombre) => nombre.toLowerCase().includes('albondiga')
-  const milanesas = [...MILANESAS.basicas, ...MILANESAS.empapeladas]
+  const milanesas = [...MILANESAS.basicas, ...MILANESAS.empapeladas].filter(m => m.available !== false)
 
   const cambiar = (id, nombre, delta) => {
     const paso = esAlbondiga(nombre) ? 10 : 1
