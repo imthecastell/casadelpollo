@@ -99,7 +99,12 @@ export default function SelectorSucursal() {
         </div>
 
         <div className="selector-footer">
-          Solo recoleccion en local · Pago en persona
+          <div>Solo recoleccion en local</div>
+          <div className="selector-footer-pagos">
+            <span className="pago-chip">💵 Efectivo</span>
+            <span className="pago-chip">💳 Débito / Crédito</span>
+            <span className="pago-chip">Amex</span>
+          </div>
         </div>
       </div>
     </div>

@@ -152,30 +152,43 @@ export default function SeccionPreparados() {
 
       {/* Milanesas empapeladas */}
       <div className="subseccion-menu">
-        <div className="config-label" style={{ marginBottom: 12 }}>Milanesas Empapeladas · $135/kg</div>
-        <p style={{ fontSize: 13, color: 'var(--texto-suave)', marginBottom: 12 }}>
-          Elige el sabor y la cantidad de piezas
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <div className="config-label" style={{ marginBottom: 0 }}>Milanesas Empapeladas</div>
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--rojo)', background: '#fff0f0', borderRadius: 999, padding: '3px 10px' }}>$135/kg</span>
+        </div>
 
-        <select
-          className="bowl-select"
-          value={saborEmpapelado}
-          onChange={e => { setSaborEmpapelado(e.target.value); setCantEmpapelada(0) }}
-          style={{ marginBottom: 14 }}
-        >
-          <option value="">— Elige el sabor —</option>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
           {saboresDisponibles.map(s => (
-            <option key={s.id} value={s.id}>{s.nombre}</option>
+            <button
+              key={s.id}
+              onClick={() => { setSaborEmpapelado(s.id === saborEmpapelado ? '' : s.id); setCantEmpapelada(0) }}
+              style={{
+                padding: '10px 12px',
+                border: `2px solid ${saborEmpapelado === s.id ? 'var(--rojo)' : 'var(--gris)'}`,
+                borderRadius: 'var(--radio)',
+                background: saborEmpapelado === s.id ? '#fff5f5' : 'var(--card-bg)',
+                color: saborEmpapelado === s.id ? 'var(--rojo)' : 'var(--texto)',
+                fontFamily: 'var(--font-body), sans-serif',
+                fontSize: 13,
+                fontWeight: saborEmpapelado === s.id ? 700 : 500,
+                cursor: 'pointer',
+                textAlign: 'left',
+                transition: 'all 0.15s',
+              }}
+            >
+              {s.nombre}
+            </button>
           ))}
-        </select>
+        </div>
 
         {saborSeleccionado && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', background: 'var(--gris-claro)', borderRadius: 'var(--radio)', padding: '12px 14px' }}>
             <div className="cantidad-ctrl">
               <button className="cantidad-btn" onClick={() => setCantEmpapelada(v => Math.max(0, v - 1))} disabled={!cantEmpapelada}>−</button>
               <span className="cantidad-num">{cantEmpapelada}</span>
               <button className="cantidad-btn" onClick={() => setCantEmpapelada(v => v + 1)}>+</button>
             </div>
+            <span style={{ fontSize: 13, color: 'var(--texto-suave)', flex: 1 }}>pz de {saborSeleccionado.nombre}</span>
             {cantEmpapelada > 0 && (
               <button
                 className={`btn-primario ${agregado === 'empapelada' ? 'btn-agregado' : ''}`}

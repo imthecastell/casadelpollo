@@ -83,12 +83,12 @@
 
 .menu-entrada-pollo {
   background:
-    linear-gradient(135deg, #8b0000, #c1121f 52%, #d4a017);
+    linear-gradient(150deg, #1a0805 0%, #7a1a1a 46%, #b8760c 100%);
 }
 
 .menu-entrada-bowls {
   background:
-    linear-gradient(135deg, #2a7a4b, #457b9d 58%, #d4a017);
+    linear-gradient(150deg, #0d2118 0%, #1a5c38 46%, #2b6e62 100%);
 }
 
 .menu-entrada-label {
@@ -440,11 +440,10 @@
   background:
     linear-gradient(
       to bottom,
-      rgba(230,57,70,0.65) 0%,
-      rgba(230,57,70,0.32) 18%,
-      rgba(230,57,70,0.08) 42%,
-      rgba(245,242,238,0.92) 94%,
-      rgba(245,242,238,0.92) 84%,
+      rgba(26,8,5,0.68) 0%,
+      rgba(26,8,5,0.28) 20%,
+      rgba(26,8,5,0.04) 42%,
+      rgba(245,242,238,0.90) 82%,
       #f5f2ee 100%
     );
 }
