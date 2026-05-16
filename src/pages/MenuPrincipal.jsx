@@ -29,8 +29,9 @@ export default function MenuPrincipal() {
 
   const SeccionActiva = COMPONENTES[tabActiva]
   const banner = promociones.find(p => p.type === 'banner')
+  const bannerMenuActual = bannersMenu[bannerActivo]
+  const heroImg = bannerMenuActual?.imagen_url || diseno?.header_image
 
-  // Carrusel automático banners menú
   useEffect(() => {
     if (bannersMenu.length <= 1) return
     const interval = setInterval(() => {
@@ -44,14 +45,17 @@ export default function MenuPrincipal() {
     setTabActiva(entrada.tab)
   }
 
- const bannerMenuActual = bannersMenu[bannerActivo]
-
-
   return (
-    <div
-      className="app-wrapper"
-      style={diseno?.background_image ? { backgroundImage: `linear-gradient(rgba(253,248,240,0.88), rgba(253,248,240,0.96)), url(${diseno.background_image})` } : undefined}
-    >
+    <div className="app-wrapper">
+
+      {/* Hero fondo con degradado */}
+      {heroImg && (
+        <div className="hero-fondo">
+          <img className="hero-fondo-img" src={heroImg} alt="" />
+          <div className="hero-fondo-overlay" />
+        </div>
+      )}
+
       <header className="header">
         <div className="header-inner">
           <div>
@@ -82,49 +86,23 @@ export default function MenuPrincipal() {
       </header>
 
       <main className="pagina slide-up">
-{diseno?.header_image && (
-  <div className="hero-fondo">
-    <img
-      className="hero-fondo-img"
-      src={diseno.header_image}
-      alt=""
-    />
-    <div className="hero-fondo-overlay" />
-  </div>
-)}
-  {/* Carrusel banners menú */}
-{bannersMenu.length > 0 && bannerMenuActual?.imagen_url && (
-  <section className="menu-banner-slider">
-    <img
-      src={bannerMenuActual.imagen_url}
-      alt={bannerMenuActual.titulo || 'Banner'}
-      className="menu-banner-img"
-    />
 
-    {bannerMenuActual?.titulo && (
-      <div className="menu-banner-caption">
-        {bannerMenuActual.titulo}
-      </div>
-    )}
-
-    {bannersMenu.length > 1 && (
-      <div className="menu-banner-dots">
-        {bannersMenu.map((_, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() => setBannerActivo(i)}
-            className={
-              i === bannerActivo
-                ? 'menu-dot menu-dot-active'
-                : 'menu-dot'
-            }
-          />
-        ))}
-      </div>
-    )}
-  </section>
-)}
+        {/* Banner menú con título y dots */}
+        {bannerMenuActual?.titulo && (
+          <section className="menu-promo">
+            <strong>{bannerMenuActual.titulo}</strong>
+            {bannersMenu.length > 1 && (
+              <div style={{ display:'flex', gap:'4px', marginTop:'6px' }}>
+                {bannersMenu.map((_, i) => (
+                  <button key={i}
+                    onClick={() => setBannerActivo(i)}
+                    style={{ width: i === bannerActivo ? '16px' : '6px', height:'6px', borderRadius:'3px', border:'none', background: i === bannerActivo ? 'var(--rojo,#E63946)' : '#ccc', cursor:'pointer', padding:0, transition:'all 0.3s' }}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+        )}
 
         {/* Fallback promociones antiguas */}
         {bannersMenu.length === 0 && banner && (
