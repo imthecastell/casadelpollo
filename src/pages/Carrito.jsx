@@ -78,7 +78,7 @@ export default function Carrito() {
             onClick={() => setVista('menu')}
             style={{ background: 'none', border: 'none', color: 'var(--dorado-claro)', fontSize: 14, fontFamily: 'var(--font-body), sans-serif', cursor: 'pointer', fontWeight: 500 }}
           >
-            &lt;- Seguir pidiendo
+            ← Seguir pidiendo
           </button>
           <div className="logo-nombre" style={{ fontSize: 16 }}>
             Tu pedido ({totalItems})
@@ -219,7 +219,7 @@ export default function Carrito() {
               onClick={handleConfirmar}
               disabled={!puedeConfirmar || confirmando}
             >
-              {confirmando ? 'Enviando pedido...' : 'Confirmar pedido ->'}
+              {confirmando ? 'Enviando pedido...' : 'Confirmar pedido →'}
             </button>
           </>
         )}

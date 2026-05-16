@@ -32,9 +32,10 @@ export const SUCURSALES = [
 ]
 
 export const MILANESAS = {
-  basicas: [
+  simples: [
     { id: 'natural', nombre: 'Natural / Aplanada', precioKg: 125, available: true },
     { id: 'empanizada', nombre: 'Empanizada', precioKg: 130, available: true },
+    { id: 'parmesano', nombre: 'Al Parmesano (empanizada)', precioKg: 130, available: true },
   ],
   empapeladas: [
     { id: 'pimienta-limon', nombre: 'Pimienta limón', precioKg: 135, available: true },

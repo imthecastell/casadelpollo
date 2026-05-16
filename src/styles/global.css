@@ -50,6 +50,18 @@ body {
   position: relative;
 }
 
+@media (min-width: 640px) {
+  body {
+    background: var(--cafe);
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(212,160,23,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(193,18,31,0.10) 0%, transparent 50%);
+  }
+  .app-wrapper {
+    box-shadow: 0 0 80px rgba(0,0,0,0.45);
+  }
+}
+
 .header {
   background: var(--navbar-bg);
   position: sticky;

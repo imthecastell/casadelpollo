@@ -93,7 +93,7 @@ export default function SelectorSucursal() {
                 <div className="sucursal-direccion">{s.address}</div>
                 {!s.active && <div className="sucursal-pronto">Proximamente</div>}
               </div>
-              {s.active && <span className="sucursal-flecha">-&gt;</span>}
+              {s.active && <span className="sucursal-flecha">→</span>}
             </button>
           ))}
         </div>

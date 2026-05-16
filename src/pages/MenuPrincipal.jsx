@@ -21,7 +21,7 @@ const COMPONENTES = {
   bowls: SeccionBowls,
 }
 
-const TABS_POLLO = SECCIONES.filter(s => s.id !== 'bowls')
+const TABS_POLLO = SECCIONES
 
 export default function MenuPrincipal() {
   const { sucursalActiva, setVista, totalItems, diseno, promociones, bannersMenu = [] } = useApp()
@@ -74,7 +74,7 @@ export default function MenuPrincipal() {
                 onClick={volverAlMenu}
                 style={{ background: 'none', border: 'none', color: 'var(--dorado-claro)', fontSize: 14, fontFamily: 'var(--font-body), sans-serif', cursor: 'pointer', fontWeight: 500, padding: 0, whiteSpace: 'nowrap' }}
               >
-                &lt;- Menú
+                ← Menú
               </button>
             )}
             {mostrarAtajos && (
@@ -91,13 +91,13 @@ export default function MenuPrincipal() {
           </button>
         </div>
 
-        {!mostrarAtajos && entrada === 'pollo' && (
+        {!mostrarAtajos && (
           <div className="menu-tabs">
             {TABS_POLLO.map(s => (
               <button
                 key={s.id}
                 className={`menu-tab ${tabActiva === s.id ? 'menu-tab-activo' : ''}`}
-                onClick={() => setTabActiva(s.id)}
+                onClick={() => { setEntrada(s.id === 'bowls' ? 'bowls' : 'pollo'); setTabActiva(s.id) }}
               >
                 <span>{s.emoji}</span>
                 <span>{s.nombre}</span>
@@ -144,11 +144,11 @@ export default function MenuPrincipal() {
               <button key={e.id} className={`menu-entrada-card menu-entrada-${e.id}`} onClick={() => elegirEntrada(e)}>
                 <strong>{e.titulo}</strong>
                 <span>{e.descripcion}</span>
-                <em>{e.accion} -&gt;</em>
+                <em>{e.accion} →</em>
               </button>
             ))}
           </section>
-        ) : entrada === 'bowls' ? (
+        ) : tabActiva === 'bowls' ? (
           <SeccionBowls />
         ) : (
           SeccionActiva && <SeccionActiva />
