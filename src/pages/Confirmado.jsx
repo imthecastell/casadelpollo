@@ -1,5 +1,6 @@
 import { useApp } from '../data/AppContext.jsx'
 import { useRef } from 'react'
+import BannerPopup from '../Components/BannerPopup.jsx'
 
 export default function Confirmado() {
   const { setVista, sucursalActiva, ultimoNumeroOrden, ultimaHora } = useApp()
@@ -23,6 +24,8 @@ export default function Confirmado() {
   }
 
   return (
+    <>
+    <BannerPopup />
     <div className="app-wrapper" style={{
       minHeight: '100vh', display: 'flex',
       flexDirection: 'column', alignItems: 'center',
@@ -123,5 +126,6 @@ export default function Confirmado() {
         Cambiar sucursal
       </button>
     </div>
+    </>
   )
 }

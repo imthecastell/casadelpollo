@@ -18,6 +18,7 @@ export function AppProvider({ children }) {
   const [ultimoNumeroOrden, setUltimoNumeroOrden] = useState(null)
   const [ultimaHora, setUltimaHora] = useState(null)
   const [bannersMenu, setBannersMenu] = useState([])
+  const [bannersPopup, setBannersPopup] = useState([])
 
   useEffect(() => {
     getBranches()
@@ -30,12 +31,16 @@ export function AppProvider({ children }) {
       .catch(() => setPromociones([]))
 
     getBanners('bienvenida')
-  .then(data => setBanners(Array.isArray(data) ? data : []))
-  .catch(() => setBanners([]))
+      .then(data => setBanners(Array.isArray(data) ? data : []))
+      .catch(() => setBanners([]))
 
-getBanners('menu')
-  .then(data => setBannersMenu(Array.isArray(data) ? data : []))
-  .catch(() => setBannersMenu([]))
+    getBanners('menu')
+      .then(data => setBannersMenu(Array.isArray(data) ? data : []))
+      .catch(() => setBannersMenu([]))
+
+    getBanners('popup')
+      .then(data => setBannersPopup(Array.isArray(data) ? data : []))
+      .catch(() => setBannersPopup([]))
   }, [])
 
   useEffect(() => {
@@ -140,6 +145,7 @@ getBanners('menu')
   promociones,
   banners,
   bannersMenu,
+  bannersPopup,
   diseno,
   cargando,
 }}>
