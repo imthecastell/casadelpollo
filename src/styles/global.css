@@ -263,16 +263,6 @@ body {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
-.menu-tabs {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-.menu-tabs::-webkit-scrollbar { display: none; }
-
-.menu-tab {
-  min-width: fit-content;
-  flex-shrink: 0;
-}
 
 /* ── MICRO-INTERACTIONS ── */
 .card-marinado,
