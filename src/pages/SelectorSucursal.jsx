@@ -34,9 +34,11 @@ export default function SelectorSucursal() {
 
       {/* Logo */}
       <div className="selector-header">
-        <div className="selector-brand-icon">🐔</div>
-        <span className="selector-brand">Casa del Pollo</span>
-        <span className="selector-tagline">El Pollo de Casa</span>
+        <img
+          src="/logo-small.png"
+          alt="Casa del Pollo"
+          style={{ width: '100%', maxWidth: 260, height: 'auto', mixBlendMode: 'multiply' }}
+        />
       </div>
 
       {/* Hero image / placeholder */}

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600;700&family=Lato:wght@400;700&family=Montserrat:wght@400;600;700;800&family=Nunito:wght@400;600;700;800&family=Open+Sans:wght@400;600;700&family=Oswald:wght@400;600;700&family=Outfit:wght@400;600;700;800&family=Playfair+Display:wght@600;700;800&family=Poppins:wght@400;600;700;800&family=Raleway:wght@400;600;700;800&family=Roboto:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&family=Space+Grotesk:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Playfair+Display:ital,wght@0,700;1,400;1,600&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -24,8 +24,9 @@
   --button-text: #ffffff;
   --navbar-bg: var(--blanco);
   --navbar-text: var(--texto);
-  --font-title: 'Syne';
+  --font-title: 'Nunito';
   --font-body: 'DM Sans';
+  --font-display: 'Playfair Display';
   --radio: 12px;
   --radio-lg: 18px;
   --sombra: 0 2px 12px rgba(0,0,0,0.08);
@@ -67,6 +68,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 100;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
 }
 
 .header-inner {
@@ -78,23 +80,25 @@ body {
 
 .logo-nombre {
   font-family: var(--font-title), sans-serif;
-  font-weight: 800;
+  font-weight: 900;
   font-size: 18px;
-  color: var(--navbar-text);
-  letter-spacing: -0.3px;
+  color: var(--texto);
+  letter-spacing: -0.5px;
+  line-height: 1;
 }
 
 .logo-sub {
+  font-family: var(--font-display), serif;
+  font-style: italic;
   font-size: 11px;
-  color: var(--dorado-claro);
-  font-weight: 500;
-  letter-spacing: 0.5px;
+  color: var(--texto-suave);
+  font-weight: 400;
+  letter-spacing: 0.2px;
 }
 
 .logo-sucursal {
   font-size: 11px;
-  color: var(--navbar-text);
-  opacity: 0.76;
+  color: var(--texto-suave);
   margin-top: 1px;
 }
 
@@ -140,8 +144,9 @@ body {
   border: none;
   border-radius: var(--radio);
   font-family: var(--font-title), sans-serif;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 15px;
+  letter-spacing: 0.2px;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -167,25 +172,27 @@ body {
 
 .seccion-titulo {
   font-family: var(--font-title), sans-serif;
-  font-weight: 800;
-  font-size: 20px;
+  font-weight: 900;
+  font-size: 22px;
   color: var(--texto);
   margin-bottom: 4px;
+  letter-spacing: -0.3px;
 }
 
 .seccion-desc {
   font-size: 13px;
   color: var(--texto-suave);
   margin-bottom: 20px;
+  font-weight: 500;
 }
 
 .config-label {
   display: block;
   font-family: var(--font-title), sans-serif;
-  font-weight: 700;
-  font-size: 12px;
+  font-weight: 800;
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
+  letter-spacing: 1px;
   color: var(--cafe-medio);
   margin-bottom: 8px;
 }

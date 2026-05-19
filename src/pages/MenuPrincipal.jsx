@@ -78,9 +78,9 @@ export default function MenuPrincipal() {
               </button>
             )}
             {mostrarAtajos && (
-              <div>
-                <div className="logo-nombre">Casa del Pollo</div>
-                <div className="logo-sucursal">Sucursal {sucursalActiva?.name}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <img src="/logo-small.png" alt="Casa del Pollo" style={{ height: 36, width: 'auto', mixBlendMode: 'multiply' }} />
+                <div className="logo-sucursal" style={{ fontSize: 12 }}>Sucursal {sucursalActiva?.name}</div>
               </div>
             )}
           </div>
