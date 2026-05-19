@@ -41,6 +41,10 @@ export default function SeccionComplementos() {
 
       {productosSeccion.map(p => (
         <div key={p.id} className="producto-row">
+          {p.image_url
+            ? <img className="producto-img" src={p.image_url} alt="" />
+            : <div className="producto-img-placeholder">🥗</div>
+          }
           <div className="producto-info">
             <div className="producto-nombre">{p.name}</div>
             <div className="producto-precio">

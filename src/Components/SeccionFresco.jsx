@@ -39,6 +39,10 @@ export default function SeccionFresco() {
       <p className="seccion-desc">Precio por kg · se cobra al pesar en el local</p>
       {productosSeccion.map(p => (
         <div key={p.id} className="producto-row">
+          {p.image_url
+            ? <img className="producto-img" src={p.image_url} alt="" />
+            : <div className="producto-img-placeholder">🍗</div>
+          }
           <div className="producto-info">
             <div className="producto-nombre">{p.name}</div>
             <div className="producto-precio">${p.price}/kg</div>

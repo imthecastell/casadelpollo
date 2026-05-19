@@ -77,6 +77,10 @@ export default function SeccionMarinados() {
             className={`card-marinado ${seleccion?.id === p.id ? 'card-marinado-activo' : ''}`}
             onClick={() => setSeleccion(seleccion?.id === p.id ? null : p)}
           >
+            {p.image_url
+              ? <img className="marinado-img" src={p.image_url} alt="" />
+              : <div className="marinado-img-placeholder">🍯</div>
+            }
             <div>
               <div className="producto-nombre">{p.name}</div>
               <div className="producto-precio">${p.price}/kg</div>

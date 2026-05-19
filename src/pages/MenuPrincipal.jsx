@@ -100,7 +100,7 @@ export default function MenuPrincipal() {
                 onClick={() => { setEntrada(s.id === 'bowls' ? 'bowls' : 'pollo'); setTabActiva(s.id) }}
               >
                 <span>{s.emoji}</span>
-                <span>{s.nombre}</span>
+                <span>{s.tabLabel || s.nombre}</span>
               </button>
             ))}
           </div>

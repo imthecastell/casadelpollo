@@ -3,19 +3,19 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --rojo: #c1121f;
-  --rojo-oscuro: #8b0000;
-  --rojo-claro: #e63946;
-  --crema: #FAF8F4;
-  --crema-oscura: #F0EBE3;
-  --cafe: #1a1a1a;
-  --cafe-medio: #5a3a2a;
-  --dorado: #d4a017;
-  --dorado-claro: #f0c040;
-  --gris-claro: #F4F1EC;
-  --gris: #CEC8C0;
-  --texto: #111111;
-  --texto-suave: #6B6866;
+  --rojo: #922B21;
+  --rojo-oscuro: #5E1515;
+  --rojo-claro: #BF4545;
+  --crema: #FBF6EF;
+  --crema-oscura: #EDE3D6;
+  --cafe: #1A0806;
+  --cafe-medio: #4A2018;
+  --dorado: #C8841A;
+  --dorado-claro: #DFA030;
+  --gris-claro: #F1E9E0;
+  --gris: #C5B5AB;
+  --texto: #1A0806;
+  --texto-suave: #7B5850;
   --blanco: #ffffff;
   --verde: #2a7a4b;
   --app-bg: var(--crema);
@@ -53,13 +53,13 @@ body {
 
 @media (min-width: 640px) {
   body {
-    background: #1a1a1a;
+    background: #120406;
     background-image:
-      radial-gradient(ellipse at 20% 60%, rgba(193,18,31,0.12) 0%, transparent 55%),
-      radial-gradient(ellipse at 78% 18%, rgba(212,160,23,0.08) 0%, transparent 50%);
+      radial-gradient(ellipse at 20% 60%, rgba(146,43,33,0.22) 0%, transparent 55%),
+      radial-gradient(ellipse at 78% 18%, rgba(200,132,26,0.10) 0%, transparent 50%);
   }
   .app-wrapper {
-    box-shadow: 0 0 80px rgba(0,0,0,0.50);
+    box-shadow: 0 0 80px rgba(0,0,0,0.55), 0 0 140px rgba(146,43,33,0.12);
   }
 }
 

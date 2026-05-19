@@ -53,6 +53,7 @@ export const SECCIONES = [
   {
     id: 'fresco',
     nombre: 'Pollo Fresco',
+    tabLabel: 'Fresco',
     emoji: '🍗',
     tipo: 'piezas',
     productos: [
@@ -67,6 +68,7 @@ export const SECCIONES = [
   {
     id: 'marinados',
     nombre: 'Marinados',
+    tabLabel: 'Marinados',
     emoji: '🍯',
     tipo: 'gramos',
     productos: [
@@ -84,6 +86,7 @@ export const SECCIONES = [
   {
     id: 'preparados',
     nombre: 'Preparados y Milanesas',
+    tabLabel: 'Preparados',
     emoji: '🍳',
     tipo: 'piezas',
     productos: [
@@ -104,6 +107,7 @@ export const SECCIONES = [
   {
     id: 'complementos',
     nombre: 'Complementos',
+    tabLabel: 'Extras',
     emoji: '🥗',
     tipo: 'complementos',
     productos: [
@@ -122,6 +126,7 @@ export const SECCIONES = [
   {
     id: 'bowls',
     nombre: 'Bowls',
+    tabLabel: 'Bowls',
     emoji: '🥣',
     tipo: 'bowls',
   },
