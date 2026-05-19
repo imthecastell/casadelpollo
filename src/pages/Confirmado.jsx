@@ -35,37 +35,38 @@ export default function Confirmado() {
       <div style={{ fontSize: 64, marginBottom: 24 }}>🎉</div>
 
       <div style={{
-        fontFamily: 'Syne, sans-serif', fontWeight: 800,
-        fontSize: 28, color: 'var(--crema)', marginBottom: 12
+        fontFamily: 'var(--font-title), sans-serif', fontWeight: 800,
+        fontSize: 28, color: 'var(--crema)', marginBottom: 12, letterSpacing: '-0.5px'
       }}>
         ¡Pedido recibido!
       </div>
 
       {/* Recibo descargable */}
       <div ref={reciboRef} style={{
-        background: '#3d1c02', borderRadius: 16,
+        background: 'rgba(255,255,255,0.06)', borderRadius: 20,
         padding: '24px', marginBottom: 24,
         width: '100%', maxWidth: 320,
-        border: '2px solid rgba(255,255,255,0.15)'
+        border: '1.5px solid rgba(255,255,255,0.12)',
+        backdropFilter: 'blur(10px)'
       }}>
-        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', marginBottom: 4 }}>
           Casa del Pollo
         </div>
-        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 16 }}>
+        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', marginBottom: 20 }}>
           Sucursal {sucursalActiva?.name || sucursalActiva?.nombre}
         </div>
 
         {ultimoNumeroOrden && (
           <div style={{
-            background: '#E63946', borderRadius: 12,
-            padding: '12px 24px', marginBottom: 16
+            background: 'var(--rojo)', borderRadius: 14,
+            padding: '14px 24px', marginBottom: 16
           }}>
-            <p style={{ fontSize: 11, color: 'white', marginBottom: 4, opacity: 0.8 }}>
-              NÚMERO DE ORDEN
+            <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.75)', marginBottom: 4 }}>
+              Número de orden
             </p>
             <p style={{
-              fontFamily: 'Syne, sans-serif', fontWeight: 900,
-              fontSize: 52, color: 'white', lineHeight: 1
+              fontFamily: 'var(--font-title), sans-serif', fontWeight: 900,
+              fontSize: 56, color: 'white', lineHeight: 1, letterSpacing: '-2px'
             }}>
               {ultimoNumeroOrden}
             </p>
@@ -74,22 +75,23 @@ export default function Confirmado() {
 
         {ultimaHora && (
           <div style={{
-            background: 'rgba(255,255,255,0.1)', borderRadius: 8,
-            padding: '10px 16px', marginBottom: 8
+            background: 'rgba(255,255,255,0.08)', borderRadius: 10,
+            padding: '12px 16px', marginBottom: 8,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between'
           }}>
-            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', marginBottom: 2 }}>
-              HORA DE RECOGIDA
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.8px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)' }}>
+              Hora de recogida
             </p>
             <p style={{
-              fontFamily: 'Syne, sans-serif', fontWeight: 800,
-              fontSize: 24, color: 'white'
+              fontFamily: 'var(--font-title), sans-serif', fontWeight: 800,
+              fontSize: 22, color: 'white', letterSpacing: '-0.5px'
             }}>
-              🕐 {ultimaHora}
+              {ultimaHora}
             </p>
           </div>
         )}
 
-        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', marginTop: 12 }}>
+        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 14, textAlign: 'center' }}>
           Pago en el local al recoger
         </p>
       </div>

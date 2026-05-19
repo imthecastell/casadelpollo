@@ -53,7 +53,7 @@ export const SECCIONES = [
   {
     id: 'fresco',
     nombre: 'Pollo Fresco',
-    emoji: 'P',
+    emoji: '🍗',
     tipo: 'piezas',
     productos: [
       { id: 'entero', nombre: 'Pollo entero', precioKg: 95, disponible: { vinedos: true, parque: true, country: true } },
@@ -67,7 +67,7 @@ export const SECCIONES = [
   {
     id: 'marinados',
     nombre: 'Marinados',
-    emoji: 'M',
+    emoji: '🍯',
     tipo: 'gramos',
     productos: [
       { id: 'mexicana', nombre: 'A la mexicana', precioKg: 130, disponible: { vinedos: true, parque: false, country: true } },
@@ -84,7 +84,7 @@ export const SECCIONES = [
   {
     id: 'preparados',
     nombre: 'Preparados y Milanesas',
-    emoji: 'R',
+    emoji: '🍳',
     tipo: 'piezas',
     productos: [
       { id: 'albondigas', nombre: 'Albondigas', precioKg: 145, disponible: { vinedos: true, parque: false, country: true } },
@@ -104,7 +104,7 @@ export const SECCIONES = [
   {
     id: 'complementos',
     nombre: 'Complementos',
-    emoji: 'C',
+    emoji: '🥗',
     tipo: 'complementos',
     productos: [
       { id: 'arroz-blanco', nombre: 'Arroz basmati blanco', precio: 35, unidad: 'porcion', disponible: { vinedos: true, parque: false, country: true } },
@@ -122,7 +122,7 @@ export const SECCIONES = [
   {
     id: 'bowls',
     nombre: 'Bowls',
-    emoji: 'B',
+    emoji: '🥣',
     tipo: 'bowls',
   },
 ]

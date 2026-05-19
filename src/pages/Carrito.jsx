@@ -76,7 +76,7 @@ export default function Carrito() {
         <div className="header-inner">
           <button
             onClick={() => setVista('menu')}
-            style={{ background: 'none', border: 'none', color: 'var(--dorado-claro)', fontSize: 14, fontFamily: 'var(--font-body), sans-serif', cursor: 'pointer', fontWeight: 500 }}
+            style={{ background: 'none', border: 'none', color: 'var(--rojo)', fontSize: 14, fontFamily: 'var(--font-body), sans-serif', cursor: 'pointer', fontWeight: 600 }}
           >
             ← Seguir pidiendo
           </button>
@@ -88,11 +88,12 @@ export default function Carrito() {
 
       <div className="pagina">
         {carrito.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--texto-suave)' }}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>Carrito</div>
-            <p style={{ marginBottom: 20 }}>Tu pedido esta vacio</p>
+          <div style={{ textAlign: 'center', padding: '60px 0' }}>
+            <div style={{ fontSize: 56, marginBottom: 16 }}>🛒</div>
+            <div style={{ fontFamily: 'var(--font-title), sans-serif', fontWeight: 700, fontSize: 18, color: 'var(--texto)', marginBottom: 8 }}>Tu pedido está vacío</div>
+            <p style={{ fontSize: 14, color: 'var(--texto-suave)', marginBottom: 24 }}>Agrega productos desde el menú</p>
             <button className="btn-primario" style={{ width: 'auto', padding: '12px 24px' }} onClick={() => setVista('menu')}>
-              Ver menu
+              Ver menú
             </button>
           </div>
         ) : (
@@ -100,8 +101,8 @@ export default function Carrito() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
               {carrito.map(item => (
                 <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'var(--card-bg)', borderRadius: 'var(--radio)', padding: '14px 16px', boxShadow: 'var(--sombra)' }}>
-                  <div style={{ fontSize: 24, flexShrink: 0 }}>
-                    {item.tipo === 'bowl' ? 'B' : item.tipo === 'marinado' ? 'M' : item.tipo === 'complemento' ? 'C' : 'P'}
+                  <div style={{ fontSize: 22, flexShrink: 0, width: 40, height: 40, background: 'var(--crema-oscura)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {item.tipo === 'bowl' ? '🥗' : item.tipo === 'marinado' ? '🍯' : item.tipo === 'complemento' ? '🫙' : '🍗'}
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--texto)', lineHeight: 1.4 }}>{item.resumen}</div>

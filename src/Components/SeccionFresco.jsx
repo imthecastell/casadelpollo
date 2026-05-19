@@ -35,7 +35,7 @@ export default function SeccionFresco() {
 
   return (
     <div>
-      <div className="seccion-titulo">🐔 Pollo Fresco</div>
+      <div className="seccion-titulo">🍗 Pollo Fresco</div>
       <p className="seccion-desc">Precio por kg · se cobra al pesar en el local</p>
       {productosSeccion.map(p => (
         <div key={p.id} className="producto-row">
