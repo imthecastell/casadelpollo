@@ -6,7 +6,6 @@ export default function SelectorSucursal() {
   const { setSucursalActiva, setVista, sucursales, cargando, promociones, banners } = useApp()
   const [bannerActivo, setBannerActivo] = useState(0)
 
-  // Carrusel automático cada 4 segundos
   useEffect(() => {
     if (banners.length <= 1) return
     const interval = setInterval(() => {
@@ -15,8 +14,8 @@ export default function SelectorSucursal() {
     return () => clearInterval(interval)
   }, [banners.length])
 
-  const banner = promociones.find(p => p.type === 'banner') || promociones[0]
-  const bannerImg = banners[bannerActivo]?.imagen_url || banner?.image_url
+  const bannerHero = banners[bannerActivo]
+  const promoLegacy = !banners.length ? (promociones.find(p => p.type === 'banner') || promociones[0]) : null
 
   const elegirSucursal = (sucursal) => {
     if (!sucursal.active) return
@@ -25,61 +24,68 @@ export default function SelectorSucursal() {
   }
 
   if (cargando) return (
-    <div className="selector-bg">
-      <div className="selector-overlay" />
-      <div className="selector-contenido">
-        <div className="selector-cargando">Cargando...</div>
-      </div>
+    <div className="selector-wrap" style={{ alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ fontSize: 14, color: 'var(--texto-suave)' }}>Cargando...</div>
     </div>
   )
 
   return (
-    <div className="selector-bg">
-      {bannerImg && <img className="selector-bg-img" src={bannerImg} alt="" />}
-      <div className="selector-overlay" />
+    <div className="selector-wrap">
 
-      <div className="selector-contenido">
-        <div className="selector-logo">
-          <div className="selector-logo-icono">Casa del Pollo</div>
-          <div className="selector-logo-nombre">Casa del Pollo</div>
-          <div className="selector-logo-sub">Marinados artesanales</div>
-        </div>
+      {/* Logo */}
+      <div className="selector-header">
+        <div className="selector-brand-icon">🐔</div>
+        <span className="selector-brand">Casa del Pollo</span>
+        <span className="selector-tagline">El Pollo de Casa</span>
+      </div>
 
-        {banners.length > 0 && (
-          <section className="promo-bienvenida">
-            {banners[bannerActivo]?.titulo && <h1>{banners[bannerActivo].titulo}</h1>}
-            {banners.length > 1 && (
-              <div style={{ display:'flex', gap:'6px', justifyContent:'center', marginTop:'8px' }}>
-                {banners.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setBannerActivo(i)}
-                    style={{
-                      width: i === bannerActivo ? '20px' : '8px',
-                      height: '8px',
-                      borderRadius: '4px',
-                      border: 'none',
-                      background: i === bannerActivo ? 'white' : 'rgba(255,255,255,0.4)',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s',
-                      padding: 0,
-                    }}
-                  />
-                ))}
+      {/* Hero image / placeholder */}
+      <div className="selector-hero">
+        {bannerHero?.imagen_url ? (
+          <>
+            <img className="selector-hero-img" src={bannerHero.imagen_url} alt="" />
+            <div className="selector-hero-overlay" />
+            {(bannerHero.titulo) && (
+              <div className="selector-hero-caption">
+                <div className="selector-hero-titulo">{bannerHero.titulo}</div>
               </div>
             )}
-          </section>
+          </>
+        ) : (
+          <div className="selector-hero-placeholder">
+            <span>🍗</span>
+            <span>Marinados artesanales{'\n'}listos para recoger</span>
+          </div>
         )}
 
-        {!banners.length && banner && (
+        {/* Dots carrusel */}
+        {banners.length > 1 && (
+          <div style={{ position: 'absolute', bottom: 12, right: 14, display: 'flex', gap: 5 }}>
+            {banners.map((_, i) => (
+              <button key={i} onClick={() => setBannerActivo(i)} style={{
+                width: i === bannerActivo ? 20 : 7, height: 7,
+                borderRadius: 4, border: 'none', padding: 0,
+                background: i === bannerActivo ? 'white' : 'rgba(255,255,255,0.45)',
+                cursor: 'pointer', transition: 'all 0.3s',
+              }} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Cuerpo */}
+      <div className="selector-body">
+
+        {/* Promo legacy */}
+        {promoLegacy && (
           <section className="promo-bienvenida">
-            <span className="promo-etiqueta">Promocion activa</span>
-            <h1>{banner.title}</h1>
-            {banner.description && <p>{banner.description}</p>}
+            <span className="promo-etiqueta">Promoción activa</span>
+            <h1>{promoLegacy.title}</h1>
+            {promoLegacy.description && <p>{promoLegacy.description}</p>}
           </section>
         )}
 
-        <div className="selector-pregunta">Elige donde recoges tu pedido</div>
+        <p className="selector-pregunta">¿Dónde recoges tu pedido?</p>
 
         <div className="selector-lista">
           {sucursales.map(s => (
@@ -91,22 +97,24 @@ export default function SelectorSucursal() {
               <div className="sucursal-info">
                 <div className="sucursal-nombre">{s.name}</div>
                 <div className="sucursal-direccion">{s.address}</div>
-                {!s.active && <div className="sucursal-pronto">Proximamente</div>}
+                {!s.active && <div className="sucursal-pronto">Próximamente</div>}
               </div>
               {s.active && <span className="sucursal-flecha">→</span>}
             </button>
           ))}
         </div>
+      </div>
 
-        <div className="selector-footer">
-          <div>Solo recoleccion en local</div>
-          <div className="selector-footer-pagos">
-            <span className="pago-chip">💵 Efectivo</span>
-            <span className="pago-chip">💳 Débito / Crédito</span>
-            <span className="pago-chip">Amex</span>
-          </div>
+      {/* Footer */}
+      <div className="selector-footer">
+        <div>Solo recolección en local</div>
+        <div className="selector-footer-pagos">
+          <span className="pago-chip">💵 Efectivo</span>
+          <span className="pago-chip">💳 Débito / Crédito</span>
+          <span className="pago-chip">Amex</span>
         </div>
       </div>
+
     </div>
   )
 }

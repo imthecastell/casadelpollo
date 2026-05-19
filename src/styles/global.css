@@ -3,34 +3,33 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  /* Paleta campo dorado al atardecer */
-  --rojo: #a06818;           /* ámbar cálido — acción principal */
-  --rojo-oscuro: #7a4e10;    /* ámbar oscuro */
-  --rojo-claro: #c07e20;     /* ámbar claro para hover */
-  --crema: #f4edd8;          /* marfil cálido — fondo */
-  --crema-oscura: #e5d8b8;   /* marfil más oscuro */
-  --cafe: #101c09;           /* verde bosque muy oscuro */
-  --cafe-medio: #2a4015;     /* verde bosque medio */
-  --dorado: #c8a020;         /* oro del pasto seco */
-  --dorado-claro: #e8c840;   /* oro brillante */
-  --gris-claro: #ede6d0;     /* fondo suave cálido */
-  --gris: #a89868;           /* gris cálido para bordes */
-  --texto: #1a280a;          /* texto verde oscuro */
-  --texto-suave: #566238;    /* texto oliva suave */
+  --rojo: #c1121f;
+  --rojo-oscuro: #8b0000;
+  --rojo-claro: #e63946;
+  --crema: #faf4ec;
+  --crema-oscura: #f0e8d8;
+  --cafe: #1a1a1a;
+  --cafe-medio: #5a3a2a;
+  --dorado: #d4a017;
+  --dorado-claro: #f0c040;
+  --gris-claro: #f5f0ea;
+  --gris: #d0c4b4;
+  --texto: #1a1a1a;
+  --texto-suave: #6b6b6b;
   --blanco: #ffffff;
-  --verde: #3a6b20;          /* verde campo (bowls, éxito) */
+  --verde: #2a7a4b;
   --app-bg: var(--crema);
   --card-bg: var(--blanco);
   --button-bg: var(--rojo);
   --button-text: #ffffff;
-  --navbar-bg: var(--cafe);
-  --navbar-text: var(--crema);
+  --navbar-bg: var(--blanco);
+  --navbar-text: var(--texto);
   --font-title: 'Syne';
   --font-body: 'DM Sans';
   --radio: 12px;
   --radio-lg: 18px;
-  --sombra: 0 2px 12px rgba(16,28,9,0.10);
-  --sombra-lg: 0 4px 24px rgba(16,28,9,0.15);
+  --sombra: 0 2px 12px rgba(0,0,0,0.08);
+  --sombra-lg: 0 4px 24px rgba(0,0,0,0.12);
 }
 
 body {
@@ -53,10 +52,10 @@ body {
 
 @media (min-width: 640px) {
   body {
-    background: var(--cafe);
+    background: #1a1a1a;
     background-image:
-      radial-gradient(ellipse at 20% 60%, rgba(200,160,32,0.12) 0%, transparent 55%),
-      radial-gradient(ellipse at 78% 18%, rgba(58,107,32,0.14) 0%, transparent 50%);
+      radial-gradient(ellipse at 20% 60%, rgba(193,18,31,0.12) 0%, transparent 55%),
+      radial-gradient(ellipse at 78% 18%, rgba(212,160,23,0.08) 0%, transparent 50%);
   }
   .app-wrapper {
     box-shadow: 0 0 80px rgba(0,0,0,0.50);
@@ -162,7 +161,7 @@ body {
   cursor: pointer;
   transition: all 0.2s;
 }
-.btn-secundario:hover { background: rgba(160,104,24,0.08); }
+.btn-secundario:hover { background: rgba(193,18,31,0.06); }
 
 .btn-agregado { background: var(--verde) !important; }
 

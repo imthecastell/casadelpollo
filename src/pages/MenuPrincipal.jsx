@@ -72,7 +72,7 @@ export default function MenuPrincipal() {
             {!mostrarAtajos && (
               <button
                 onClick={volverAlMenu}
-                style={{ background: 'none', border: 'none', color: 'var(--dorado-claro)', fontSize: 14, fontFamily: 'var(--font-body), sans-serif', cursor: 'pointer', fontWeight: 500, padding: 0, whiteSpace: 'nowrap' }}
+                style={{ background: 'none', border: 'none', color: 'var(--rojo)', fontSize: 14, fontFamily: 'var(--font-body), sans-serif', cursor: 'pointer', fontWeight: 600, padding: 0, whiteSpace: 'nowrap' }}
               >
                 ← Menú
               </button>

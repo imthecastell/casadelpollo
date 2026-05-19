@@ -83,12 +83,12 @@
 
 .menu-entrada-pollo {
   background:
-    linear-gradient(150deg, #0d1a07 0%, #2e5218 48%, #9a7010 100%);
+    linear-gradient(150deg, #5a1208 0%, #c1121f 52%, #e8600a 100%);
 }
 
 .menu-entrada-bowls {
   background:
-    linear-gradient(150deg, #071408 0%, #1a5030 48%, #3a7850 100%);
+    linear-gradient(150deg, #0d2b1a 0%, #1e6040 52%, #2a8050 100%);
 }
 
 .menu-entrada-label {
@@ -173,7 +173,7 @@
   width: 100%;
 }
 .card-marinado:hover { border-color: var(--rojo); transform: translateY(-1px); }
-.card-marinado-activo { border-color: var(--rojo) !important; background: #f8f2e0 !important; }
+.card-marinado-activo { border-color: var(--rojo) !important; background: #fff5f5 !important; }
 
 .card-check {
   position: absolute;
@@ -222,7 +222,7 @@
   transition: all 0.18s;
 }
 .recogida-opt:hover { border-color: var(--rojo); }
-.recogida-activo { border-color: var(--rojo) !important; background: #f8f2e0 !important; }
+.recogida-activo { border-color: var(--rojo) !important; background: #fff5f5 !important; }
 
 .recogida-titulo {
   font-family: var(--font-title), sans-serif;
@@ -440,11 +440,11 @@
   background:
     linear-gradient(
       to bottom,
-      rgba(13,26,7,0.70) 0%,
-      rgba(13,26,7,0.28) 20%,
-      rgba(13,26,7,0.04) 42%,
-      rgba(244,237,216,0.90) 82%,
-      #f4edd8 100%
+      rgba(26,8,5,0.62) 0%,
+      rgba(26,8,5,0.22) 20%,
+      rgba(26,8,5,0.02) 42%,
+      rgba(250,244,236,0.92) 82%,
+      #faf4ec 100%
     );
 }
 
