@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 
 const ORDEN_SIMPLES = ['natural', 'aplanada', 'empanizada', 'parmesano']
+const EMPAP_IMG = 'https://res.cloudinary.com/do4juvxio/image/upload/ar_4:3,c_fill,g_west,w_320/marinados/empapeladas.png'
 
 const esSimpleMil = (p) => {
   const n = p.name.toLowerCase()
@@ -45,16 +46,14 @@ export default function SeccionPreparados() {
   const { agregarAlCarrito, productos } = useApp()
   const [cantidades, setCantidades] = useState({})
   const [cantSimples, setCantSimples] = useState({})
-  const [saborId, setSaborId] = useState('')
-  const [cantEmpapelada, setCantEmpapelada] = useState(0)
+  const [cantEmpapeladas, setCantEmpapeladas] = useState({})
+  const [empapOpen, setEmpapOpen] = useState(false)
   const [agregado, setAgregado] = useState(null)
 
-  // Preparados desde DB
   const productosSeccion = productos.filter(
     p => p.category_name === 'Preparados' && p.available !== false
   )
 
-  // Milanesas desde DB
   const milanesas = productos.filter(
     p => p.category_name === 'Milanesas' && p.available !== false
   )
@@ -68,7 +67,6 @@ export default function SeccionPreparados() {
     })
 
   const milEmpapeladas = milanesas.filter(p => !esSimpleMil(p))
-  const saborSeleccionado = milEmpapeladas.find(e => e.id === saborId)
   const precioEmpapelada = milEmpapeladas[0]?.price ?? 230
 
   const esAlbondiga = (nombre) =>
@@ -108,26 +106,27 @@ export default function SeccionPreparados() {
     agregarAlCarrito({
       tipo: 'milanesa', nombre: m.name, cantidad,
       precioKg: m.price, precio: m.price, necesitaHora: true,
-      resumen: `Milanesa ${m.name} × ${cantidad} pz · $${m.price}/kg`
+      resumen: `${m.name} × ${cantidad} pz · $${m.price}/kg`
     })
     setCantSimples(prev => ({ ...prev, [m.id]: 0 }))
     marcarAgregado(m.id)
   }
 
-  const agregarEmpapelada = () => {
-    if (!saborSeleccionado || !cantEmpapelada) return
+  const agregarSabor = (flavor) => {
+    const cantidad = cantEmpapeladas[flavor.id] || 0
+    if (!cantidad) return
+    const nombreSabor = flavor.name.replace(/^milanesa\s*/i, '')
     agregarAlCarrito({
       tipo: 'milanesa',
-      nombre: `Empapelada ${saborSeleccionado.name}`,
-      cantidad: cantEmpapelada,
-      precioKg: saborSeleccionado.price,
-      precio: saborSeleccionado.price,
+      nombre: `Empapelada ${nombreSabor}`,
+      cantidad,
+      precioKg: flavor.price,
+      precio: flavor.price,
       necesitaHora: true,
-      resumen: `Milanesa empapelada ${saborSeleccionado.name} × ${cantEmpapelada} pz · $${saborSeleccionado.price}/kg`
+      resumen: `Milanesa empapelada ${nombreSabor} × ${cantidad} pz · $${flavor.price}/kg`
     })
-    setSaborId('')
-    setCantEmpapelada(0)
-    marcarAgregado('empapelada')
+    setCantEmpapeladas(prev => ({ ...prev, [flavor.id]: 0 }))
+    marcarAgregado(`emp-${flavor.id}`)
   }
 
   return (
@@ -170,59 +169,52 @@ export default function SeccionPreparados() {
         </div>
       )}
 
-      {/* Milanesas empapeladas */}
+      {/* Milanesas empapeladas — fila única expandible */}
       {milEmpapeladas.length > 0 && (
         <div className="subseccion-menu">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <div className="config-label" style={{ marginBottom: 0 }}>Milanesas Empapeladas</div>
-            <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--rojo)', background: '#fff0f0', borderRadius: 999, padding: '3px 10px' }}>
-              ${precioEmpapelada}/kg
-            </span>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
-            {milEmpapeladas.map(s => (
-              <button
-                key={s.id}
-                onClick={() => { setSaborId(s.id === saborId ? '' : s.id); setCantEmpapelada(0) }}
-                style={{
-                  padding: '10px 12px',
-                  border: `2px solid ${saborId === s.id ? 'var(--rojo)' : 'var(--gris)'}`,
-                  borderRadius: 'var(--radio)',
-                  background: saborId === s.id ? '#fff5f5' : 'var(--card-bg)',
-                  color: saborId === s.id ? 'var(--rojo)' : 'var(--texto)',
-                  fontFamily: 'var(--font-body), sans-serif',
-                  fontSize: 13,
-                  fontWeight: saborId === s.id ? 700 : 500,
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  transition: 'all 0.15s',
-                }}
-              >
-                {s.name.replace(/^milanesa\s*/i, '')}
-              </button>
-            ))}
-          </div>
-
-          {saborSeleccionado && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', background: 'var(--gris-claro)', borderRadius: 'var(--radio)', padding: '12px 14px' }}>
-              <div className="cantidad-ctrl">
-                <button className="cantidad-btn" onClick={() => setCantEmpapelada(v => Math.max(0, v - 1))} disabled={!cantEmpapelada}>−</button>
-                <span className="cantidad-num">{cantEmpapelada}</span>
-                <button className="cantidad-btn" onClick={() => setCantEmpapelada(v => v + 1)}>+</button>
+          <button
+            className={`card-marinado ${empapOpen ? 'card-marinado-activo' : ''}`}
+            onClick={() => setEmpapOpen(v => !v)}
+          >
+            <img src={EMPAP_IMG} alt="" style={{ width: 88, height: 66, borderRadius: 12, objectFit: 'cover', flexShrink: 0, order: -1 }} />
+            <div style={{ flex: 1 }}>
+              <div className="producto-nombre">Milanesas Empapeladas</div>
+              <div className="producto-precio">${precioEmpapelada}/kg</div>
+              <div style={{ fontSize: 11, color: 'var(--texto-suave)', marginTop: 2 }}>
+                {milEmpapeladas.length} sabores · {empapOpen ? 'ocultar ▴' : 'elegir sabor ▾'}
               </div>
-              <span style={{ fontSize: 13, color: 'var(--texto-suave)', flex: 1 }}>
-                pz de {saborSeleccionado.name.replace(/^milanesa\s*/i, '')}
-              </span>
-              {cantEmpapelada > 0 && (
-                <button
-                  className={`btn-primario ${agregado === 'empapelada' ? 'btn-agregado' : ''}`}
-                  style={{ width: 'auto', padding: '10px 18px', fontSize: 13 }}
-                  onClick={agregarEmpapelada}
-                >
-                  {agregado === 'empapelada' ? 'Agregada' : `Agregar ${cantEmpapelada} pz`}
-                </button>
-              )}
+            </div>
+            {empapOpen && <div className="card-check">✓</div>}
+          </button>
+
+          {empapOpen && (
+            <div className="configurador-card slide-up" style={{ marginTop: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0, gap: 10 }}>
+              {milEmpapeladas.map(flavor => {
+                const nombre = flavor.name.replace(/^milanesa\s*/i, '')
+                const cantidad = cantEmpapeladas[flavor.id] || 0
+                const key = `emp-${flavor.id}`
+                return (
+                  <div key={flavor.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--card-bg)', borderRadius: 14, border: '1px solid rgba(0,0,0,0.05)' }}>
+                    <div className="producto-nombre" style={{ flex: 1 }}>{nombre}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div className="cantidad-ctrl">
+                        <button className="cantidad-btn" onClick={() => setCantEmpapeladas(prev => ({ ...prev, [flavor.id]: Math.max(0, (prev[flavor.id] || 0) - 1) }))} disabled={!cantidad}>−</button>
+                        <span className="cantidad-num">{cantidad}</span>
+                        <button className="cantidad-btn" onClick={() => setCantEmpapeladas(prev => ({ ...prev, [flavor.id]: (prev[flavor.id] || 0) + 1 }))}>+</button>
+                      </div>
+                      {cantidad > 0 && (
+                        <button
+                          className={`btn-primario ${agregado === key ? 'btn-agregado' : ''}`}
+                          style={{ width: 'auto', padding: '8px 14px', fontSize: 13 }}
+                          onClick={() => agregarSabor(flavor)}
+                        >
+                          {agregado === key ? 'Agregado' : 'Agregar'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>
