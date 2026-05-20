@@ -87,20 +87,42 @@ export function AppProvider({ children }) {
 
   useEffect(() => {
     const root = document.documentElement
+
+    // Primero restaurar los defaults de la app, para que una sucursal
+    // sin tema guardado no herede los colores de la anterior
+    const defaults = {
+      '--rojo':         '#c1121f',
+      '--crema':        '#FAF8F4',
+      '--dorado':       '#D4A017',
+      '--app-bg':       '#FAF8F4',
+      '--card-bg':      '#FFFFFF',
+      '--button-bg':    '#c1121f',
+      '--button-text':  '#FFFFFF',
+      '--navbar-bg':    '#c1121f',
+      '--texto':        '#111111',
+      '--navbar-text':  '#FFFFFF',
+      '--radio':        '12px',
+      '--font-title':   'Plus Jakarta Sans',
+      '--font-body':    'DM Sans',
+    }
+    Object.entries(defaults).forEach(([variable, value]) =>
+      root.style.setProperty(variable, value)
+    )
+
     const themeMap = {
-      primary_color: '--rojo',
-      secondary_color: '--crema',
-      accent_color: '--dorado',
-      background_color: '--app-bg',
-      card_color: '--card-bg',
-      button_color: '--button-bg',
-      button_text_color: '--button-text',
-      navbar_color: '--navbar-bg',
-      text_color: '--texto',
+      primary_color:        '--rojo',
+      secondary_color:      '--crema',
+      accent_color:         '--dorado',
+      background_color:     '--app-bg',
+      card_color:           '--card-bg',
+      button_color:         '--button-bg',
+      button_text_color:    '--button-text',
+      navbar_color:         '--navbar-bg',
+      text_color:           '--texto',
       secondary_text_color: '--navbar-text',
-      border_radius: '--radio',
-      font_title: '--font-title',
-      font_body: '--font-body',
+      border_radius:        '--radio',
+      font_title:           '--font-title',
+      font_body:            '--font-body',
     }
     Object.entries(themeMap).forEach(([field, variable]) => {
       if (diseno[field]) root.style.setProperty(variable, diseno[field])
