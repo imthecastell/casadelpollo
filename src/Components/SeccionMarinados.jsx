@@ -2,18 +2,35 @@ import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import AvisoAirfryer from './AvisoAirfryer.jsx'
 
-function rawCrop(url) {
-  if (!url || !url.includes('cloudinary.com')) return url
-  return url.replace('/upload/', '/upload/ar_4:3,c_fill,g_west,w_320/')
+/* ── extrae la ruta del archivo ignorando transformaciones previas ── */
+function getFilePath(url) {
+  if (!url || !url.includes('cloudinary.com')) return null
+  // Elimina segmentos de transformación (contienen coma) y versión (v1234...)
+  const m = url.match(/\/upload\/(?:v\d+\/)?(?:[^/]*,[^/]*\/)*(.+)$/)
+  return m ? m[1] : null
 }
 
-export function cookedCrop(url) {
-  if (!url || !url.includes('cloudinary.com')) return url
-  return url.replace('/upload/', '/upload/ar_4:3,c_fill,g_east,w_320/')
+const CDN = 'https://res.cloudinary.com/do4juvxio/image/upload'
+
+function buildSideUrl(url, xStart, size = 320) {
+  const path = getFilePath(url)
+  if (!path) return url
+  return `${CDN}/c_crop,fl_relative,x_${xStart.toFixed(2)},y_0.00,w_0.50,h_1.00/ar_4:3,c_fill,w_${size}/${path}`
+}
+
+export function cookedCrop(url, size = 320) {
+  return buildSideUrl(url, 0.5, size)
+}
+
+export function rawCrop(url, size = 320) {
+  return buildSideUrl(url, 0.0, size)
 }
 
 function MarimadoImg({ imageUrl, imageCookedUrl }) {
-  const src = imageCookedUrl || (imageUrl ? cookedCrop(imageUrl) : null)
+  // Siempre normaliza via cookedCrop para garantizar el crop correcto,
+  // independientemente del formato almacenado en BD.
+  const base = imageCookedUrl || imageUrl
+  const src  = base ? cookedCrop(base) : null
   if (!src) return (
     <div style={{ width: 72, height: 72, borderRadius: 14, background: 'var(--crema-oscura)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, flexShrink: 0, order: -1 }}>🍯</div>
   )

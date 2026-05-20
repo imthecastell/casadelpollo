@@ -9,25 +9,30 @@ import SeccionBowls from '../Components/SeccionBowls.jsx'
 import '../styles/menu.css'
 
 const BASE = 'https://res.cloudinary.com/do4juvxio/image/upload'
-const C    = (t, f) => `${BASE}/${t}/${f}`
+/* crop lado cocinado (derecho) con fl_relative — funciona con cualquier resolución */
+const COOK = (f, ar = '4:3', w = 600) =>
+  `${BASE}/c_crop,fl_relative,x_0.50,y_0.00,w_0.50,h_1.00/ar_${ar},c_fill,w_${w}/${f}`
+/* foto entera sin crop (para imágenes que no son combo) */
+const FULL = (f, ar = '4:3', w = 600) =>
+  `${BASE}/ar_${ar},c_fill,w_${w}/${f}`
 
 /* ─── Imágenes que rotan en el hero ─── */
 const HERO_IMGS = [
-  C('ar_3:2,c_fill,g_east,w_960', 'marinados/teriyaki.png'),
-  C('ar_3:2,c_fill,g_east,w_960', 'marinados/agridulce.png'),
-  C('ar_3:2,c_fill,g_east,w_960', 'preparados/pechuga_rellena.png'),
-  C('ar_3:2,c_fill,g_east,w_960', 'fresco/piernita.png'),
-  C('ar_3:2,c_fill,g_east,w_960', 'marinados/barbacoa.png'),
+  COOK('marinados/teriyaki.png',           '3:2', 960),
+  COOK('marinados/agridulce.png',          '3:2', 960),
+  COOK('preparados/pechuga_rellena.png',   '3:2', 960),
+  COOK('fresco/piernita.png',              '3:2', 960),
+  COOK('marinados/barbacoa.png',           '3:2', 960),
 ]
 
 /* ─── Strip de categorías ─── */
 const CATS = [
-  { label: 'Marinados',   emoji: '🍯', img: C('ar_1:1,c_fill,g_east,w_180', 'marinados/teriyaki.png'),        tab: 'marinados'    },
-  { label: 'Milanesas',   emoji: '🥩', img: C('ar_1:1,c_fill,g_east,w_180', 'milanesas/milanesa_natural.png'), tab: 'preparados'   },
-  { label: 'Preparados',  emoji: '🍳', img: C('ar_1:1,c_fill,g_east,w_180', 'preparados/pechuga_rellena.png'), tab: 'preparados'   },
-  { label: 'Nuggets',     emoji: '🍗', img: C('c_fill,w_180,h_180',         'preparados/nuggets_grupo.png'),   tab: 'preparados'   },
-  { label: 'Fresco',      emoji: '🐔', img: C('ar_1:1,c_fill,g_east,w_180', 'fresco/piernita.png'),            tab: 'fresco'       },
-  { label: 'Bowls',       emoji: '🥣', img: C('ar_1:1,c_fill,g_east,w_180', 'marinados/agridulce.png'),        tab: 'bowls'        },
+  { label: 'Marinados',   emoji: '🍯', img: COOK('marinados/teriyaki.png',          '1:1', 180), tab: 'marinados'  },
+  { label: 'Milanesas',   emoji: '🥩', img: COOK('milanesas/milanesa_natural.png',  '1:1', 180), tab: 'preparados' },
+  { label: 'Preparados',  emoji: '🍳', img: COOK('preparados/pechuga_rellena.png',  '1:1', 180), tab: 'preparados' },
+  { label: 'Nuggets',     emoji: '🍗', img: FULL('preparados/nuggets_grupo.png',    '1:1', 180), tab: 'preparados' },
+  { label: 'Fresco',      emoji: '🐔', img: COOK('fresco/piernita.png',             '1:1', 180), tab: 'fresco'     },
+  { label: 'Bowls',       emoji: '🥣', img: COOK('marinados/agridulce.png',         '1:1', 180), tab: 'bowls'      },
 ]
 
 /* ─── Cards de entrada ─── */
@@ -37,12 +42,13 @@ const ENTRADAS = [
     titulo: 'Pollo fresco y marinados',
     desc: 'Marinados artesanales · preparados · milanesas · piezas frescas',
     color: '#1a0408',
+    invertido: false,
     imgs: [
-      C('ar_4:3,c_fill,g_east,w_480', 'marinados/adobado.png'),
-      C('ar_4:3,c_fill,g_east,w_480', 'marinados/teriyaki.png'),
-      C('ar_4:3,c_fill,g_east,w_480', 'marinados/hoisin.png'),
-      C('ar_4:3,c_fill,g_east,w_480', 'marinados/barbacoa.png'),
-      C('ar_4:3,c_fill,g_east,w_480', 'preparados/hamburguesa.png'),
+      COOK('marinados/adobado.png',           '4:3', 480),
+      COOK('marinados/teriyaki.png',          '4:3', 480),
+      COOK('marinados/hoisin.png',            '4:3', 480),
+      COOK('marinados/barbacoa.png',          '4:3', 480),
+      COOK('preparados/hamburguesa.png',      '4:3', 480),
     ],
   },
   {
@@ -50,9 +56,10 @@ const ENTRADAS = [
     titulo: 'Bowls',
     desc: 'Arma tu bowl con marinado y base a elegir',
     color: '#0a2016',
+    invertido: true,
     imgs: [
-      C('ar_4:3,c_fill,g_east,w_480', 'marinados/agridulce.png'),
-      C('ar_4:3,c_fill,g_east,w_480', 'marinados/almendrado.png'),
+      COOK('marinados/agridulce.png',  '4:3', 480),
+      COOK('marinados/almendrado.png', '4:3', 480),
     ],
   },
 ]
@@ -83,17 +90,22 @@ function HeroSlide({ imgs, idx }) {
 function EntradaCard({ entrada, onClic }) {
   const [idx, setIdx] = useState(0)
   const imgs = entrada.imgs || []
+  const inv  = !!entrada.invertido   // si true: imagen izquierda, texto derecha
   useEffect(() => {
     if (imgs.length <= 1) return
     const t = setInterval(() => setIdx(p => (p + 1) % imgs.length), 3400)
     return () => clearInterval(t)
   }, [imgs.length])
 
+  const gradDir = inv ? 'to left' : 'to right'
+  const imgPos  = inv ? 'left center' : 'right center'
+  const textSide = inv ? { right: 0 } : { left: 0 }
+
   return (
     <button onClick={onClic} style={{
       position: 'relative', overflow: 'hidden', minHeight: 160,
       borderRadius: 22, border: 0, cursor: 'pointer',
-      textAlign: 'left', width: '100%', display: 'block', padding: 0,
+      textAlign: inv ? 'right' : 'left', width: '100%', display: 'block', padding: 0,
       boxShadow: 'var(--sombra-lg)',
     }}>
       <div style={{ position: 'absolute', inset: 0, background: entrada.color }} />
@@ -101,15 +113,20 @@ function EntradaCard({ entrada, onClic }) {
         <div key={i} style={{
           position: 'absolute', inset: 0,
           backgroundImage: `url(${img})`,
-          backgroundSize: 'cover', backgroundPosition: 'right center',
+          backgroundSize: 'cover', backgroundPosition: imgPos,
           opacity: i === idx ? 1 : 0, transition: 'opacity 1s ease',
         }} />
       ))}
       <div style={{
         position: 'absolute', inset: 0,
-        background: `linear-gradient(to right, ${entrada.color} 0%, ${entrada.color} 38%, ${entrada.color}d0 55%, ${entrada.color}50 72%, transparent 100%)`,
+        background: `linear-gradient(${gradDir}, ${entrada.color} 0%, ${entrada.color} 38%, ${entrada.color}d0 55%, ${entrada.color}50 72%, transparent 100%)`,
       }} />
-      <div style={{ position: 'relative', zIndex: 1, padding: '20px 18px', maxWidth: '65%', display: 'flex', flexDirection: 'column', gap: 6, minHeight: 160, justifyContent: 'center' }}>
+      <div style={{
+        position: 'absolute', top: 0, bottom: 0, ...textSide,
+        zIndex: 1, padding: '20px 18px', maxWidth: '65%',
+        display: 'flex', flexDirection: 'column', gap: 6, justifyContent: 'center',
+        alignItems: inv ? 'flex-end' : 'flex-start',
+      }}>
         <strong style={{ fontFamily: 'var(--font-title),sans-serif', fontWeight: 800, fontSize: 18, lineHeight: 1.15, color: '#fff', letterSpacing: '-0.2px' }}>
           {entrada.titulo}
         </strong>
