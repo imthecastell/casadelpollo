@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useApp } from '../data/AppContext.jsx'
-import LogoPlaceholder from '../Components/LogoPlaceholder.jsx'
+import LogoSlot from '../Components/LogoSlot.jsx'
 import '../styles/selector.css'
 
 /* Carrusel de productos cocinados */
@@ -100,10 +100,14 @@ export default function SelectorSucursal() {
 
       {/* Logo */}
       <div className="selector-header">
-        <LogoPlaceholder
+        <LogoSlot
           type="logotipo"
+          src={diseno?.logo_url}
+          mode={diseno?.logo_color_mode}
+          customFilter={diseno?.logo_custom_filter}
           width={200} height={42}
-          style={{ border: '1.5px dashed rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.08)', margin: '0 auto' }}
+          placeholderStyle={{ border: '1.5px dashed rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.08)', margin: '0 auto' }}
+          imgStyle={{ margin: '0 auto' }}
         />
       </div>
 

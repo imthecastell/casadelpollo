@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useApp } from '../data/AppContext.jsx'
-import LogoPlaceholder from '../Components/LogoPlaceholder.jsx'
+import LogoSlot from '../Components/LogoSlot.jsx'
 import { SECCIONES } from '../data/menu.js'
 import SeccionFresco from '../Components/SeccionFresco.jsx'
 import SeccionMarinados from '../Components/SeccionMarinados.jsx'
@@ -212,11 +212,14 @@ export default function MenuPrincipal() {
                 ← Menú
               </button>
             ) : (
-              /* ── Icon placeholder — sobre hero oscuro ── */
-              <LogoPlaceholder
+              /* ── Icon sobre hero oscuro ── */
+              <LogoSlot
                 type="icon"
+                src={diseno?.logo_icon_url}
+                mode={diseno?.logo_color_mode}
+                customFilter={diseno?.logo_custom_filter}
                 width={44} height={44}
-                style={{ border: '1.5px dashed rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.1)' }}
+                placeholderStyle={{ border: '1.5px dashed rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.1)' }}
               />
             )}
           </div>
@@ -224,7 +227,13 @@ export default function MenuPrincipal() {
           {/* Icon centrado en vista de sección */}
           {!mostrarAtajos && (
             <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none' }}>
-              <LogoPlaceholder type="icon" width={30} height={30} />
+              <LogoSlot
+                type="icon"
+                src={diseno?.logo_icon_url}
+                mode={diseno?.logo_color_mode}
+                customFilter={diseno?.logo_custom_filter}
+                width={30} height={30}
+              />
             </div>
           )}
 

@@ -1,10 +1,10 @@
 import { useApp } from '../data/AppContext.jsx'
 import { useRef, useEffect, useState } from 'react'
 import BannerPopup from '../Components/BannerPopup.jsx'
-import LogoPlaceholder from '../Components/LogoPlaceholder.jsx'
+import LogoSlot from '../Components/LogoSlot.jsx'
 
 export default function Confirmado() {
-  const { setVista, sucursalActiva, ultimoNumeroOrden, ultimaHora } = useApp()
+  const { setVista, sucursalActiva, ultimoNumeroOrden, ultimaHora, diseno } = useApp()
   const reciboRef = useRef(null)
   const [cuenta, setCuenta] = useState(12)
 
@@ -47,7 +47,13 @@ export default function Confirmado() {
     }}>
 
       {/* ── Logotipo ── */}
-      <LogoPlaceholder type="logotipo" width={170} height={40} />
+      <LogoSlot
+        type="logotipo"
+        src={diseno?.logo_url}
+        mode={diseno?.logo_color_mode}
+        customFilter={diseno?.logo_custom_filter}
+        width={170} height={40}
+      />
 
       {/* ── Confirmación ── */}
       <div style={{ textAlign: 'center' }}>
@@ -111,7 +117,12 @@ export default function Confirmado() {
       }}>
         {/* Cabecera del recibo */}
         <div style={{ marginBottom: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-          <LogoPlaceholder type="color" width={120} height={26} />
+          <LogoSlot
+            type="color"
+            src={diseno?.logo_original_url || diseno?.logo_url}
+            mode="original"
+            width={120} height={26}
+          />
           <div style={{ fontSize: 11, color: '#bbb' }}>
             Sucursal {sucursalActiva?.name || sucursalActiva?.nombre}
           </div>

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import SemaforoCupo from '../Components/SemaforoCupo.jsx'
-import LogoPlaceholder from '../Components/LogoPlaceholder.jsx'
+import LogoSlot from '../Components/LogoSlot.jsx'
 
 function calcularLugaresBowls(carrito) {
   const numBowls = carrito.filter(i => i.tipo === 'bowl').length
@@ -37,7 +37,7 @@ function precioItem(item) {
 }
 
 export default function Carrito() {
-  const { carrito, eliminarDelCarrito, confirmarPedido, setVista, slots, totalItems } = useApp()
+  const { carrito, eliminarDelCarrito, confirmarPedido, setVista, slots, totalItems, diseno } = useApp()
   const [horaSeleccionada, setHoraSeleccionada] = useState(null)
   const [nombre, setNombre] = useState('')
   const [telefono, setTelefono] = useState('')
@@ -85,10 +85,13 @@ export default function Carrito() {
 
           {/* Icon centrado — fondo de header es var(--rojo) */}
           <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none' }}>
-            <LogoPlaceholder
+            <LogoSlot
               type="icon"
+              src={diseno?.logo_icon_url}
+              mode={diseno?.logo_color_mode}
+              customFilter={diseno?.logo_custom_filter}
               width={30} height={30}
-              style={{ border: '1.5px dashed rgba(255,255,255,0.45)', background: 'rgba(255,255,255,0.1)' }}
+              placeholderStyle={{ border: '1.5px dashed rgba(255,255,255,0.45)', background: 'rgba(255,255,255,0.1)' }}
             />
           </div>
 
