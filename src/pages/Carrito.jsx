@@ -35,15 +35,8 @@ function precioItem(item) {
   return precio > 0 ? `$${precio.toFixed(2)}` : 'Al pesar'
 }
 
-function getLogoFilter(mode, custom) {
-  if (mode === 'blanco') return 'brightness(0) invert(1)'
-  if (mode === 'negro')  return 'brightness(0)'
-  if (mode === 'personalizado') return custom || 'none'
-  return 'none'
-}
-
 export default function Carrito() {
-  const { carrito, eliminarDelCarrito, confirmarPedido, setVista, slots, totalItems, diseno } = useApp()
+  const { carrito, eliminarDelCarrito, confirmarPedido, setVista, slots, totalItems } = useApp()
   const [horaSeleccionada, setHoraSeleccionada] = useState(null)
   const [nombre, setNombre] = useState('')
   const [telefono, setTelefono] = useState('')
@@ -88,22 +81,6 @@ export default function Carrito() {
           >
             ← Seguir pidiendo
           </button>
-
-          {/* Logo centrado — espacio pequeño: icono cuadrado */}
-          <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', alignItems: 'center' }}>
-            <img
-              src={diseno?.logo_icon_url || '/icon.svg'}
-              alt="Casa del Pollo"
-              style={{
-                height: 28,
-                maxWidth: 34,
-                objectFit: 'contain',
-                filter: diseno?.logo_icon_url
-                  ? getLogoFilter(diseno.logo_color_mode, diseno.logo_custom_filter)
-                  : 'brightness(0) invert(1)',
-              }}
-            />
-          </div>
 
           <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--rojo)', fontFamily: 'var(--font-body), sans-serif' }}>
             {totalItems} {totalItems === 1 ? 'item' : 'items'}

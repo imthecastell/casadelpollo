@@ -157,13 +157,6 @@ function calcEstaAbierto(schedule) {
   return min >= hAp * 60 + mAp && min < hCi * 60 + mCi
 }
 
-function getLogoFilter(mode, custom) {
-  if (mode === 'blanco') return 'brightness(0) invert(1)'
-  if (mode === 'negro')  return 'brightness(0)'
-  if (mode === 'personalizado') return custom || 'none'
-  return 'none'
-}
-
 export default function MenuPrincipal() {
   const { sucursalActiva, setVista, totalItems, bannersMenu = [], schedule, diseno } = useApp()
   const estaAbierto = calcEstaAbierto(schedule)
@@ -213,51 +206,12 @@ export default function MenuPrincipal() {
       }}>
         <div className="header-inner" style={{ position: 'relative' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {!mostrarAtajos ? (
+            {!mostrarAtajos && (
               <button onClick={volver} style={{ background: 'none', border: 'none', color: 'var(--rojo)', fontSize: 14, fontFamily: 'var(--font-body),sans-serif', cursor: 'pointer', fontWeight: 600, padding: 0 }}>
                 ← Menú
               </button>
-            ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                {(() => {
-                  /* Espacio cuadrado 44px: usar siempre el icono */
-                  const src = diseno?.logo_icon_url || '/icon.svg'
-                  const isDynamic = !!diseno?.logo_icon_url
-                  const mode = diseno?.logo_color_mode || 'blanco'
-                  let filter = 'brightness(0) invert(1) drop-shadow(0 2px 12px rgba(0,0,0,0.8))'
-                  if (isDynamic) {
-                    if (mode === 'blanco') filter = 'brightness(0) invert(1) drop-shadow(0 2px 12px rgba(0,0,0,0.8))'
-                    else if (mode === 'negro') filter = 'brightness(0) drop-shadow(0 2px 12px rgba(0,0,0,0.5))'
-                    else if (mode === 'personalizado') filter = (diseno?.logo_custom_filter || 'none') + ' drop-shadow(0 2px 8px rgba(0,0,0,0.4))'
-                    else filter = 'drop-shadow(0 2px 12px rgba(0,0,0,0.6))'  // original
-                  }
-                  return (
-                    <div style={{ width: 44, height: 44, overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <img src={src} alt="Casa del Pollo" style={{ height: '100%', width: 'auto', filter }} />
-                    </div>
-                  )
-                })()}
-              </div>
             )}
           </div>
-
-          {/* Logo centrado en vista de sección — icono cuadrado en el navbar */}
-          {!mostrarAtajos && (
-            <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none' }}>
-              <img
-                src={diseno?.logo_icon_url || '/icon.svg'}
-                alt="Casa del Pollo"
-                style={{
-                  height: 30,
-                  maxWidth: 34,
-                  objectFit: 'contain',
-                  filter: diseno?.logo_icon_url
-                    ? getLogoFilter(diseno.logo_color_mode, diseno.logo_custom_filter)
-                    : 'brightness(0) invert(1)',
-                }}
-              />
-            </div>
-          )}
 
           <button className="carrito-btn" onClick={() => setVista('carrito')}>
             🛒{totalItems > 0 && <span className="carrito-badge">{totalItems}</span>}

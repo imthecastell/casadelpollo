@@ -2,15 +2,8 @@ import { useApp } from '../data/AppContext.jsx'
 import { useRef, useEffect, useState } from 'react'
 import BannerPopup from '../Components/BannerPopup.jsx'
 
-function getLogoFilter(mode, custom) {
-  if (mode === 'blanco') return 'brightness(0) invert(1)'
-  if (mode === 'negro')  return 'brightness(0)'
-  if (mode === 'personalizado') return custom || 'none'
-  return 'none'
-}
-
 export default function Confirmado() {
-  const { setVista, sucursalActiva, ultimoNumeroOrden, ultimaHora, diseno } = useApp()
+  const { setVista, sucursalActiva, ultimoNumeroOrden, ultimaHora } = useApp()
   const reciboRef = useRef(null)
   const [cuenta, setCuenta] = useState(12)
 
@@ -38,15 +31,6 @@ export default function Confirmado() {
     document.head.appendChild(script)
   }
 
-  /* Confirmado: fondo blanco/claro → usar logo horizontal completo sin filtro.
-     Prioridad: logo_original_url (color) → logo_url → /logo.svg */
-  const logoSrc    = diseno?.logo_original_url || diseno?.logo_url || '/logo.svg'
-  /* Sin filtro si usamos logo_original_url o el SVG local (ya tienen color).
-     Aplicar filtro solo si viene de logo_url con modo configurado. */
-  const logoFilter = (diseno?.logo_original_url || !diseno?.logo_url)
-    ? 'none'
-    : getLogoFilter(diseno?.logo_color_mode, diseno?.logo_custom_filter)
-
   return (
     <>
     <BannerPopup delay={2500} />
@@ -61,15 +45,8 @@ export default function Confirmado() {
       boxSizing: 'border-box',
     }}>
 
-      {/* ── Logo + Confirmación ── */}
+      {/* ── Confirmación ── */}
       <div style={{ textAlign: 'center' }}>
-        {logoSrc && (
-          <img
-            src={logoSrc}
-            alt="Casa del Pollo"
-            style={{ height: 36, maxWidth: 180, objectFit: 'contain', filter: logoFilter, marginBottom: 8, display: 'block', margin: '0 auto 8px' }}
-          />
-        )}
         <div style={{ fontSize: 40 }}>🎉</div>
         <div style={{
           fontFamily: 'var(--font-title), sans-serif', fontWeight: 800,
@@ -130,8 +107,7 @@ export default function Confirmado() {
       }}>
         {/* Cabecera del recibo */}
         <div style={{ marginBottom: 12 }}>
-          <img src={logoSrc} alt="Casa del Pollo"
-            style={{ height: 26, maxWidth: 140, objectFit: 'contain', filter: logoFilter, display: 'block', margin: '0 auto 2px' }} />
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#555', marginBottom: 2 }}>Casa del Pollo</div>
           <div style={{ fontSize: 11, color: '#bbb' }}>
             Sucursal {sucursalActiva?.name || sucursalActiva?.nombre}
           </div>
