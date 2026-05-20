@@ -152,10 +152,11 @@ export default function SeccionPreparados() {
         </div>
       )}
 
-      {/* Milanesas simples */}
-      {milSimples.length > 0 && (
+      {/* Milanesas — simples + empapeladas en la misma sección */}
+      {(milSimples.length > 0 || milEmpapeladas.length > 0) && (
         <div className="subseccion-menu">
           <div className="config-label" style={{ marginBottom: 12 }}>Milanesas</div>
+
           {milSimples.map(m => (
             <FilaProducto
               key={m.id} idKey={m.id}
@@ -166,12 +167,10 @@ export default function SeccionPreparados() {
               agregado={agregado}
             />
           ))}
-        </div>
-      )}
 
-      {/* Milanesas empapeladas — fila única expandible */}
-      {milEmpapeladas.length > 0 && (
-        <div className="subseccion-menu">
+          {/* Empapeladas — fila expandible al mismo nivel */}
+          {milEmpapeladas.length > 0 && (
+          <div>
           <button
             className={`card-marinado ${empapOpen ? 'card-marinado-activo' : ''}`}
             onClick={() => setEmpapOpen(v => !v)}
@@ -217,6 +216,7 @@ export default function SeccionPreparados() {
               })}
             </div>
           )}
+          </div>}
         </div>
       )}
     </div>
