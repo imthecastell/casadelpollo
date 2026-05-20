@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
+import { cookedCrop } from './SeccionMarinados.jsx'
 
 export default function SeccionFresco() {
   const { agregarAlCarrito, productos } = useApp()
@@ -11,10 +12,11 @@ export default function SeccionFresco() {
   )
 
   const cambiar = (id, delta) => {
-    setCantidades(prev => ({
-      ...prev,
-      [id]: Math.max(0, (prev[id] || 0) + delta)
-    }))
+    setCantidades(prev => {
+      const actual = prev[id] || 0
+      if (delta < 0 && actual <= 1) return { ...prev, [id]: 0 }
+      return { ...prev, [id]: actual === 0 ? 1 : Math.max(0, actual + delta) }
+    })
   }
 
   const handleAgregar = (producto) => {
@@ -37,37 +39,39 @@ export default function SeccionFresco() {
     <div>
       <div className="seccion-titulo">🍗 Pollo Fresco</div>
       <p className="seccion-desc">Precio por kg · se cobra al pesar en el local</p>
-      {productosSeccion.map(p => (
-        <div key={p.id} className="producto-row">
-          {p.image_url
-            ? <img className="producto-img" src={p.image_url} alt="" />
-            : <div className="producto-img-placeholder">🍗</div>
-          }
-          <div className="producto-info">
-            <div className="producto-nombre">{p.name}</div>
-            <div className="producto-precio">${p.price}/kg</div>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-            <div style={{ fontSize: 11, color: 'var(--texto-suave)', fontWeight: 500 }}>piezas</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div className="cantidad-ctrl">
-                <button className="cantidad-btn" onClick={() => cambiar(p.id, -1)} disabled={!cantidades[p.id]}>−</button>
-                <span className="cantidad-num">{cantidades[p.id] || 0}</span>
-                <button className="cantidad-btn" onClick={() => cambiar(p.id, 1)}>+</button>
-              </div>
-              {(cantidades[p.id] || 0) > 0 && (
+      {productosSeccion.map(p => {
+        const cantidad = cantidades[p.id] || 0
+        const thumb = p.image_url ? cookedCrop(p.image_url) : null
+        return (
+          <div key={p.id} className="producto-row">
+            {thumb
+              ? <img className="producto-img" src={thumb} alt="" />
+              : <div className="producto-img-placeholder">🍗</div>
+            }
+            <div className="producto-info" style={{ flex: 1, minWidth: 0 }}>
+              <div className="producto-nombre">{p.name}</div>
+              <div className="producto-precio">${p.price}/kg</div>
+            </div>
+            {cantidad === 0 ? (
+              <button className="btn-add" onClick={() => cambiar(p.id, 1)}>+</button>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div className="qty-pill">
+                  <button className="qty-pill-btn" onClick={() => cambiar(p.id, -1)} disabled={cantidad <= 1}>−</button>
+                  <span className="qty-pill-num">{cantidad}</span>
+                  <button className="qty-pill-btn" onClick={() => cambiar(p.id, 1)}>+</button>
+                </div>
                 <button
-                  className={`btn-primario ${agregado === p.id ? 'btn-agregado' : ''}`}
-                  style={{ width: 'auto', padding: '8px 14px', fontSize: 13 }}
+                  className={`btn-confirm ${agregado === p.id ? 'confirmado' : ''}`}
                   onClick={() => handleAgregar(p)}
                 >
                   {agregado === p.id ? '✓' : 'Agregar'}
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }

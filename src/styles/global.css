@@ -244,6 +244,86 @@ body {
   text-align: center;
 }
 
+/* ── NUEVO PATRÓN: btn-add / qty-pill ── */
+
+.btn-add {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: var(--button-bg);
+  color: #fff;
+  font-size: 24px;
+  font-weight: 400;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 1;
+  box-shadow: 0 4px 12px rgba(146,43,33,0.28);
+  transition: transform 0.15s, filter 0.15s;
+}
+.btn-add:hover { transform: scale(1.1); filter: brightness(1.1); }
+.btn-add:active { transform: scale(0.93); }
+
+.qty-pill {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--gris-claro);
+  border-radius: 50px;
+  padding: 3px;
+  flex-shrink: 0;
+}
+
+.qty-pill-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: var(--blanco);
+  color: var(--rojo);
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s;
+  line-height: 1;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+}
+.qty-pill-btn:hover:not(:disabled) { background: var(--rojo); color: #fff; }
+.qty-pill-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+
+.qty-pill-num {
+  font-family: var(--font-title), sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--texto);
+  min-width: 26px;
+  text-align: center;
+}
+
+.btn-confirm {
+  background: var(--button-bg);
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 7px 13px;
+  font-family: var(--font-title), sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-left: 6px;
+  transition: all 0.15s;
+  box-shadow: 0 3px 10px rgba(146,43,33,0.22);
+}
+.btn-confirm:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.btn-confirm.confirmado { background: var(--verde); box-shadow: none; }
+
 .tag-precio {
   font-size: 12px;
   color: var(--texto-suave);

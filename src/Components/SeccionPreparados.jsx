@@ -1,43 +1,47 @@
 import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
+import { cookedCrop } from './SeccionMarinados.jsx'
 
 const ORDEN_SIMPLES = ['natural', 'aplanada', 'empanizada', 'parmesano']
-const EMPAP_IMG = 'https://res.cloudinary.com/do4juvxio/image/upload/ar_4:3,c_fill,g_west,w_320/marinados/empapeladas.png'
+const EMPAP_IMG = 'https://res.cloudinary.com/do4juvxio/image/upload/ar_4:3,c_fill,g_east,w_320/marinados/empapeladas.png'
 
 const esSimpleMil = (p) => {
   const n = p.name.toLowerCase()
   return ORDEN_SIMPLES.some(k => n.includes(k)) && !n.includes('empapelada')
 }
 
-function FilaProducto({ nombre, precio, nota, cantidad, onCambiar, onAgregar, agregado, idKey }) {
+function FilaProducto({ nombre, precio, nota, imagen, cantidad, onCambiar, onAgregar, agregado, idKey }) {
+  const thumb = imagen ? cookedCrop(imagen) : null
   return (
     <div className="producto-row">
-      <div className="producto-info">
-        <div className="producto-nombre">{nombre}</div>
+      {thumb
+        ? <img src={thumb} alt="" className="producto-img" />
+        : <div className="producto-img-placeholder">🍗</div>
+      }
+      <div className="producto-info" style={{ flex: 1, minWidth: 0 }}>
+        <div className="producto-nombre" style={{ lineHeight: 1.25 }}>{nombre}</div>
         <div className="producto-precio">
           ${precio}/kg
           {nota && <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--rojo)' }}>{nota}</span>}
         </div>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-        <div style={{ fontSize: 11, color: 'var(--texto-suave)', fontWeight: 500 }}>piezas</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div className="cantidad-ctrl">
-            <button className="cantidad-btn" onClick={() => onCambiar(-1)} disabled={!cantidad}>−</button>
-            <span className="cantidad-num">{cantidad}</span>
-            <button className="cantidad-btn" onClick={() => onCambiar(1)}>+</button>
+      {cantidad === 0 ? (
+        <button className="btn-add" onClick={() => onCambiar(1)}>+</button>
+      ) : (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 0, flexShrink: 0 }}>
+          <div className="qty-pill">
+            <button className="qty-pill-btn" onClick={() => onCambiar(-1)} disabled={cantidad <= 1}>−</button>
+            <span className="qty-pill-num">{cantidad}</span>
+            <button className="qty-pill-btn" onClick={() => onCambiar(1)}>+</button>
           </div>
-          {cantidad > 0 && (
-            <button
-              className={`btn-primario ${agregado === idKey ? 'btn-agregado' : ''}`}
-              style={{ width: 'auto', padding: '8px 14px', fontSize: 13 }}
-              onClick={onAgregar}
-            >
-              {agregado === idKey ? 'Agregado' : 'Agregar'}
-            </button>
-          )}
+          <button
+            className={`btn-confirm ${agregado === idKey ? 'confirmado' : ''}`}
+            onClick={onAgregar}
+          >
+            {agregado === idKey ? '✓' : 'Agregar'}
+          </button>
         </div>
-      </div>
+      )}
     </div>
   )
 }
@@ -79,11 +83,12 @@ export default function SeccionPreparados() {
 
   const cambiarPreparado = (id, nombre, delta) => {
     const paso = esAlbondiga(nombre) ? 10 : 1
-    const min = esAlbondiga(nombre) ? 10 : 0
+    const min = esAlbondiga(nombre) ? 10 : 1
     setCantidades(prev => {
       const actual = prev[id] || 0
-      const nuevo = actual + delta * paso
-      return { ...prev, [id]: nuevo <= 0 ? (delta > 0 ? min : 0) : nuevo }
+      if (delta < 0 && actual <= min) return { ...prev, [id]: 0 }
+      const nuevo = actual === 0 ? min : actual + delta * paso
+      return { ...prev, [id]: Math.max(0, nuevo) }
     })
   }
 
@@ -142,7 +147,8 @@ export default function SeccionPreparados() {
             <FilaProducto
               key={p.id} idKey={p.id}
               nombre={p.name} precio={p.price}
-              nota={esAlbondiga(p.name) ? '· ±10 pz · charola 20 pz' : null}
+              imagen={p.image_url}
+              nota={esAlbondiga(p.name) ? '±10 pz · charola 20' : null}
               cantidad={cantidades[p.id] || 0}
               onCambiar={d => cambiarPreparado(p.id, p.name, d)}
               onAgregar={() => agregarPreparado(p)}
@@ -161,8 +167,13 @@ export default function SeccionPreparados() {
             <FilaProducto
               key={m.id} idKey={m.id}
               nombre={m.name} precio={m.price}
+              imagen={m.image_url}
               cantidad={cantSimples[m.id] || 0}
-              onCambiar={d => setCantSimples(prev => ({ ...prev, [m.id]: Math.max(0, (prev[m.id] || 0) + d) }))}
+              onCambiar={d => setCantSimples(prev => {
+                const actual = prev[m.id] || 0
+                if (d < 0 && actual <= 1) return { ...prev, [m.id]: 0 }
+                return { ...prev, [m.id]: actual === 0 ? 1 : Math.max(0, actual + d) }
+              })}
               onAgregar={() => agregarSimple(m)}
               agregado={agregado}
             />
@@ -170,53 +181,55 @@ export default function SeccionPreparados() {
 
           {/* Empapeladas — fila expandible al mismo nivel */}
           {milEmpapeladas.length > 0 && (
-          <div>
-          <button
-            className={`card-marinado ${empapOpen ? 'card-marinado-activo' : ''}`}
-            onClick={() => setEmpapOpen(v => !v)}
-          >
-            <img src={EMPAP_IMG} alt="" style={{ width: 88, height: 66, borderRadius: 12, objectFit: 'cover', flexShrink: 0, order: -1 }} />
-            <div style={{ flex: 1 }}>
-              <div className="producto-nombre">Milanesas Empapeladas</div>
-              <div className="producto-precio">${precioEmpapelada}/kg</div>
-              <div style={{ fontSize: 11, color: 'var(--texto-suave)', marginTop: 2 }}>
-                {milEmpapeladas.length} sabores · {empapOpen ? 'ocultar ▴' : 'elegir sabor ▾'}
-              </div>
-            </div>
-            {empapOpen && <div className="card-check">✓</div>}
-          </button>
-
-          {empapOpen && (
-            <div className="configurador-card slide-up" style={{ marginTop: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0, gap: 10 }}>
-              {milEmpapeladas.map(flavor => {
-                const nombre = flavor.name.replace(/^milanesa\s*/i, '')
-                const cantidad = cantEmpapeladas[flavor.id] || 0
-                const key = `emp-${flavor.id}`
-                return (
-                  <div key={flavor.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--card-bg)', borderRadius: 14, border: '1px solid rgba(0,0,0,0.05)' }}>
-                    <div className="producto-nombre" style={{ flex: 1 }}>{nombre}</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <div className="cantidad-ctrl">
-                        <button className="cantidad-btn" onClick={() => setCantEmpapeladas(prev => ({ ...prev, [flavor.id]: Math.max(0, (prev[flavor.id] || 0) - 1) }))} disabled={!cantidad}>−</button>
-                        <span className="cantidad-num">{cantidad}</span>
-                        <button className="cantidad-btn" onClick={() => setCantEmpapeladas(prev => ({ ...prev, [flavor.id]: (prev[flavor.id] || 0) + 1 }))}>+</button>
-                      </div>
-                      {cantidad > 0 && (
-                        <button
-                          className={`btn-primario ${agregado === key ? 'btn-agregado' : ''}`}
-                          style={{ width: 'auto', padding: '8px 14px', fontSize: 13 }}
-                          onClick={() => agregarSabor(flavor)}
-                        >
-                          {agregado === key ? 'Agregado' : 'Agregar'}
-                        </button>
-                      )}
-                    </div>
+            <div>
+              <button
+                className={`card-marinado ${empapOpen ? 'card-marinado-activo' : ''}`}
+                onClick={() => setEmpapOpen(v => !v)}
+              >
+                <img src={EMPAP_IMG} alt="" style={{ width: 68, height: 68, borderRadius: 14, objectFit: 'cover', flexShrink: 0, order: -1 }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="producto-nombre">Milanesas Empapeladas</div>
+                  <div className="producto-precio">${precioEmpapelada}/kg</div>
+                  <div style={{ fontSize: 11, color: 'var(--texto-suave)', marginTop: 2 }}>
+                    {milEmpapeladas.length} sabores · {empapOpen ? 'ocultar ▴' : 'elegir sabor ▾'}
                   </div>
-                )
-              })}
+                </div>
+                {empapOpen && <div className="card-check">✓</div>}
+              </button>
+
+              {empapOpen && (
+                <div className="configurador-card slide-up" style={{ marginTop: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0, gap: 8 }}>
+                  {milEmpapeladas.map(flavor => {
+                    const nombre = flavor.name.replace(/^milanesa\s*/i, '')
+                    const cantidad = cantEmpapeladas[flavor.id] || 0
+                    const key = `emp-${flavor.id}`
+                    return (
+                      <div key={flavor.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'var(--card-bg)', borderRadius: 14, border: '1px solid rgba(0,0,0,0.05)' }}>
+                        <div className="producto-nombre" style={{ flex: 1 }}>{nombre}</div>
+                        {cantidad === 0 ? (
+                          <button className="btn-add" onClick={() => setCantEmpapeladas(prev => ({ ...prev, [flavor.id]: 1 }))}>+</button>
+                        ) : (
+                          <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <div className="qty-pill">
+                              <button className="qty-pill-btn" onClick={() => setCantEmpapeladas(prev => ({ ...prev, [flavor.id]: Math.max(0, (prev[flavor.id] || 0) - 1) }))} disabled={cantidad <= 1}>−</button>
+                              <span className="qty-pill-num">{cantidad}</span>
+                              <button className="qty-pill-btn" onClick={() => setCantEmpapeladas(prev => ({ ...prev, [flavor.id]: (prev[flavor.id] || 0) + 1 }))}>+</button>
+                            </div>
+                            <button
+                              className={`btn-confirm ${agregado === key ? 'confirmado' : ''}`}
+                              onClick={() => agregarSabor(flavor)}
+                            >
+                              {agregado === key ? '✓' : 'Agregar'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </div>
           )}
-          </div>}
         </div>
       )}
     </div>

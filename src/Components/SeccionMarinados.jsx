@@ -14,13 +14,13 @@ export function cookedCrop(url) {
 
 function MarimadoImg({ imageUrl }) {
   if (!imageUrl) return (
-    <div style={{ width: 88, height: 66, borderRadius: 12, background: 'var(--crema-oscura)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, flexShrink: 0, order: -1 }}>🍯</div>
+    <div style={{ width: 72, height: 72, borderRadius: 14, background: 'var(--crema-oscura)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, flexShrink: 0, order: -1 }}>🍯</div>
   )
   return (
     <img
-      src={rawCrop(imageUrl)}
+      src={cookedCrop(imageUrl)}
       alt=""
-      style={{ width: 88, height: 66, borderRadius: 12, objectFit: 'cover', flexShrink: 0, order: -1 }}
+      style={{ width: 72, height: 72, borderRadius: 14, objectFit: 'cover', flexShrink: 0, order: -1 }}
     />
   )
 }
