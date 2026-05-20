@@ -2,6 +2,13 @@ import { useState, useEffect, useRef } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import '../styles/selector.css'
 
+function getLogoFilter(mode, customFilter) {
+  if (mode === 'blanco')       return 'brightness(0) invert(1)'
+  if (mode === 'negro')        return 'brightness(0)'
+  if (mode === 'personalizado') return customFilter || 'none'
+  return 'none' // original
+}
+
 /* Carrusel de productos cocinados */
 const CDN  = 'https://res.cloudinary.com/do4juvxio/image/upload'
 const COOK = (f) => `${CDN}/c_crop,fl_relative,x_0.50,y_0.00,w_0.50,h_1.00/ar_16:9,c_fill,w_960/${f}`
@@ -15,7 +22,7 @@ const HERO_ITEMS = [
 ]
 
 export default function SelectorSucursal() {
-  const { setSucursalActiva, setVista, sucursales, cargando, promociones, banners } = useApp()
+  const { setSucursalActiva, setVista, sucursales, cargando, promociones, banners, diseno } = useApp()
 
   // fase: 'banners' → muestra avisos del admin uno a uno
   //       'carrusel' → productos rotando indefinidamente
@@ -99,11 +106,22 @@ export default function SelectorSucursal() {
 
       {/* Logo */}
       <div className="selector-header">
-        <img
-          src="/logo-small.png"
-          alt="Casa del Pollo"
-          style={{ width: '100%', maxWidth: 260, height: 'auto', mixBlendMode: 'multiply' }}
-        />
+        {diseno?.logo_url || diseno?.logo_icon_url ? (
+          <img
+            src={diseno.logo_url || diseno.logo_icon_url}
+            alt="Casa del Pollo"
+            style={{
+              width: '100%', maxWidth: 260, height: 'auto',
+              filter: getLogoFilter(diseno.logo_color_mode, diseno.logo_custom_filter),
+            }}
+          />
+        ) : (
+          <img
+            src="/logo-small.png"
+            alt="Casa del Pollo"
+            style={{ width: '100%', maxWidth: 260, height: 'auto', mixBlendMode: 'multiply' }}
+          />
+        )}
       </div>
 
       {/* Hero */}

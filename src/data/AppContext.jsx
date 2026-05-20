@@ -24,7 +24,18 @@ export function AppProvider({ children }) {
 
   useEffect(() => {
     getBranches()
-      .then(data => setSucursales(data))
+      .then(data => {
+        const lista = Array.isArray(data) ? data : []
+        setSucursales(lista)
+        // Precarga el diseño del primer branch activo para que SelectorSucursal
+        // tenga acceso al logo dinámico antes de que el usuario elija sucursal
+        const primerActivo = lista.find(b => b.active)
+        if (primerActivo) {
+          return getDesign(primerActivo.id)
+            .then(d => { if (d && Object.keys(d).length > 0) setDiseno(d) })
+            .catch(() => {})
+        }
+      })
       .catch(() => setSucursales([]))
       .finally(() => setCargando(false))
 
