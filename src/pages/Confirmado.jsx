@@ -1,10 +1,20 @@
 import { useApp } from '../data/AppContext.jsx'
-import { useRef } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import BannerPopup from '../Components/BannerPopup.jsx'
 
 export default function Confirmado() {
   const { setVista, sucursalActiva, ultimoNumeroOrden, ultimaHora } = useApp()
   const reciboRef = useRef(null)
+  const [cuenta, setCuenta] = useState(12)
+
+  /* Cuenta regresiva de 12 s → redirige a la encuesta */
+  useEffect(() => {
+    const t = setInterval(() => setCuenta(c => {
+      if (c <= 1) { clearInterval(t); setVista('feedback'); return 0 }
+      return c - 1
+    }), 1000)
+    return () => clearInterval(t)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const descargarRecibo = async () => {
     const elemento = reciboRef.current
@@ -127,6 +137,42 @@ export default function Confirmado() {
       >
         Cambiar sucursal
       </button>
+
+      {/* Banner beta tester */}
+      <div style={{
+        marginTop: 28, width: '100%', maxWidth: 320,
+        background: 'rgba(255,215,0,0.08)',
+        border: '1.5px solid rgba(255,215,0,0.25)',
+        borderRadius: 16, padding: '18px 20px', textAlign: 'center',
+      }}>
+        <div style={{ fontSize: 28, marginBottom: 6 }}>🧪</div>
+        <p style={{
+          fontSize: 13, fontWeight: 700,
+          color: 'rgba(255,255,255,0.85)', marginBottom: 4,
+          fontFamily: 'var(--font-title), sans-serif',
+        }}>
+          ¡Eres beta tester!
+        </p>
+        <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', lineHeight: 1.5, marginBottom: 14 }}>
+          Tu opinión nos ayuda a mejorar la app. La encuesta es anónima y toma menos de 1 minuto.
+        </p>
+        <button
+          onClick={() => setVista('feedback')}
+          style={{
+            background: 'rgba(255,215,0,0.2)', color: '#FFD700',
+            border: '1.5px solid rgba(255,215,0,0.4)',
+            padding: '10px 20px', borderRadius: 999,
+            fontWeight: 700, fontSize: 13, cursor: 'pointer',
+            fontFamily: 'DM Sans, sans-serif', width: '100%',
+          }}
+        >
+          ⭐ Calificar mi experiencia
+        </button>
+        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', marginTop: 10 }}>
+          Redirigiendo en {cuenta}s…
+        </p>
+      </div>
+
     </div>
     </>
   )
