@@ -106,22 +106,16 @@ export default function SelectorSucursal() {
 
       {/* Logo */}
       <div className="selector-header">
-        {diseno?.logo_url || diseno?.logo_icon_url ? (
-          <img
-            src={diseno.logo_url || diseno.logo_icon_url}
-            alt="Casa del Pollo"
-            style={{
-              width: '100%', maxWidth: 260, height: 'auto',
-              filter: getLogoFilter(diseno.logo_color_mode, diseno.logo_custom_filter),
-            }}
-          />
-        ) : (
-          <img
-            src="/logo-small.png"
-            alt="Casa del Pollo"
-            style={{ width: '100%', maxWidth: 260, height: 'auto', mixBlendMode: 'multiply' }}
-          />
-        )}
+        <img
+          src={diseno?.logo_url || diseno?.logo_icon_url || '/logo.svg'}
+          alt="Casa del Pollo"
+          style={{
+            width: '100%', maxWidth: 260, height: 'auto',
+            filter: (diseno?.logo_url || diseno?.logo_icon_url)
+              ? getLogoFilter(diseno.logo_color_mode, diseno.logo_custom_filter)
+              : 'none',
+          }}
+        />
       </div>
 
       {/* Hero */}

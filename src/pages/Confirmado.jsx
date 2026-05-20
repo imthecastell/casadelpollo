@@ -38,9 +38,11 @@ export default function Confirmado() {
     document.head.appendChild(script)
   }
 
-  const logoSrc   = diseno?.logo_original_url || diseno?.logo_url
-  const logoFilter = diseno?.logo_original_url
-    ? 'none'
+  /* Para la confirmación (fondo claro) preferimos la versión a color.
+     Fallback a /logo.svg (texto + icono, colores originales del SVG) */
+  const logoSrc    = diseno?.logo_original_url || diseno?.logo_url || '/logo.svg'
+  const logoFilter = diseno?.logo_original_url || !diseno?.logo_url
+    ? 'none'   // original sin filtro en fondo blanco
     : getLogoFilter(diseno?.logo_color_mode, diseno?.logo_custom_filter)
 
   return (
@@ -126,14 +128,8 @@ export default function Confirmado() {
       }}>
         {/* Cabecera del recibo */}
         <div style={{ marginBottom: 12 }}>
-          {logoSrc ? (
-            <img src={logoSrc} alt="Casa del Pollo"
-              style={{ height: 26, maxWidth: 140, objectFit: 'contain', filter: logoFilter, display: 'block', margin: '0 auto 2px' }} />
-          ) : (
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: '#ccc' }}>
-              Casa del Pollo
-            </div>
-          )}
+          <img src={logoSrc} alt="Casa del Pollo"
+            style={{ height: 26, maxWidth: 140, objectFit: 'contain', filter: logoFilter, display: 'block', margin: '0 auto 2px' }} />
           <div style={{ fontSize: 11, color: '#bbb' }}>
             Sucursal {sucursalActiva?.name || sucursalActiva?.nombre}
           </div>

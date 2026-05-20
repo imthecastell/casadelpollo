@@ -90,24 +90,20 @@ export default function Carrito() {
           </button>
 
           {/* Logo centrado */}
-          {(diseno?.logo_icon_url || diseno?.logo_url) ? (
-            <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none' }}>
-              <img
-                src={diseno.logo_icon_url || diseno.logo_url}
-                alt="Casa del Pollo"
-                style={{
-                  height: 28,
-                  maxWidth: 110,
-                  objectFit: 'contain',
-                  filter: getLogoFilter(diseno.logo_color_mode, diseno.logo_custom_filter),
-                }}
-              />
-            </div>
-          ) : (
-            <div className="logo-nombre" style={{ fontSize: 15, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
-              Mi pedido
-            </div>
-          )}
+          <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none' }}>
+            <img
+              src={diseno?.logo_icon_url || diseno?.logo_url || '/icon.svg'}
+              alt="Casa del Pollo"
+              style={{
+                height: 28,
+                maxWidth: 110,
+                objectFit: 'contain',
+                filter: (diseno?.logo_icon_url || diseno?.logo_url)
+                  ? getLogoFilter(diseno.logo_color_mode, diseno.logo_custom_filter)
+                  : 'brightness(0) invert(1)',
+              }}
+            />
+          </div>
 
           <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--rojo)', fontFamily: 'var(--font-body), sans-serif' }}>
             {totalItems} {totalItems === 1 ? 'item' : 'items'}

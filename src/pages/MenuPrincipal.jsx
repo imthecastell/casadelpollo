@@ -220,8 +220,8 @@ export default function MenuPrincipal() {
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 {(() => {
-                  // Logo dinámico desde diseño, con fallback al PNG local
-                  const src = diseno?.logo_icon_url || diseno?.logo_url || '/logo-small.png'
+                  // Logo dinámico desde diseño, con fallback al SVG local
+                  const src = diseno?.logo_icon_url || diseno?.logo_url || '/icon.svg'
                   const isDynamic = !!(diseno?.logo_icon_url || diseno?.logo_url)
                   const mode = diseno?.logo_color_mode || 'blanco'
                   let filter = 'brightness(0) invert(1) drop-shadow(0 2px 12px rgba(0,0,0,0.8))'
@@ -233,11 +233,7 @@ export default function MenuPrincipal() {
                   }
                   return (
                     <div style={{ width: 44, height: 44, overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <img src={src} alt="Casa del Pollo" style={{
-                        height: '100%', width: 'auto',
-                        filter,
-                        transform: isDynamic ? 'none' : 'translateX(-8px)',
-                      }} />
+                      <img src={src} alt="Casa del Pollo" style={{ height: '100%', width: 'auto', filter }} />
                     </div>
                   )
                 })()}
@@ -246,16 +242,18 @@ export default function MenuPrincipal() {
           </div>
 
           {/* Logo centrado en vista de sección (cuando mostrarAtajos=false) */}
-          {!mostrarAtajos && (diseno?.logo_icon_url || diseno?.logo_url) && (
+          {!mostrarAtajos && (
             <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none' }}>
               <img
-                src={diseno.logo_icon_url || diseno.logo_url}
+                src={diseno?.logo_icon_url || diseno?.logo_url || '/icon.svg'}
                 alt="Casa del Pollo"
                 style={{
                   height: 30,
                   maxWidth: 120,
                   objectFit: 'contain',
-                  filter: getLogoFilter(diseno.logo_color_mode, diseno.logo_custom_filter),
+                  filter: (diseno?.logo_icon_url || diseno?.logo_url)
+                    ? getLogoFilter(diseno.logo_color_mode, diseno.logo_custom_filter)
+                    : 'brightness(0) invert(1)',
                 }}
               />
             </div>
