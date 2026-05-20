@@ -220,9 +220,9 @@ export default function MenuPrincipal() {
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 {(() => {
-                  // Logo dinámico desde diseño, con fallback al SVG local
-                  const src = diseno?.logo_icon_url || diseno?.logo_url || '/icon.svg'
-                  const isDynamic = !!(diseno?.logo_icon_url || diseno?.logo_url)
+                  /* Espacio cuadrado 44px: usar siempre el icono */
+                  const src = diseno?.logo_icon_url || '/icon.svg'
+                  const isDynamic = !!diseno?.logo_icon_url
                   const mode = diseno?.logo_color_mode || 'blanco'
                   let filter = 'brightness(0) invert(1) drop-shadow(0 2px 12px rgba(0,0,0,0.8))'
                   if (isDynamic) {
@@ -241,17 +241,17 @@ export default function MenuPrincipal() {
             )}
           </div>
 
-          {/* Logo centrado en vista de sección (cuando mostrarAtajos=false) */}
+          {/* Logo centrado en vista de sección — icono cuadrado en el navbar */}
           {!mostrarAtajos && (
             <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none' }}>
               <img
-                src={diseno?.logo_icon_url || diseno?.logo_url || '/icon.svg'}
+                src={diseno?.logo_icon_url || '/icon.svg'}
                 alt="Casa del Pollo"
                 style={{
                   height: 30,
-                  maxWidth: 120,
+                  maxWidth: 34,
                   objectFit: 'contain',
-                  filter: (diseno?.logo_icon_url || diseno?.logo_url)
+                  filter: diseno?.logo_icon_url
                     ? getLogoFilter(diseno.logo_color_mode, diseno.logo_custom_filter)
                     : 'brightness(0) invert(1)',
                 }}

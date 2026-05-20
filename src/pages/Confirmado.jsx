@@ -38,11 +38,13 @@ export default function Confirmado() {
     document.head.appendChild(script)
   }
 
-  /* Para la confirmación (fondo claro) preferimos la versión a color.
-     Fallback a /logo.svg (texto + icono, colores originales del SVG) */
+  /* Confirmado: fondo blanco/claro → usar logo horizontal completo sin filtro.
+     Prioridad: logo_original_url (color) → logo_url → /logo.svg */
   const logoSrc    = diseno?.logo_original_url || diseno?.logo_url || '/logo.svg'
-  const logoFilter = diseno?.logo_original_url || !diseno?.logo_url
-    ? 'none'   // original sin filtro en fondo blanco
+  /* Sin filtro si usamos logo_original_url o el SVG local (ya tienen color).
+     Aplicar filtro solo si viene de logo_url con modo configurado. */
+  const logoFilter = (diseno?.logo_original_url || !diseno?.logo_url)
+    ? 'none'
     : getLogoFilter(diseno?.logo_color_mode, diseno?.logo_custom_filter)
 
   return (

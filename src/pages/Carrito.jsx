@@ -89,16 +89,16 @@ export default function Carrito() {
             ← Seguir pidiendo
           </button>
 
-          {/* Logo centrado */}
-          <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none' }}>
+          {/* Logo centrado — espacio pequeño: icono cuadrado */}
+          <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none', display: 'flex', alignItems: 'center' }}>
             <img
-              src={diseno?.logo_icon_url || diseno?.logo_url || '/icon.svg'}
+              src={diseno?.logo_icon_url || '/icon.svg'}
               alt="Casa del Pollo"
               style={{
                 height: 28,
-                maxWidth: 110,
+                maxWidth: 34,
                 objectFit: 'contain',
-                filter: (diseno?.logo_icon_url || diseno?.logo_url)
+                filter: diseno?.logo_icon_url
                   ? getLogoFilter(diseno.logo_color_mode, diseno.logo_custom_filter)
                   : 'brightness(0) invert(1)',
               }}
