@@ -157,6 +157,7 @@ export function AppProvider({ children }) {
   ultimoNumeroOrden, ultimaHora,
   sucursales,
   productos,
+  schedule,
   promociones,
   banners,
   bannersMenu,

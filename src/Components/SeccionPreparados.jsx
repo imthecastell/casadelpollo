@@ -79,10 +79,15 @@ function GrupoExpandible({ titulo, precio, imagen, emoji, conteo, open, onToggle
           <div className="producto-nombre">{titulo}</div>
           <div className="producto-precio">${precio}/kg</div>
           <div style={{ fontSize: 11, color: 'var(--texto-suave)', marginTop: 2 }}>
-            {conteo} variantes · {open ? 'ocultar ▴' : 'elegir ▾'}
+            {conteo} variantes {open ? '· ocultar ▴' : ''}
           </div>
         </div>
-        {open && <div className="card-check">✓</div>}
+        {open
+          ? <div className="card-check">✓</div>
+          : <div style={{ background: 'var(--rojo)', color: '#fff', borderRadius: 999, padding: '5px 14px', fontSize: 12, fontWeight: 700, flexShrink: 0, letterSpacing: 0.2 }}>
+              Elegir
+            </div>
+        }
       </button>
       {open && (
         <div className="configurador-card slide-up" style={{ marginTop: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0, gap: 8 }}>

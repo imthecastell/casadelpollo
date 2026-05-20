@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 
 const TIEMPO_BOWL = 20
@@ -7,6 +7,25 @@ const GRAMOS_BASE = 200
 const PASO_EXTRA = 50
 const MAX_EXTRA = 400
 const BASES_NOMBRES = ['Arroz basmati blanco', 'Arroz basmati a la jardinera', 'Pasta poblana', 'Pasta de tomate', 'Ensalada']
+
+/* ── Crop helpers para imágenes de bowl ── */
+const CDN = 'https://res.cloudinary.com/do4juvxio/image/upload'
+
+function getFilePath(url) {
+  if (!url || !url.includes('cloudinary.com')) return null
+  const m = url.match(/\/upload\/(?:v\d+\/)?(?:[^/]*,[^/]*\/)*(.+)$/)
+  return m ? m[1] : null
+}
+
+/* Lado cocinado (derecho) en formato 16:9 para el hero */
+function cookedHero(url, w = 900) {
+  const path = getFilePath(url)
+  if (!path) return url
+  return `${CDN}/c_crop,fl_relative,x_0.50,y_0.00,w_0.50,h_1.00/ar_16:9,c_fill,w_${w}/${path}`
+}
+
+/* Imagen de bowl por defecto — lado cocinado del teriyaki */
+const BOWL_DEFAULT = cookedHero('marinados/teriyaki.png')
 
 function calcularLugares(numBowls) {
   return Math.ceil(numBowls / 2)
@@ -17,7 +36,89 @@ function precioExtra(producto, gramosExtra) {
   return (gramosExtra / 1000) * precioKg
 }
 
-function BowlBuilder({ numero, onAgregar, productos }) {
+/* ── Componente de imagen de base (placeholder verde/madera) ── */
+function BaseImg({ nombre }) {
+  const emojis = { 'Arroz': '🍚', 'Pasta': '🍝', 'Ensalada': '🥗' }
+  const emoji = Object.entries(emojis).find(([k]) => nombre?.includes(k))?.[1] || '🥣'
+  return (
+    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #0a2016 0%, #1a4030 60%, #2d6a4f 100%)' }}>
+      <span style={{ fontSize: 72 }}>{emoji}</span>
+    </div>
+  )
+}
+
+/* ── Hero image del bowl ── */
+function BowlHero({ marinado, base, defaultImg }) {
+  const heroImg = useMemo(() => {
+    if (marinado?.image_cooked_url || marinado?.image_url)
+      return cookedHero(marinado.image_cooked_url || marinado.image_url)
+    return null
+  }, [marinado])
+
+  const showBase = !heroImg && !!base
+
+  return (
+    <div style={{ position: 'relative', height: 'clamp(160px,42vw,240px)', borderRadius: 20, overflow: 'hidden', marginBottom: 0, flexShrink: 0 }}>
+      {/* Fondo default */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        backgroundImage: `url(${defaultImg || BOWL_DEFAULT})`,
+        backgroundSize: 'cover', backgroundPosition: 'center',
+        opacity: heroImg || showBase ? 0 : 1,
+        transition: 'opacity 0.9s ease',
+      }} />
+
+      {/* Overlay base (emoji) */}
+      {showBase && (
+        <div style={{ position: 'absolute', inset: 0, opacity: showBase ? 1 : 0, transition: 'opacity 0.7s ease' }}>
+          <BaseImg nombre={base?.name} />
+        </div>
+      )}
+
+      {/* Foto del marinado cocinado */}
+      {heroImg && (
+        <div style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: `url(${heroImg})`,
+          backgroundSize: 'cover', backgroundPosition: 'center',
+          opacity: 1, transition: 'opacity 0.9s ease',
+        }} />
+      )}
+
+      {/* Gradiente */}
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.2) 50%, transparent 100%)' }} />
+
+      {/* Caption */}
+      <div style={{ position: 'absolute', bottom: 14, left: 16, right: 16, zIndex: 2 }}>
+        {marinado ? (
+          <>
+            <div style={{ fontFamily: 'var(--font-title),sans-serif', fontWeight: 800, fontSize: 20, color: '#fff', lineHeight: 1.1 }}>
+              {marinado.name}
+            </div>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.8)', marginTop: 3, fontWeight: 600 }}>
+              🔥 Cocinado · listo en ~{TIEMPO_BOWL} min
+            </div>
+          </>
+        ) : base ? (
+          <div style={{ fontFamily: 'var(--font-title),sans-serif', fontWeight: 800, fontSize: 18, color: '#fff', lineHeight: 1.1 }}>
+            {base.name}
+          </div>
+        ) : (
+          <>
+            <div style={{ fontFamily: 'var(--font-title),sans-serif', fontWeight: 800, fontSize: 20, color: '#fff', lineHeight: 1.1 }}>
+              Bowls
+            </div>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.75)', marginTop: 3 }}>
+              Elige tu base y marinado
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function BowlBuilder({ numero, onAgregar, productos, defaultImg }) {
   const [baseId, setBaseId] = useState('')
   const [marinadoId, setMarinadoId] = useState('')
   const [extraBase, setExtraBase] = useState(0)
@@ -65,6 +166,7 @@ function BowlBuilder({ numero, onAgregar, productos }) {
       necesitaHora: true,
       precio: precioTotal,
       precioTotal,
+      imagen_referencia: marinado.image_cooked_url || marinado.image_url || null,
       resumen: `Bowl #${numero}: ${base.name} ${gramosBaseTotal}g + ${marinado.name} ${gramosMarinadoTotal}g · $${precioTotal.toFixed(2)} · ~${TIEMPO_BOWL} min`
     })
     setAgregado(true)
@@ -75,83 +177,92 @@ function BowlBuilder({ numero, onAgregar, productos }) {
   }
 
   return (
-    <div className="configurador-card">
-      <div className="bowl-card-head">
-        <div>
-          <div className="bowl-numero">Bowl #{numero}</div>
-          <div className="bowl-precio-base">$110 base</div>
-        </div>
-        <div className="bowl-total">${precioTotal.toFixed(2)}</div>
-      </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+      {/* Hero dinámico */}
+      <BowlHero marinado={marinado} base={base} defaultImg={defaultImg} />
 
-      <div className="bowl-field">
-        <label className="config-label">Base</label>
-        <select className="bowl-select" value={baseId} onChange={e => setBaseId(e.target.value)}>
-          <option value="">Elige la base</option>
-          {bases.map(b => (
-            <option key={b.id} value={b.id}>{b.name}</option>
-          ))}
-        </select>
-        <div className="bowl-extra-row">
-          <span>{gramosBaseTotal}g</span>
-          <div className="cantidad-ctrl">
-            <button className="cantidad-btn" onClick={() => cambiarExtra('base', -PASO_EXTRA)} disabled={extraBase <= 0}>-</button>
-            <span className="cantidad-num">{extraBase ? `+${extraBase}` : '200'}</span>
-            <button className="cantidad-btn" onClick={() => cambiarExtra('base', PASO_EXTRA)} disabled={extraBase >= MAX_EXTRA}>+</button>
+      {/* Card de configuración */}
+      <div className="configurador-card" style={{ borderTopLeftRadius: 0, borderTopRightRadius: 0, marginTop: 0 }}>
+        <div className="bowl-card-head">
+          <div>
+            <div className="bowl-numero">Bowl #{numero}</div>
+            <div className="bowl-precio-base">$110 base</div>
           </div>
+          <div className="bowl-total">${precioTotal.toFixed(2)}</div>
         </div>
-        {base && extraBase > 0 && (
-          <div className="bowl-extra-precio">Extra base: +${precioExtra(base, extraBase).toFixed(2)}</div>
-        )}
-      </div>
 
-      <div className="bowl-field">
-        <label className="config-label">Marinado</label>
-        <select className="bowl-select" value={marinadoId} onChange={e => setMarinadoId(e.target.value)}>
-          <option value="">Elige el marinado</option>
-          {marinados.map(m => (
-            <option key={m.id} value={m.id}>{m.name}</option>
-          ))}
-        </select>
-        <div className="bowl-extra-row">
-          <span>{gramosMarinadoTotal}g</span>
-          <div className="cantidad-ctrl">
-            <button className="cantidad-btn" onClick={() => cambiarExtra('marinado', -PASO_EXTRA)} disabled={extraMarinado <= 0}>-</button>
-            <span className="cantidad-num">{extraMarinado ? `+${extraMarinado}` : '200'}</span>
-            <button className="cantidad-btn" onClick={() => cambiarExtra('marinado', PASO_EXTRA)} disabled={extraMarinado >= MAX_EXTRA}>+</button>
+        <div className="bowl-field">
+          <label className="config-label">Base</label>
+          <select className="bowl-select" value={baseId} onChange={e => setBaseId(e.target.value)}>
+            <option value="">Elige la base</option>
+            {bases.map(b => (
+              <option key={b.id} value={b.id}>{b.name}</option>
+            ))}
+          </select>
+          <div className="bowl-extra-row">
+            <span>{gramosBaseTotal}g</span>
+            <div className="cantidad-ctrl">
+              <button className="cantidad-btn" onClick={() => cambiarExtra('base', -PASO_EXTRA)} disabled={extraBase <= 0}>-</button>
+              <span className="cantidad-num">{extraBase ? `+${extraBase}` : '200'}</span>
+              <button className="cantidad-btn" onClick={() => cambiarExtra('base', PASO_EXTRA)} disabled={extraBase >= MAX_EXTRA}>+</button>
+            </div>
           </div>
+          {base && extraBase > 0 && (
+            <div className="bowl-extra-precio">Extra base: +${precioExtra(base, extraBase).toFixed(2)}</div>
+          )}
         </div>
-        {marinado && extraMarinado > 0 && (
-          <div className="bowl-extra-precio">Extra marinado: +${precioExtra(marinado, extraMarinado).toFixed(2)}</div>
+
+        <div className="bowl-field">
+          <label className="config-label">Marinado</label>
+          <select className="bowl-select" value={marinadoId} onChange={e => setMarinadoId(e.target.value)}>
+            <option value="">Elige el marinado</option>
+            {marinados.map(m => (
+              <option key={m.id} value={m.id}>{m.name}</option>
+            ))}
+          </select>
+          <div className="bowl-extra-row">
+            <span>{gramosMarinadoTotal}g</span>
+            <div className="cantidad-ctrl">
+              <button className="cantidad-btn" onClick={() => cambiarExtra('marinado', -PASO_EXTRA)} disabled={extraMarinado <= 0}>-</button>
+              <span className="cantidad-num">{extraMarinado ? `+${extraMarinado}` : '200'}</span>
+              <button className="cantidad-btn" onClick={() => cambiarExtra('marinado', PASO_EXTRA)} disabled={extraMarinado >= MAX_EXTRA}>+</button>
+            </div>
+          </div>
+          {marinado && extraMarinado > 0 && (
+            <div className="bowl-extra-precio">Extra marinado: +${precioExtra(marinado, extraMarinado).toFixed(2)}</div>
+          )}
+        </div>
+
+        {listo && (
+          <div className="bowl-resumen">
+            {base.name} {gramosBaseTotal}g + {marinado.name} {gramosMarinadoTotal}g · listo en ~{TIEMPO_BOWL} min
+          </div>
         )}
+
+        <button
+          className={`btn-primario ${agregado ? 'btn-agregado' : ''}`}
+          onClick={handleAgregar}
+          disabled={!listo}
+          style={{ opacity: listo ? 1 : 0.4 }}
+        >
+          {agregado ? '✓ Bowl agregado' : 'Agregar bowl al pedido'}
+        </button>
       </div>
-
-      {listo && (
-        <div className="bowl-resumen">
-          {base.name} {gramosBaseTotal}g + {marinado.name} {gramosMarinadoTotal}g · listo en ~{TIEMPO_BOWL} min
-        </div>
-      )}
-
-      <button
-        className={`btn-primario ${agregado ? 'btn-agregado' : ''}`}
-        onClick={handleAgregar}
-        disabled={!listo}
-        style={{ opacity: listo ? 1 : 0.4 }}
-      >
-        {agregado ? 'Bowl agregado' : 'Agregar bowl al pedido'}
-      </button>
     </div>
   )
 }
 
 export default function SeccionBowls() {
-  const { agregarAlCarrito, productos } = useApp()
+  const { agregarAlCarrito, productos, diseno } = useApp()
   const [bowls, setBowls] = useState([1])
   const lugares = calcularLugares(bowls.length)
 
+  /* Imagen hero por defecto — editable desde admin en Design > bowl_hero_url */
+  const defaultImg = diseno?.bowl_hero_url || BOWL_DEFAULT
+
   return (
     <div>
-      <div className="seccion-titulo">Bowls</div>
+      <div className="seccion-titulo">🥣 Bowls</div>
       <p className="seccion-desc">200g de base + 200g de marinado cocinado · extras en intervalos de 50g</p>
 
       {bowls.length > 1 && (
@@ -161,7 +272,7 @@ export default function SeccionBowls() {
       )}
 
       {bowls.map((num, i) => (
-        <BowlBuilder key={i} numero={num} onAgregar={agregarAlCarrito} productos={productos} />
+        <BowlBuilder key={i} numero={num} onAgregar={agregarAlCarrito} productos={productos} defaultImg={defaultImg} />
       ))}
 
       <button

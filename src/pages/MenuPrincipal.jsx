@@ -25,14 +25,13 @@ const HERO_IMGS = [
   COOK('marinados/barbacoa.png',           '3:2', 960),
 ]
 
-/* ─── Strip de categorías ─── */
+/* ─── Strip de categorías — sin Nuggets para que quepan todos sin scroll ─── */
 const CATS = [
-  { label: 'Marinados',   emoji: '🍯', img: COOK('marinados/teriyaki.png',          '1:1', 180), tab: 'marinados'  },
-  { label: 'Milanesas',   emoji: '🥩', img: COOK('milanesas/milanesa_natural.png',  '1:1', 180), tab: 'preparados' },
-  { label: 'Preparados',  emoji: '🍳', img: COOK('preparados/pechuga_rellena.png',  '1:1', 180), tab: 'preparados' },
-  { label: 'Nuggets',     emoji: '🍗', img: FULL('preparados/nuggets_grupo.png',    '1:1', 180), tab: 'preparados' },
-  { label: 'Fresco',      emoji: '🐔', img: COOK('fresco/piernita.png',             '1:1', 180), tab: 'fresco'     },
-  { label: 'Bowls',       emoji: '🥣', img: COOK('marinados/agridulce.png',         '1:1', 180), tab: 'bowls'      },
+  { label: 'Marinados',      emoji: '🍯', img: COOK('marinados/teriyaki.png',          '1:1', 180), tab: 'marinados'  },
+  { label: 'Milanesas',      emoji: '🥩', img: COOK('milanesas/milanesa_natural.png',  '1:1', 180), tab: 'preparados' },
+  { label: 'Preparados',     emoji: '🍳', img: COOK('preparados/pechuga_rellena.png',  '1:1', 180), tab: 'preparados' },
+  { label: 'Pollo\nFresco',  emoji: '🐔', img: COOK('fresco/piernita.png',             '1:1', 180), tab: 'fresco'     },
+  { label: 'Bowls',          emoji: '🥣', img: COOK('marinados/agridulce.png',         '1:1', 180), tab: 'bowls'      },
 ]
 
 /* ─── Cards de entrada ─── */
@@ -54,7 +53,7 @@ const ENTRADAS = [
   {
     id: 'bowls', tab: 'bowls',
     titulo: 'Bowls',
-    desc: 'Arma tu bowl con marinado y base a elegir',
+    desc: 'Base + marinado cocinado · personaliza a tu gusto',
     color: '#0a2016',
     invertido: true,
     imgs: [
@@ -144,8 +143,23 @@ function EntradaCard({ entrada, onClic }) {
 const COMPONENTES = { fresco: SeccionFresco, marinados: SeccionMarinados, preparados: SeccionPreparados, complementos: SeccionComplementos, bowls: SeccionBowls }
 const TABS_POLLO  = SECCIONES
 
+/* ── Calcula si la sucursal está abierta ahora ── */
+const DIAS_ES = ['domingo','lunes','martes','miercoles','jueves','viernes','sabado']
+function calcEstaAbierto(schedule) {
+  if (!schedule || schedule.length === 0) return null // desconocido
+  const now  = new Date()
+  const dia  = DIAS_ES[now.getDay()]
+  const hor  = schedule.find(h => h.dia === dia)
+  if (!hor || !hor.activo) return false
+  const [hAp, mAp] = (hor.apertura || '10:00').slice(0, 5).split(':').map(Number)
+  const [hCi, mCi] = (hor.cierre  || '20:00').slice(0, 5).split(':').map(Number)
+  const min = now.getHours() * 60 + now.getMinutes()
+  return min >= hAp * 60 + mAp && min < hCi * 60 + mCi
+}
+
 export default function MenuPrincipal() {
-  const { sucursalActiva, setVista, totalItems, bannersMenu = [] } = useApp()
+  const { sucursalActiva, setVista, totalItems, bannersMenu = [], schedule, diseno } = useApp()
+  const estaAbierto = calcEstaAbierto(schedule)
   const [mostrarAtajos, setMostrarAtajos] = useState(true)
   const [tabActiva, setTabActiva]         = useState(null)
   const [heroIdx, setHeroIdx]             = useState(0)
@@ -198,7 +212,14 @@ export default function MenuPrincipal() {
               </button>
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <img src="/logo-small.png" alt="Casa del Pollo" style={{ height: 34, width: 'auto', mixBlendMode: 'multiply', filter: 'brightness(0) invert(1)' }} />
+                {/* Clip container — muestra sólo el emblema central del logo */}
+                <div style={{ width: 44, height: 44, overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <img src="/logo-small.png" alt="Casa del Pollo" style={{
+                    height: '100%', width: 'auto',
+                    filter: 'brightness(0) invert(1) drop-shadow(0 2px 12px rgba(0,0,0,0.8))',
+                    transform: 'translateX(-8px)',
+                  }} />
+                </div>
               </div>
             )}
           </div>
@@ -243,17 +264,22 @@ export default function MenuPrincipal() {
 
             {/* Texto encima del hero */}
             <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 22px 28px', zIndex: 2 }}>
-              {sucursalActiva && (
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)', borderRadius: 999, padding: '4px 10px', marginBottom: 10 }}>
-                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#4ade80', flexShrink: 0 }} />
+              {sucursalActiva && estaAbierto !== null && (
+                <div style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  background: estaAbierto ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.18)',
+                  backdropFilter: 'blur(8px)', borderRadius: 999, padding: '4px 10px', marginBottom: 10,
+                  border: estaAbierto ? '1px solid rgba(34,197,94,0.3)' : '1px solid rgba(239,68,68,0.3)',
+                }}>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: estaAbierto ? '#4ade80' : '#f87171', flexShrink: 0 }} />
                   <span style={{ color: '#fff', fontSize: 11, fontWeight: 600, letterSpacing: 0.3 }}>
-                    Sucursal {sucursalActiva.name} · Abierto
+                    {sucursalActiva.name} · {estaAbierto ? 'Abierto' : 'Cerrado'}
                   </span>
                 </div>
               )}
               <div style={{ fontFamily: 'var(--font-title),sans-serif', fontWeight: 800, fontSize: 30, lineHeight: 1.05, color: '#fff', letterSpacing: '-0.5px', marginBottom: 6 }}>
-                El pollo de casa,<br />
-                <span style={{ color: '#fbbf24' }}>listo para recoger</span>
+                {diseno?.slogan_titulo || 'El pollo de casa,'}<br />
+                <span style={{ color: '#fbbf24' }}>{diseno?.slogan_subtitulo || 'listo para recoger'}</span>
               </div>
               <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13, lineHeight: 1.4, marginBottom: 16 }}>
                 Marinados artesanales · preparados · bowls
@@ -267,7 +293,7 @@ export default function MenuPrincipal() {
                   cursor: 'pointer', letterSpacing: 0.3,
                   boxShadow: '0 4px 16px rgba(146,43,33,0.45)',
                 }}>
-                Ver menú completo →
+                {diseno?.cta_label || 'Inicia tu pedido →'}
               </button>
             </div>
           </div>
@@ -289,7 +315,7 @@ export default function MenuPrincipal() {
                       : <div style={{ width: '100%', height: '100%', background: 'var(--crema-oscura)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>{cat.emoji}</div>
                     }
                   </div>
-                  <span style={{ fontFamily: 'var(--font-title),sans-serif', fontWeight: 700, fontSize: 11, color: 'var(--texto)', letterSpacing: 0.2 }}>
+                  <span style={{ fontFamily: 'var(--font-title),sans-serif', fontWeight: 700, fontSize: 11, color: 'var(--texto)', letterSpacing: 0.2, whiteSpace: 'pre-line', textAlign: 'center', lineHeight: 1.25 }}>
                     {cat.label}
                   </span>
                 </button>
@@ -315,10 +341,27 @@ export default function MenuPrincipal() {
           )}
 
           {/* ── Cards de entrada ── */}
-          <div style={{ padding: '0 20px 100px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ padding: '0 20px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
             {ENTRADAS.map(e => (
               <EntradaCard key={e.id} entrada={e} onClic={() => irA(e.tab)} />
             ))}
+          </div>
+
+          {/* ── Pie de página ── */}
+          <div style={{ padding: '12px 20px 90px', textAlign: 'center', borderTop: '1px solid rgba(0,0,0,0.06)', marginTop: 4 }}>
+            <div style={{ fontSize: 11, color: 'var(--texto-suave)', marginBottom: 8 }}>
+              Aceptamos todas las formas de pago
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+              {['💵 Efectivo', '💳 Débito', '💳 Crédito', 'Amex'].map(p => (
+                <span key={p} style={{ background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.08)', borderRadius: 999, padding: '3px 10px', fontSize: 11, color: 'var(--texto-suave)' }}>
+                  {p}
+                </span>
+              ))}
+            </div>
+            <div style={{ marginTop: 12, fontSize: 10, color: 'var(--texto-suave)', opacity: 0.6, letterSpacing: 0.3 }}>
+              Solo recolección en local · Pedidos con anticipación
+            </div>
           </div>
 
         </div>

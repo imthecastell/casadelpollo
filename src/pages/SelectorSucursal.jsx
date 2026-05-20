@@ -5,19 +5,20 @@ import '../styles/selector.css'
 /* Carrusel de productos cocinados — regla: slides/carruseles = cocinado */
 const CDN  = 'https://res.cloudinary.com/do4juvxio/image/upload'
 const COOK = (f) => `${CDN}/c_crop,fl_relative,x_0.50,y_0.00,w_0.50,h_1.00/ar_16:9,c_fill,w_960/${f}`
-const HERO_IMGS = [
-  COOK('marinados/teriyaki.png'),
-  COOK('marinados/agridulce.png'),
-  COOK('preparados/pechuga_rellena.png'),
-  COOK('marinados/barbacoa.png'),
-  COOK('marinados/hoisin.png'),
-  COOK('marinados/mostaza%20miel.png'),
+const HERO_ITEMS = [
+  { img: COOK('marinados/teriyaki.png'),             nombre: 'Marinado Teriyaki' },
+  { img: COOK('marinados/agridulce.png'),            nombre: 'Marinado Agridulce' },
+  { img: COOK('preparados/pechuga_rellena.png'),     nombre: 'Pechuga Rellena' },
+  { img: COOK('marinados/barbacoa.png'),             nombre: 'Marinado Barbacoa' },
+  { img: COOK('marinados/hoisin.png'),               nombre: 'Marinado Hoisin' },
+  { img: COOK('marinados/mostaza%20miel.png'),       nombre: 'Mostaza con Miel' },
 ]
 
 export default function SelectorSucursal() {
   const { setSucursalActiva, setVista, sucursales, cargando, promociones, banners } = useApp()
   const [bannerActivo, setBannerActivo] = useState(0)
   const [heroIdx, setHeroIdx]           = useState(0)
+  const [nombreVisible, setNombreVisible] = useState(true)
 
   /* rotación banners admin */
   useEffect(() => {
@@ -30,7 +31,13 @@ export default function SelectorSucursal() {
 
   /* rotación carrusel de productos (siempre activo) */
   useEffect(() => {
-    const t = setInterval(() => setHeroIdx(p => (p + 1) % HERO_IMGS.length), 3800)
+    const t = setInterval(() => {
+      setNombreVisible(false)
+      setTimeout(() => {
+        setHeroIdx(p => (p + 1) % HERO_ITEMS.length)
+        setNombreVisible(true)
+      }, 350)
+    }, 3800)
     return () => clearInterval(t)
   }, [])
 
@@ -64,16 +71,32 @@ export default function SelectorSucursal() {
       {/* Hero — carrusel de productos cocinados siempre visible */}
       <div className="selector-hero">
         {/* Imágenes rotativas de fondo */}
-        {HERO_IMGS.map((img, i) => (
+        {HERO_ITEMS.map((item, i) => (
           <div key={i} style={{
             position: 'absolute', inset: 0,
-            backgroundImage: `url(${img})`,
+            backgroundImage: `url(${item.img})`,
             backgroundSize: 'cover', backgroundPosition: 'center',
             opacity: i === heroIdx ? 1 : 0,
             transition: 'opacity 1.1s ease',
           }} />
         ))}
         <div className="selector-hero-overlay" />
+
+        {/* Chip con nombre del producto — sólo en modo carrusel sin banner */}
+        {!bannerHero?.titulo && (
+          <div style={{
+            position: 'absolute', top: 14, left: 14, zIndex: 3,
+            background: 'rgba(0,0,0,0.38)', backdropFilter: 'blur(6px)',
+            border: '1px solid rgba(255,255,255,0.2)',
+            borderRadius: 999, padding: '4px 12px',
+            fontSize: 12, fontWeight: 700, color: 'white', letterSpacing: '0.3px',
+            opacity: nombreVisible ? 1 : 0,
+            transition: 'opacity 0.35s ease',
+            pointerEvents: 'none',
+          }}>
+            {HERO_ITEMS[heroIdx].nombre}
+          </div>
+        )}
 
         {/* Si hay banner admin con imagen, lo mostramos encima */}
         {bannerHero?.imagen_url && (
@@ -97,8 +120,8 @@ export default function SelectorSucursal() {
 
         {/* Dots del carrusel */}
         <div style={{ position: 'absolute', bottom: 12, right: 14, display: 'flex', gap: 5, zIndex: 2 }}>
-          {HERO_IMGS.map((_, i) => (
-            <button key={i} onClick={() => setHeroIdx(i)} style={{
+          {HERO_ITEMS.map((_, i) => (
+            <button key={i} onClick={() => { setHeroIdx(i); setNombreVisible(true); }} style={{
               width: i === heroIdx ? 20 : 7, height: 7,
               borderRadius: 4, border: 'none', padding: 0, cursor: 'pointer',
               background: i === heroIdx ? 'white' : 'rgba(255,255,255,0.45)',

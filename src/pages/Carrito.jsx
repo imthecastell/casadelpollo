@@ -101,9 +101,19 @@ export default function Carrito() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
               {carrito.map(item => (
                 <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'var(--card-bg)', borderRadius: 'var(--radio)', padding: '14px 16px', boxShadow: 'var(--sombra)' }}>
-                  <div style={{ fontSize: 22, flexShrink: 0, width: 40, height: 40, background: 'var(--crema-oscura)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {item.tipo === 'bowl' ? '🥗' : item.tipo === 'marinado' ? '🍯' : item.tipo === 'complemento' ? '🫙' : '🍗'}
-                  </div>
+                  {item.tipo === 'bowl' && item.imagen_referencia ? (
+                    <div style={{ width: 44, height: 44, borderRadius: 10, flexShrink: 0, overflow: 'hidden', background: 'var(--crema-oscura)' }}>
+                      <img
+                        src={item.imagen_referencia}
+                        alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        onError={e => { e.target.style.display = 'none' }}
+                      />
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: 22, flexShrink: 0, width: 44, height: 44, background: 'var(--crema-oscura)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {item.tipo === 'bowl' ? '🥗' : item.tipo === 'marinado' ? '🍯' : item.tipo === 'complemento' ? '🫙' : '🍗'}
+                    </div>
+                  )}
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--texto)', lineHeight: 1.4 }}>{item.resumen}</div>
                     {item.tiempoEstimado && (
@@ -113,7 +123,7 @@ export default function Carrito() {
                       {precioItem(item)}
                     </div>
                   </div>
-                  <button onClick={() => eliminarDelCarrito(item.id)} style={{ background: 'none', border: 'none', color: 'var(--gris)', fontSize: 16, cursor: 'pointer', padding: 4, borderRadius: '50%', flexShrink: 0 }}>x</button>
+                  <button onClick={() => eliminarDelCarrito(item.id)} style={{ background: 'none', border: 'none', color: 'var(--gris)', fontSize: 16, cursor: 'pointer', padding: 4, borderRadius: '50%', flexShrink: 0 }}>✕</button>
                 </div>
               ))}
             </div>
