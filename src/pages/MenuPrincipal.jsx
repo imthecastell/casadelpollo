@@ -212,14 +212,28 @@ export default function MenuPrincipal() {
               </button>
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                {/* Clip container — muestra sólo el emblema central del logo */}
-                <div style={{ width: 44, height: 44, overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <img src="/logo-small.png" alt="Casa del Pollo" style={{
-                    height: '100%', width: 'auto',
-                    filter: 'brightness(0) invert(1) drop-shadow(0 2px 12px rgba(0,0,0,0.8))',
-                    transform: 'translateX(-8px)',
-                  }} />
-                </div>
+                {(() => {
+                  // Logo dinámico desde diseño, con fallback al PNG local
+                  const src = diseno?.logo_icon_url || diseno?.logo_url || '/logo-small.png'
+                  const isDynamic = !!(diseno?.logo_icon_url || diseno?.logo_url)
+                  const mode = diseno?.logo_color_mode || 'blanco'
+                  let filter = 'brightness(0) invert(1) drop-shadow(0 2px 12px rgba(0,0,0,0.8))'
+                  if (isDynamic) {
+                    if (mode === 'blanco') filter = 'brightness(0) invert(1) drop-shadow(0 2px 12px rgba(0,0,0,0.8))'
+                    else if (mode === 'negro') filter = 'brightness(0) drop-shadow(0 2px 12px rgba(0,0,0,0.5))'
+                    else if (mode === 'personalizado') filter = (diseno?.logo_custom_filter || 'none') + ' drop-shadow(0 2px 8px rgba(0,0,0,0.4))'
+                    else filter = 'drop-shadow(0 2px 12px rgba(0,0,0,0.6))'  // original
+                  }
+                  return (
+                    <div style={{ width: 44, height: 44, overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <img src={src} alt="Casa del Pollo" style={{
+                        height: '100%', width: 'auto',
+                        filter,
+                        transform: isDynamic ? 'none' : 'translateX(-8px)',
+                      }} />
+                    </div>
+                  )
+                })()}
               </div>
             )}
           </div>
