@@ -42,13 +42,15 @@ export default function BannerPopup({ delay = 0 }) {
           onClick={() => setCerrado(true)}
           aria-label="Cerrar"
           style={{
-            position: 'absolute', top: 12, right: 12,
-            background: 'rgba(255,255,255,0.15)',
+            position: 'absolute', top: 10, right: 10,
+            background: 'white',
             border: 'none', borderRadius: '50%',
             width: 32, height: 32,
-            color: 'white', fontSize: 18, lineHeight: '32px',
+            color: '#1a1a1a', fontSize: 20, fontWeight: 700,
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 1,
+            zIndex: 2,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.35)',
+            lineHeight: 1,
           }}
         >
           ×

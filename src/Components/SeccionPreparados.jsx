@@ -276,10 +276,9 @@ export default function SeccionPreparados() {
     setCantidad(prev => Math.max(min, prev + delta * paso))
   }
 
-  const AVISO_DISP_KEY = 'aviso_disp_visto'
   const elegirRecogida = (modo) => {
     setRecogida(modo)
-    if (modo === 'cocinado' && !sessionStorage.getItem(AVISO_DISP_KEY)) {
+    if (modo === 'cocinado') {
       setMostrarAvisoDisp(true)
     }
   }
@@ -300,8 +299,8 @@ export default function SeccionPreparados() {
       tiempoEstimado,
       necesitaHora: true,
       imagen_url: recogida === 'cocinado'
-        ? (seleccion.image_cooked_url || seleccion.image_url)
-        : seleccion.image_url,
+        ? cookedCrop(seleccion.image_cooked_url || seleccion.image_url)
+        : rawCrop(seleccion.image_url),
       resumen: `${seleccion.name} × ${cantidad} pz${nota}${recogida === 'cocinado' ? ' · Cocinado ~20 min' : ''} · $${seleccion.price}/kg`,
     })
     marcarAgregado(seleccion.id)
@@ -321,7 +320,7 @@ export default function SeccionPreparados() {
   const agregarNugget = (p) => {
     const c = cantNuggets[p.id] || 0
     if (!c) return
-    agregarAlCarrito({ tipo: 'preparado', nombre: p.name, cantidad: c, precioKg: p.price, precio: p.price, necesitaHora: true, imagen_url: p.image_cooked_url || p.image_url, resumen: `${p.name} × ${c} pz · $${p.price}/kg` })
+    agregarAlCarrito({ tipo: 'preparado', nombre: p.name, cantidad: c, precioKg: p.price, precio: p.price, necesitaHora: true, imagen_url: rawCrop(p.image_url || p.image_cooked_url), resumen: `${p.name} × ${c} pz · $${p.price}/kg` })
     setCantNuggets(prev => ({ ...prev, [p.id]: 0 }))
     marcarAgregado(`nug-${p.id}`)
   }
@@ -337,7 +336,7 @@ export default function SeccionPreparados() {
     const c = cantEmpapeladas[flavor.id] || 0
     if (!c) return
     const nombreSabor = flavor.name.replace(/^milanesa\s*/i, '')
-    agregarAlCarrito({ tipo: 'milanesa', nombre: `Empapelada ${nombreSabor}`, cantidad: c, precioKg: flavor.price, precio: flavor.price, necesitaHora: true, imagen_url: flavor.image_cooked_url || flavor.image_url, resumen: `Empapelada ${nombreSabor} × ${c} pz · $${flavor.price}/kg` })
+    agregarAlCarrito({ tipo: 'milanesa', nombre: `Empapelada ${nombreSabor}`, cantidad: c, precioKg: flavor.price, precio: flavor.price, necesitaHora: true, imagen_url: rawCrop(flavor.image_url || flavor.image_cooked_url), resumen: `Empapelada ${nombreSabor} × ${c} pz · $${flavor.price}/kg` })
     setCantEmpapeladas(prev => ({ ...prev, [flavor.id]: 0 }))
     marcarAgregado(`emp-${flavor.id}`)
   }
@@ -352,7 +351,7 @@ export default function SeccionPreparados() {
   const agregarEmpanizada = (m) => {
     const c = cantEmpanizadas[m.id] || 0
     if (!c) return
-    agregarAlCarrito({ tipo: 'milanesa', nombre: m.name, cantidad: c, precioKg: m.price, precio: m.price, necesitaHora: true, imagen_url: m.image_cooked_url || m.image_url, resumen: `${m.name} × ${c} pz · $${m.price}/kg` })
+    agregarAlCarrito({ tipo: 'milanesa', nombre: m.name, cantidad: c, precioKg: m.price, precio: m.price, necesitaHora: true, imagen_url: rawCrop(m.image_url || m.image_cooked_url), resumen: `${m.name} × ${c} pz · $${m.price}/kg` })
     setCantEmpanizadas(prev => ({ ...prev, [m.id]: 0 }))
     marcarAgregado(`epz-${m.id}`)
   }

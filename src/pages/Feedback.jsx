@@ -78,16 +78,19 @@ export default function Feedback() {
   if (enviado) {
     return (
       <div style={estilos.wrapper}>
-        <div style={estilos.card}>
+        <div style={{ ...estilos.card, marginTop: 40 }}>
           <div style={{ fontSize: 64, marginBottom: 16 }}>🙏</div>
           <h2 style={estilos.titulo}>¡Gracias por tu opinión!</h2>
           <p style={estilos.sub}>
             Tu feedback es completamente anónimo y nos ayuda a mejorar la aplicación para todos.
           </p>
+          <div style={{ ...estilos.anonimo, textAlign: 'center', marginTop: 16 }}>
+            🔒 No almacenamos ningún dato personal.
+          </div>
           <button
             className="btn-primario"
             onClick={() => setVista('menu')}
-            style={{ marginTop: 24, width: '100%', maxWidth: 280 }}
+            style={{ marginTop: 24, width: '100%' }}
           >
             Hacer otro pedido
           </button>
@@ -187,23 +190,24 @@ const estilos = {
     alignItems: 'flex-start',
     justifyContent: 'center',
     padding: '32px 16px 48px',
-    background: 'var(--cafe, #2d1a0e)',
+    background: '#FFF8F0',
+    fontFamily: 'DM Sans, sans-serif',
   },
   card: {
     width: '100%',
     maxWidth: 480,
-    background: 'rgba(255,255,255,0.06)',
+    background: 'white',
     borderRadius: 24,
     padding: '32px 24px',
-    border: '1.5px solid rgba(255,255,255,0.1)',
-    backdropFilter: 'blur(10px)',
+    border: '1.5px solid #F3E8DC',
+    boxShadow: '0 4px 24px rgba(0,0,0,0.07)',
     textAlign: 'center',
   },
   betaBadge: {
     display: 'inline-block',
-    background: 'rgba(255,215,0,0.15)',
-    color: '#FFD700',
-    border: '1px solid rgba(255,215,0,0.35)',
+    background: '#FFFBEB',
+    color: '#92400E',
+    border: '1px solid #F59E0B55',
     borderRadius: 999,
     fontSize: 10,
     fontWeight: 800,
@@ -215,44 +219,44 @@ const estilos = {
     fontFamily: 'var(--font-title), sans-serif',
     fontWeight: 800,
     fontSize: 22,
-    color: 'var(--crema, #FAF8F4)',
+    color: '#1a1a1a',
     margin: '0 0 8px',
     letterSpacing: '-0.5px',
   },
   sub: {
     fontSize: 14,
-    color: 'rgba(255,255,255,0.6)',
+    color: '#666',
     margin: '0 0 12px',
     lineHeight: 1.5,
   },
   anonimo: {
-    background: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(255,255,255,0.1)',
+    background: '#FFFBEB',
+    border: '1px solid #F59E0B33',
     borderRadius: 10,
     padding: '10px 14px',
     fontSize: 12,
-    color: 'rgba(255,255,255,0.5)',
+    color: '#78350F',
     lineHeight: 1.5,
     margin: '8px 0 0',
     textAlign: 'left',
   },
   preguntaCard: {
-    background: 'rgba(255,255,255,0.05)',
+    background: '#FAFAFA',
     borderRadius: 14,
     padding: '16px',
-    border: '1px solid rgba(255,255,255,0.08)',
+    border: '1px solid #F0E8E0',
   },
   preguntaTexto: {
     fontSize: 14,
     fontWeight: 600,
-    color: 'rgba(255,255,255,0.85)',
+    color: '#333',
     marginBottom: 12,
     lineHeight: 1.4,
     textAlign: 'left',
   },
   ratingLabel: {
     fontSize: 12,
-    color: '#FFD700',
+    color: '#B45309',
     fontWeight: 700,
     marginTop: 6,
   },
@@ -260,19 +264,19 @@ const estilos = {
     display: 'block',
     fontSize: 13,
     fontWeight: 700,
-    color: 'rgba(255,255,255,0.75)',
+    color: '#444',
     marginBottom: 8,
     textAlign: 'left',
   },
   textarea: {
     width: '100%',
     minHeight: 100,
-    background: 'rgba(255,255,255,0.07)',
-    border: '1.5px solid rgba(255,255,255,0.15)',
+    background: '#FAFAFA',
+    border: '1.5px solid #E8DDD5',
     borderRadius: 12,
     padding: '12px 14px',
     fontSize: 14,
-    color: 'rgba(255,255,255,0.85)',
+    color: '#333',
     fontFamily: 'DM Sans, sans-serif',
     resize: 'vertical',
     outline: 'none',
@@ -290,12 +294,13 @@ const estilos = {
     fontWeight: 700,
     fontFamily: 'DM Sans, sans-serif',
     transition: 'opacity 0.2s',
+    cursor: 'pointer',
   },
   linkBtn: {
     marginTop: 12,
     background: 'none',
     border: 'none',
-    color: 'rgba(255,255,255,0.4)',
+    color: '#bbb',
     fontSize: 13,
     cursor: 'pointer',
     fontFamily: 'DM Sans, sans-serif',
