@@ -6,81 +6,146 @@ import AvisoDisponibilidad from './AvisoDisponibilidad.jsx'
 // Milanesas simples (sin empanado ni empapelado)
 const ORDEN_SIMPLES = ['natural', 'aplanada']
 
-// Imágenes de grupo — cocinado para carruseles/cards de grupo
+// Imágenes de grupo
 const CDN = 'https://res.cloudinary.com/do4juvxio/image/upload'
 const COOK_HALF = (f) => `${CDN}/c_crop,fl_relative,x_0.50,y_0.00,w_0.50,h_1.00/ar_4:3,c_fill,w_600/${f}`
-const EMPAP_IMG        = COOK_HALF('marinados/empapeladas.png')
-const EMPANIZADAS_IMG  = COOK_HALF('milanesas/empanadas.png')
-const NUGGETS_IMG      = `${CDN}/c_fill,w_600/preparados/nuggets_grupo.png`
+const EMPAP_IMG       = COOK_HALF('marinados/empapeladas.png')
+const EMPANIZADAS_IMG = COOK_HALF('milanesas/empanadas.png')
+const NUGGETS_IMG     = `${CDN}/c_fill,w_600/preparados/nuggets_grupo.png`
 
 const esSimpleMil = (p) => {
   const n = p.name.toLowerCase()
   return ORDEN_SIMPLES.some(k => n.includes(k)) && !n.includes('empapelada')
 }
-
 const esEmpanizada = (p) => {
   const n = p.name.toLowerCase()
   return (n.includes('empanizada') || n.includes('parmesano')) && !n.includes('empapelada')
 }
-
 const esNugget = (p) =>
   ['nugget', 'tender', 'trozo'].some(k => p.name.toLowerCase().includes(k))
+const esAlbondiga = (nombre) =>
+  nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').includes('albondiga')
 
-/* ── Fila de producto individual ── */
-function FilaProducto({ nombre, precio, nota, imagen, imagenCocinada, sePuedeCocinar, recogida, onRecogida, cantidad, onCambiar, onAgregar, agregado, idKey }) {
-  const showCooked = !!(sePuedeCocinar && recogida === 'cocinado')
-  const thumb = imagen
-    ? (showCooked && (imagenCocinada || imagen) ? cookedCrop(imagenCocinada || imagen) : rawCrop(imagen))
-    : null
+/* ── Imagen con transición crudo ↔ cocinado (igual que en Marinados) ── */
+function PreparadoImg({ imageUrl, imageCookedUrl, isSelected, recogida }) {
+  const rawSrc    = imageUrl ? rawCrop(imageUrl) : null
+  const cookedSrc = (imageCookedUrl || imageUrl) ? cookedCrop(imageCookedUrl || imageUrl) : null
+  const showCooked = !!(isSelected && recogida === 'cocinado' && cookedSrc)
+  const size = isSelected ? 90 : 72
+  const dur  = '0.38s cubic-bezier(.34,1.56,.64,1)'
+
+  const imgStyle = (visible) => ({
+    position: 'absolute', inset: 0, width: '100%', height: '100%',
+    objectFit: 'cover', transition: 'opacity 0.4s ease',
+    opacity: visible ? 1 : 0,
+  })
+
+  if (!rawSrc && !cookedSrc) return (
+    <div style={{
+      width: size, height: size, borderRadius: 14, flexShrink: 0, order: -1,
+      background: 'var(--crema-oscura)', display: 'flex', alignItems: 'center',
+      justifyContent: 'center', fontSize: 28,
+      transition: `width ${dur}, height ${dur}`,
+    }}>🍗</div>
+  )
+
   return (
-    <div className="producto-row" style={{ flexWrap: 'wrap', alignItems: 'flex-start' }}>
-      {thumb
-        ? <img src={thumb} alt="" className="producto-img" style={{ transition: 'opacity 0.3s' }} />
-        : <div className="producto-img-placeholder">🍗</div>
-      }
-      <div className="producto-info" style={{ flex: 1, minWidth: 0 }}>
-        <div className="producto-nombre" style={{ lineHeight: 1.25 }}>{nombre}</div>
-        <div className="producto-precio">
-          ${precio}/kg
-          {nota && <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--rojo)' }}>{nota}</span>}
+    <div style={{
+      position: 'relative', width: size, height: size, borderRadius: 14,
+      flexShrink: 0, order: -1, overflow: 'hidden',
+      transition: `width ${dur}, height ${dur}`,
+      boxShadow: isSelected ? '0 4px 16px rgba(0,0,0,0.18)' : 'none',
+    }}>
+      {rawSrc    && <img src={rawSrc}    alt="" style={imgStyle(!showCooked)} />}
+      {cookedSrc && <img src={cookedSrc} alt="" style={imgStyle(showCooked)}  />}
+    </div>
+  )
+}
+
+/* ── Tarjeta de producto individual (preparados y milanesas simples) ── */
+function CardProducto({ producto, seleccion, cantidad, recogida, onSeleccionar, onCambiar, onAgregar, onRecogida, agregado }) {
+  const isActive = seleccion?.id === producto.id
+  const esAlb = esAlbondiga(producto.name)
+  const min = esAlb ? 10 : 1
+
+  return (
+    <div>
+      <button
+        className={`card-marinado ${isActive ? 'card-marinado-activo' : ''}`}
+        onClick={() => onSeleccionar(producto)}
+      >
+        <PreparadoImg
+          imageUrl={producto.image_url}
+          imageCookedUrl={producto.image_cooked_url}
+          isSelected={isActive}
+          recogida={recogida}
+        />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="producto-nombre">{producto.name}</div>
+          <div className="producto-precio">${producto.price}/kg</div>
+          {esAlb && (
+            <div style={{ fontSize: 11, color: 'var(--rojo)', marginTop: 2 }}>±10 pz · charola 20</div>
+          )}
         </div>
-        {sePuedeCocinar && cantidad > 0 && (
-          <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
-            <button
-              onClick={() => onRecogida?.('crudo')}
-              style={{
-                padding: '4px 10px', borderRadius: 999, fontSize: 11, fontWeight: 700, cursor: 'pointer', border: '1.5px solid',
-                background: recogida === 'crudo' ? 'var(--rojo)' : 'transparent',
-                color: recogida === 'crudo' ? '#fff' : 'var(--texto-suave)',
-                borderColor: recogida === 'crudo' ? 'var(--rojo)' : 'var(--gris)',
-              }}
-            >📦 Crudo</button>
-            <button
-              onClick={() => onRecogida?.('cocinado')}
-              style={{
-                padding: '4px 10px', borderRadius: 999, fontSize: 11, fontWeight: 700, cursor: 'pointer', border: '1.5px solid',
-                background: recogida === 'cocinado' ? 'var(--rojo)' : 'transparent',
-                color: recogida === 'cocinado' ? '#fff' : 'var(--texto-suave)',
-                borderColor: recogida === 'cocinado' ? 'var(--rojo)' : 'var(--gris)',
-              }}
-            >🔥 Cocinado</button>
+        {isActive && <div className="card-check">✓</div>}
+      </button>
+
+      {isActive && (
+        <div className="configurador-card slide-up" style={{ marginTop: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0 }}>
+
+          {/* Cantidad */}
+          <div>
+            <label className="config-label">Cantidad</label>
+            <div className="cantidad-ctrl">
+              <button className="cantidad-btn" onClick={() => onCambiar(-1)} disabled={cantidad <= min}>−</button>
+              <span className="cantidad-num" style={{ fontSize: 20, minWidth: 64, textAlign: 'center' }}>
+                {cantidad} pz
+              </span>
+              <button className="cantidad-btn" onClick={() => onCambiar(1)}>+</button>
+            </div>
+            {esAlb && (
+              <div style={{ fontSize: 12, color: 'var(--texto-suave)', marginTop: 6 }}>
+                Intervalos de 10 pz · ~{Math.round(cantidad / 20)} charola{cantidad !== 20 ? 's' : ''}
+              </div>
+            )}
           </div>
-        )}
-      </div>
-      {cantidad === 0 ? (
-        <button className="btn-add" onClick={() => onCambiar(1)}>+</button>
-      ) : (
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <div className="qty-pill">
-            <button className="qty-pill-btn" onClick={() => onCambiar(-1)} disabled={cantidad <= 1}>−</button>
-            <span className="qty-pill-num">{cantidad}</span>
-            <button className="qty-pill-btn" onClick={() => onCambiar(1)}>+</button>
-          </div>
+
+          {/* ¿Cómo lo quieres? — igual que en Marinados */}
+          {producto.se_puede_cocinar && (
+            <div>
+              <label className="config-label">¿Cómo lo quieres?</label>
+              <div className="recogida-opts">
+                <button
+                  className={`recogida-opt ${recogida === 'crudo' ? 'recogida-activo' : ''}`}
+                  onClick={() => onRecogida('crudo')}
+                >
+                  <span style={{ fontSize: 20 }}>📦</span>
+                  <div>
+                    <div className="recogida-titulo">Recoger crudo</div>
+                    <div className="recogida-sub">Listo para llevar</div>
+                  </div>
+                </button>
+                <button
+                  className={`recogida-opt ${recogida === 'cocinado' ? 'recogida-activo' : ''}`}
+                  onClick={() => onRecogida('cocinado')}
+                >
+                  <span style={{ fontSize: 20 }}>🔥</span>
+                  <div>
+                    <div className="recogida-titulo">Recoger cocinado</div>
+                    <div className="recogida-sub">Listo en ~20 min</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
+
           <button
-            className={`btn-confirm ${agregado === idKey ? 'confirmado' : ''}`}
+            className={`btn-primario ${agregado === producto.id ? 'btn-agregado' : ''}`}
             onClick={onAgregar}
           >
-            {agregado === idKey ? '✓' : 'Agregar'}
+            {agregado === producto.id
+              ? '✓ Agregado'
+              : `Agregar ${cantidad} pz de ${producto.name}`}
           </button>
         </div>
       )}
@@ -88,7 +153,7 @@ function FilaProducto({ nombre, precio, nota, imagen, imagenCocinada, sePuedeCoc
   )
 }
 
-/* ── Fila expandible (grupo) — Empapeladas o Nuggets ── */
+/* ── Fila expandible de grupo (Nuggets / Empanizadas / Empapeladas) ── */
 function GrupoExpandible({ titulo, precio, imagen, emoji, conteo, open, onToggle, children }) {
   return (
     <div>
@@ -109,9 +174,7 @@ function GrupoExpandible({ titulo, precio, imagen, emoji, conteo, open, onToggle
         </div>
         {open
           ? <div className="card-check">✓</div>
-          : <div style={{ background: 'var(--rojo)', color: '#fff', borderRadius: 999, padding: '5px 14px', fontSize: 12, fontWeight: 700, flexShrink: 0, letterSpacing: 0.2 }}>
-              Elegir
-            </div>
+          : <div style={{ background: 'var(--rojo)', color: '#fff', borderRadius: 999, padding: '5px 14px', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>Elegir</div>
         }
       </button>
       {open && (
@@ -123,7 +186,7 @@ function GrupoExpandible({ titulo, precio, imagen, emoji, conteo, open, onToggle
   )
 }
 
-/* ── Fila de variante dentro del grupo expandido ── */
+/* ── Variante dentro del grupo expandido ── */
 function FilaVariante({ nombre, cantidad, onCambiar, onAgregar, agregado, idKey }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'var(--card-bg)', borderRadius: 14, border: '1px solid rgba(0,0,0,0.05)' }}>
@@ -152,18 +215,23 @@ function FilaVariante({ nombre, cantidad, onCambiar, onAgregar, agregado, idKey 
 /* ════════════════════════════════════════════════ */
 export default function SeccionPreparados() {
   const { agregarAlCarrito, productos } = useApp()
-  const [cantidades, setCantidades]             = useState({})
-  const [cantSimples, setCantSimples]           = useState({})
+
+  // Un solo producto activo a la vez (mismo patrón que Marinados)
+  const [seleccion, setSeleccion]   = useState(null)
+  const [cantidad, setCantidad]     = useState(1)
+  const [recogida, setRecogida]     = useState('crudo')
+  const [mostrarAvisoDisp, setMostrarAvisoDisp] = useState(false)
+  const [agregado, setAgregado]     = useState(null)
+
+  // Estado de grupos expandibles
   const [cantEmpapeladas, setCantEmpapeladas]   = useState({})
   const [cantEmpanizadas, setCantEmpanizadas]   = useState({})
   const [cantNuggets, setCantNuggets]           = useState({})
   const [empapOpen, setEmpapOpen]               = useState(false)
   const [empanizadasOpen, setEmpanizadasOpen]   = useState(false)
   const [nuggetsOpen, setNuggetsOpen]           = useState(false)
-  const [agregado, setAgregado]                 = useState(null)
-  const [recogidaMap, setRecogidaMap]           = useState({})  // { [id]: 'crudo' | 'cocinado' }
-  const [mostrarAvisoDisp, setMostrarAvisoDisp] = useState(false)
 
+  // Filtros de productos
   const todoPreparado = productos.filter(p => p.category_name === 'Preparados' && p.available !== false)
   const productosNormales = todoPreparado.filter(p => !esNugget(p))
   const nuggets = todoPreparado.filter(esNugget)
@@ -177,105 +245,66 @@ export default function SeccionPreparados() {
       const bi = ORDEN_SIMPLES.findIndex(k => b.name.toLowerCase().includes(k))
       return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi)
     })
-  const milEmpanizadas  = milanesas.filter(esEmpanizada)
-  const milEmpapeladas  = milanesas.filter(p => !esSimpleMil(p) && !esEmpanizada(p))
-  const precioEmpanizada  = milEmpanizadas[0]?.price ?? 225
-  const precioEmpapelada  = milEmpapeladas[0]?.price ?? 230
-
-  const esAlbondiga = (nombre) =>
-    nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').includes('albondiga')
+  const milEmpanizadas = milanesas.filter(esEmpanizada)
+  const milEmpapeladas = milanesas.filter(p => !esSimpleMil(p) && !esEmpanizada(p))
+  const precioEmpanizada = milEmpanizadas[0]?.price ?? 225
+  const precioEmpapelada = milEmpapeladas[0]?.price ?? 230
 
   const marcarAgregado = (key) => {
     setAgregado(key)
     setTimeout(() => setAgregado(null), 1200)
   }
 
-  /* ── Handler modo recogida para preparados cocinados ── */
-  const handleRecogida = (id, modo, sePuedeCocinar) => {
-    if (!sePuedeCocinar) return
-    setRecogidaMap(prev => ({ ...prev, [id]: modo }))
+  /* ── Handlers del producto activo ── */
+  const seleccionar = (producto) => {
+    if (seleccion?.id === producto.id) {
+      // Deseleccionar
+      setSeleccion(null)
+      setCantidad(1)
+      setRecogida('crudo')
+    } else {
+      setSeleccion(producto)
+      setCantidad(esAlbondiga(producto.name) ? 10 : 1)
+      setRecogida('crudo')
+    }
+  }
+
+  const cambiarCantidad = (delta) => {
+    if (!seleccion) return
+    const paso = esAlbondiga(seleccion.name) ? 10 : 1
+    const min  = esAlbondiga(seleccion.name) ? 10 : 1
+    setCantidad(prev => Math.max(min, prev + delta * paso))
+  }
+
+  const elegirRecogida = (modo) => {
+    setRecogida(modo)
     if (modo === 'cocinado') setMostrarAvisoDisp(true)
   }
 
-  /* ── Handlers preparados normales ── */
-  const cambiarPreparado = (id, nombre, delta) => {
-    const paso = esAlbondiga(nombre) ? 10 : 1
-    const min = esAlbondiga(nombre) ? 10 : 1
-    setCantidades(prev => {
-      const actual = prev[id] || 0
-      if (delta < 0 && actual <= min) return { ...prev, [id]: 0 }
-      return { ...prev, [id]: actual === 0 ? min : Math.max(0, actual + delta * paso) }
-    })
-  }
-
-  const agregarPreparado = (p) => {
-    const cantidad = cantidades[p.id] || 0
-    if (!cantidad) return
-    const recogida = recogidaMap[p.id] || 'crudo'
-    const nota = esAlbondiga(p.name) ? ` (~${Math.round(cantidad / 20)} charola${cantidad >= 20 ? 's' : ''})` : ''
-    const tiempoEstimado = (p.se_puede_cocinar && recogida === 'cocinado') ? 20 : null
+  const agregarActivo = () => {
+    if (!seleccion) return
+    const nota = esAlbondiga(seleccion.name)
+      ? ` (~${Math.round(cantidad / 20)} charola${cantidad >= 20 ? 's' : ''})`
+      : ''
+    const tiempoEstimado = (seleccion.se_puede_cocinar && recogida === 'cocinado') ? 20 : null
     agregarAlCarrito({
-      tipo: 'preparado', nombre: p.name, cantidad,
-      precioKg: p.price, precio: p.price,
-      recogida: p.se_puede_cocinar ? recogida : undefined,
+      tipo: 'preparado',
+      nombre: seleccion.name,
+      cantidad,
+      precioKg: seleccion.price,
+      precio: seleccion.price,
+      recogida: seleccion.se_puede_cocinar ? recogida : undefined,
       tiempoEstimado,
       necesitaHora: true,
-      resumen: `${p.name} × ${cantidad} pz${nota}${recogida === 'cocinado' ? ' · Cocinado ~20 min' : ''} · $${p.price}/kg`
+      resumen: `${seleccion.name} × ${cantidad} pz${nota}${recogida === 'cocinado' ? ' · Cocinado ~20 min' : ''} · $${seleccion.price}/kg`,
     })
-    setCantidades(prev => ({ ...prev, [p.id]: 0 }))
-    marcarAgregado(p.id)
+    marcarAgregado(seleccion.id)
+    setSeleccion(null)
+    setCantidad(1)
+    setRecogida('crudo')
   }
 
-  /* ── Handlers milanesas simples ── */
-  const cambiarSimple = (id, delta) =>
-    setCantSimples(prev => {
-      const actual = prev[id] || 0
-      if (delta < 0 && actual <= 1) return { ...prev, [id]: 0 }
-      return { ...prev, [id]: actual === 0 ? 1 : Math.max(0, actual + delta) }
-    })
-
-  const agregarSimple = (m) => {
-    const cantidad = cantSimples[m.id] || 0
-    if (!cantidad) return
-    agregarAlCarrito({ tipo: 'milanesa', nombre: m.name, cantidad, precioKg: m.price, precio: m.price, necesitaHora: true, resumen: `${m.name} × ${cantidad} pz · $${m.price}/kg` })
-    setCantSimples(prev => ({ ...prev, [m.id]: 0 }))
-    marcarAgregado(m.id)
-  }
-
-  /* ── Handlers empapeladas ── */
-  const cambiarEmpap = (id, delta) =>
-    setCantEmpapeladas(prev => {
-      const actual = prev[id] || 0
-      if (delta < 0 && actual <= 1) return { ...prev, [id]: 0 }
-      return { ...prev, [id]: actual === 0 ? 1 : Math.max(0, actual + delta) }
-    })
-
-  const agregarEmpap = (flavor) => {
-    const cantidad = cantEmpapeladas[flavor.id] || 0
-    if (!cantidad) return
-    const nombreSabor = flavor.name.replace(/^milanesa\s*/i, '')
-    agregarAlCarrito({ tipo: 'milanesa', nombre: `Empapelada ${nombreSabor}`, cantidad, precioKg: flavor.price, precio: flavor.price, necesitaHora: true, resumen: `Empapelada ${nombreSabor} × ${cantidad} pz · $${flavor.price}/kg` })
-    setCantEmpapeladas(prev => ({ ...prev, [flavor.id]: 0 }))
-    marcarAgregado(`emp-${flavor.id}`)
-  }
-
-  /* ── Handlers empanizadas ── */
-  const cambiarEmpanizada = (id, delta) =>
-    setCantEmpanizadas(prev => {
-      const actual = prev[id] || 0
-      if (delta < 0 && actual <= 1) return { ...prev, [id]: 0 }
-      return { ...prev, [id]: actual === 0 ? 1 : Math.max(0, actual + delta) }
-    })
-
-  const agregarEmpanizada = (m) => {
-    const cantidad = cantEmpanizadas[m.id] || 0
-    if (!cantidad) return
-    agregarAlCarrito({ tipo: 'milanesa', nombre: m.name, cantidad, precioKg: m.price, precio: m.price, necesitaHora: true, resumen: `${m.name} × ${cantidad} pz · $${m.price}/kg` })
-    setCantEmpanizadas(prev => ({ ...prev, [m.id]: 0 }))
-    marcarAgregado(`epz-${m.id}`)
-  }
-
-  /* ── Handlers nuggets ── */
+  /* ── Handlers de grupos ── */
   const cambiarNugget = (id, delta) =>
     setCantNuggets(prev => {
       const actual = prev[id] || 0
@@ -284,16 +313,48 @@ export default function SeccionPreparados() {
     })
 
   const agregarNugget = (p) => {
-    const cantidad = cantNuggets[p.id] || 0
-    if (!cantidad) return
-    agregarAlCarrito({ tipo: 'preparado', nombre: p.name, cantidad, precioKg: p.price, precio: p.price, necesitaHora: true, resumen: `${p.name} × ${cantidad} pz · $${p.price}/kg` })
+    const c = cantNuggets[p.id] || 0
+    if (!c) return
+    agregarAlCarrito({ tipo: 'preparado', nombre: p.name, cantidad: c, precioKg: p.price, precio: p.price, necesitaHora: true, resumen: `${p.name} × ${c} pz · $${p.price}/kg` })
     setCantNuggets(prev => ({ ...prev, [p.id]: 0 }))
     marcarAgregado(`nug-${p.id}`)
+  }
+
+  const cambiarEmpap = (id, delta) =>
+    setCantEmpapeladas(prev => {
+      const actual = prev[id] || 0
+      if (delta < 0 && actual <= 1) return { ...prev, [id]: 0 }
+      return { ...prev, [id]: actual === 0 ? 1 : Math.max(0, actual + delta) }
+    })
+
+  const agregarEmpap = (flavor) => {
+    const c = cantEmpapeladas[flavor.id] || 0
+    if (!c) return
+    const nombreSabor = flavor.name.replace(/^milanesa\s*/i, '')
+    agregarAlCarrito({ tipo: 'milanesa', nombre: `Empapelada ${nombreSabor}`, cantidad: c, precioKg: flavor.price, precio: flavor.price, necesitaHora: true, resumen: `Empapelada ${nombreSabor} × ${c} pz · $${flavor.price}/kg` })
+    setCantEmpapeladas(prev => ({ ...prev, [flavor.id]: 0 }))
+    marcarAgregado(`emp-${flavor.id}`)
+  }
+
+  const cambiarEmpanizada = (id, delta) =>
+    setCantEmpanizadas(prev => {
+      const actual = prev[id] || 0
+      if (delta < 0 && actual <= 1) return { ...prev, [id]: 0 }
+      return { ...prev, [id]: actual === 0 ? 1 : Math.max(0, actual + delta) }
+    })
+
+  const agregarEmpanizada = (m) => {
+    const c = cantEmpanizadas[m.id] || 0
+    if (!c) return
+    agregarAlCarrito({ tipo: 'milanesa', nombre: m.name, cantidad: c, precioKg: m.price, precio: m.price, necesitaHora: true, resumen: `${m.name} × ${c} pz · $${m.price}/kg` })
+    setCantEmpanizadas(prev => ({ ...prev, [m.id]: 0 }))
+    marcarAgregado(`epz-${m.id}`)
   }
 
   return (
     <div>
       {mostrarAvisoDisp && <AvisoDisponibilidad onCerrar={() => setMostrarAvisoDisp(false)} />}
+
       <div className="seccion-titulo">Preparados y Milanesas</div>
       <p className="seccion-desc">Por pieza · precio por kg al pesar en el local</p>
 
@@ -302,23 +363,23 @@ export default function SeccionPreparados() {
         <div className="subseccion-menu">
           <div className="config-label" style={{ marginBottom: 12 }}>Preparados</div>
           {productosNormales.map(p => (
-            <FilaProducto
-              key={p.id} idKey={p.id}
-              nombre={p.name} precio={p.price} imagen={p.image_url} imagenCocinada={p.image_cooked_url}
-              sePuedeCocinar={!!p.se_puede_cocinar}
-              recogida={recogidaMap[p.id] || 'crudo'}
-              onRecogida={modo => handleRecogida(p.id, modo, p.se_puede_cocinar)}
-              nota={esAlbondiga(p.name) ? '±10 pz · charola 20' : null}
-              cantidad={cantidades[p.id] || 0}
-              onCambiar={d => cambiarPreparado(p.id, p.name, d)}
-              onAgregar={() => agregarPreparado(p)}
+            <CardProducto
+              key={p.id}
+              producto={p}
+              seleccion={seleccion}
+              cantidad={cantidad}
+              recogida={recogida}
+              onSeleccionar={seleccionar}
+              onCambiar={cambiarCantidad}
+              onAgregar={agregarActivo}
+              onRecogida={elegirRecogida}
               agregado={agregado}
             />
           ))}
         </div>
       )}
 
-      {/* ── Nuggets (grupo expandible) ── */}
+      {/* ── Nuggets ── */}
       {nuggets.length > 0 && (
         <div className="subseccion-menu">
           <GrupoExpandible
@@ -342,17 +403,21 @@ export default function SeccionPreparados() {
       )}
 
       {/* ── Milanesas ── */}
-      {(milSimples.length > 0 || milEmpapeladas.length > 0) && (
+      {(milSimples.length > 0 || milEmpanizadas.length > 0 || milEmpapeladas.length > 0) && (
         <div className="subseccion-menu">
           <div className="config-label" style={{ marginBottom: 12 }}>Milanesas</div>
 
           {milSimples.map(m => (
-            <FilaProducto
-              key={m.id} idKey={m.id}
-              nombre={m.name} precio={m.price} imagen={m.image_url} imagenCocinada={m.image_cooked_url}
-              cantidad={cantSimples[m.id] || 0}
-              onCambiar={d => cambiarSimple(m.id, d)}
-              onAgregar={() => agregarSimple(m)}
+            <CardProducto
+              key={m.id}
+              producto={m}
+              seleccion={seleccion}
+              cantidad={cantidad}
+              recogida={recogida}
+              onSeleccionar={seleccionar}
+              onCambiar={cambiarCantidad}
+              onAgregar={agregarActivo}
+              onRecogida={elegirRecogida}
               agregado={agregado}
             />
           ))}
