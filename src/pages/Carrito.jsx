@@ -35,8 +35,15 @@ function precioItem(item) {
   return precio > 0 ? `$${precio.toFixed(2)}` : 'Al pesar'
 }
 
+function getLogoFilter(mode, custom) {
+  if (mode === 'blanco') return 'brightness(0) invert(1)'
+  if (mode === 'negro')  return 'brightness(0)'
+  if (mode === 'personalizado') return custom || 'none'
+  return 'none'
+}
+
 export default function Carrito() {
-  const { carrito, eliminarDelCarrito, confirmarPedido, setVista, slots, totalItems } = useApp()
+  const { carrito, eliminarDelCarrito, confirmarPedido, setVista, slots, totalItems, diseno } = useApp()
   const [horaSeleccionada, setHoraSeleccionada] = useState(null)
   const [nombre, setNombre] = useState('')
   const [telefono, setTelefono] = useState('')
@@ -74,15 +81,36 @@ export default function Carrito() {
   return (
     <div className="app-wrapper">
       <header className="header">
-        <div className="header-inner">
+        <div className="header-inner" style={{ position: 'relative' }}>
           <button
             onClick={() => setVista('menu')}
             style={{ background: 'none', border: 'none', color: 'var(--rojo)', fontSize: 14, fontFamily: 'var(--font-body), sans-serif', cursor: 'pointer', fontWeight: 600 }}
           >
             ← Seguir pidiendo
           </button>
-          <div className="logo-nombre" style={{ fontSize: 16 }}>
-            Tu pedido ({totalItems})
+
+          {/* Logo centrado */}
+          {(diseno?.logo_icon_url || diseno?.logo_url) ? (
+            <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none' }}>
+              <img
+                src={diseno.logo_icon_url || diseno.logo_url}
+                alt="Casa del Pollo"
+                style={{
+                  height: 28,
+                  maxWidth: 110,
+                  objectFit: 'contain',
+                  filter: getLogoFilter(diseno.logo_color_mode, diseno.logo_custom_filter),
+                }}
+              />
+            </div>
+          ) : (
+            <div className="logo-nombre" style={{ fontSize: 15, position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+              Mi pedido
+            </div>
+          )}
+
+          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--rojo)', fontFamily: 'var(--font-body), sans-serif' }}>
+            {totalItems} {totalItems === 1 ? 'item' : 'items'}
           </div>
         </div>
       </header>

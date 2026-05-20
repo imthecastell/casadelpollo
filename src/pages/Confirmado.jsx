@@ -2,8 +2,15 @@ import { useApp } from '../data/AppContext.jsx'
 import { useRef, useEffect, useState } from 'react'
 import BannerPopup from '../Components/BannerPopup.jsx'
 
+function getLogoFilter(mode, custom) {
+  if (mode === 'blanco') return 'brightness(0) invert(1)'
+  if (mode === 'negro')  return 'brightness(0)'
+  if (mode === 'personalizado') return custom || 'none'
+  return 'none'
+}
+
 export default function Confirmado() {
-  const { setVista, sucursalActiva, ultimoNumeroOrden, ultimaHora } = useApp()
+  const { setVista, sucursalActiva, ultimoNumeroOrden, ultimaHora, diseno } = useApp()
   const reciboRef = useRef(null)
   const [cuenta, setCuenta] = useState(12)
 
@@ -79,6 +86,24 @@ export default function Confirmado() {
         </p>
       </div>
 
+      {/* ── Logo de marca ── */}
+      {(diseno?.logo_original_url || diseno?.logo_url) && (
+        <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'center' }}>
+          <img
+            src={diseno.logo_original_url || diseno.logo_url}
+            alt="Casa del Pollo"
+            style={{
+              height: 48,
+              maxWidth: 200,
+              objectFit: 'contain',
+              filter: diseno.logo_original_url
+                ? 'none'
+                : getLogoFilter(diseno.logo_color_mode, diseno.logo_custom_filter),
+            }}
+          />
+        </div>
+      )}
+
       {/* ── Confirmación ── */}
       <div style={{ fontSize: 56, marginBottom: 8 }}>🎉</div>
       <div style={{
@@ -101,15 +126,38 @@ export default function Confirmado() {
         boxShadow: '0 4px 24px rgba(0,0,0,0.07)',
         textAlign: 'center',
       }}>
-        <div style={{
-          fontSize: 11, fontWeight: 700, letterSpacing: '1px',
-          textTransform: 'uppercase', color: '#aaa', marginBottom: 4,
-        }}>
-          Casa del Pollo
-        </div>
-        <div style={{ fontSize: 13, color: '#999', marginBottom: 20 }}>
-          Sucursal {sucursalActiva?.name || sucursalActiva?.nombre}
-        </div>
+        {/* Encabezado del recibo con logo */}
+        {(diseno?.logo_original_url || diseno?.logo_url || diseno?.logo_icon_url) ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 16, gap: 4 }}>
+            <img
+              src={diseno.logo_original_url || diseno.logo_url}
+              alt="Casa del Pollo"
+              style={{
+                height: 36,
+                maxWidth: 160,
+                objectFit: 'contain',
+                filter: diseno.logo_original_url
+                  ? 'none'
+                  : getLogoFilter(diseno.logo_color_mode, diseno.logo_custom_filter),
+              }}
+            />
+            <div style={{ fontSize: 12, color: '#999' }}>
+              Sucursal {sucursalActiva?.name || sucursalActiva?.nombre}
+            </div>
+          </div>
+        ) : (
+          <>
+            <div style={{
+              fontSize: 11, fontWeight: 700, letterSpacing: '1px',
+              textTransform: 'uppercase', color: '#aaa', marginBottom: 4,
+            }}>
+              Casa del Pollo
+            </div>
+            <div style={{ fontSize: 13, color: '#999', marginBottom: 20 }}>
+              Sucursal {sucursalActiva?.name || sucursalActiva?.nombre}
+            </div>
+          </>
+        )}
 
         {ultimoNumeroOrden && (
           <div style={{

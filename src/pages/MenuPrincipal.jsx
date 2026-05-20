@@ -157,6 +157,13 @@ function calcEstaAbierto(schedule) {
   return min >= hAp * 60 + mAp && min < hCi * 60 + mCi
 }
 
+function getLogoFilter(mode, custom) {
+  if (mode === 'blanco') return 'brightness(0) invert(1)'
+  if (mode === 'negro')  return 'brightness(0)'
+  if (mode === 'personalizado') return custom || 'none'
+  return 'none'
+}
+
 export default function MenuPrincipal() {
   const { sucursalActiva, setVista, totalItems, bannersMenu = [], schedule, diseno } = useApp()
   const estaAbierto = calcEstaAbierto(schedule)
@@ -204,7 +211,7 @@ export default function MenuPrincipal() {
         boxShadow:    mostrarAtajos ? 'none' : undefined,
         borderBottom: mostrarAtajos ? 'none' : undefined,
       }}>
-        <div className="header-inner">
+        <div className="header-inner" style={{ position: 'relative' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {!mostrarAtajos ? (
               <button onClick={volver} style={{ background: 'none', border: 'none', color: 'var(--rojo)', fontSize: 14, fontFamily: 'var(--font-body),sans-serif', cursor: 'pointer', fontWeight: 600, padding: 0 }}>
@@ -237,6 +244,23 @@ export default function MenuPrincipal() {
               </div>
             )}
           </div>
+
+          {/* Logo centrado en vista de sección (cuando mostrarAtajos=false) */}
+          {!mostrarAtajos && (diseno?.logo_icon_url || diseno?.logo_url) && (
+            <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none' }}>
+              <img
+                src={diseno.logo_icon_url || diseno.logo_url}
+                alt="Casa del Pollo"
+                style={{
+                  height: 30,
+                  maxWidth: 120,
+                  objectFit: 'contain',
+                  filter: getLogoFilter(diseno.logo_color_mode, diseno.logo_custom_filter),
+                }}
+              />
+            </div>
+          )}
+
           <button className="carrito-btn" onClick={() => setVista('carrito')}>
             🛒{totalItems > 0 && <span className="carrito-badge">{totalItems}</span>}
             Mi pedido
