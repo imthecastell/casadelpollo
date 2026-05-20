@@ -106,6 +106,9 @@ export default function SeccionMarinados() {
       necesitaHora: true,
       precio: seleccion.price,
       precioTotal,
+      imagen_url: recogida === 'cocinado'
+        ? (seleccion.image_cooked_url || seleccion.image_url)
+        : seleccion.image_url,
       resumen: `${seleccion.name} ${gramos}g · ${recogida === 'crudo' ? 'Crudo' : `Cocinado ~${tiempoEstimado} min`} · $${precioTotal.toFixed(2)}`
     })
     setAgregado(true)

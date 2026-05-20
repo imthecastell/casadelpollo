@@ -102,11 +102,12 @@ export default function Carrito() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
               {carrito.map(item => (
                 <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'var(--card-bg)', borderRadius: 'var(--radio)', padding: '14px 16px', boxShadow: 'var(--sombra)' }}>
-                  {item.tipo === 'bowl' && item.imagen_referencia ? (
+                  {(item.imagen_url || item.imagen_referencia) ? (
                     <div style={{ width: 44, height: 44, borderRadius: 10, flexShrink: 0, overflow: 'hidden', background: 'var(--crema-oscura)' }}>
                       <img
-                        src={item.imagen_referencia}
-                        alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        src={item.imagen_url || item.imagen_referencia}
+                        alt=""
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         onError={e => { e.target.style.display = 'none' }}
                       />
                     </div>

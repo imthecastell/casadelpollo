@@ -28,6 +28,7 @@ export default function SeccionFresco() {
       cantidad,
       precioKg: producto.price,
       precio: producto.price,
+      imagen_url: producto.image_url,
       resumen: `${producto.name} × ${cantidad} pz · $${producto.price}/kg (se pesa al entregar)`
     })
     setCantidades(prev => ({ ...prev, [producto.id]: 0 }))
