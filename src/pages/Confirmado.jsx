@@ -38,141 +38,122 @@ export default function Confirmado() {
     document.head.appendChild(script)
   }
 
+  const logoSrc   = diseno?.logo_original_url || diseno?.logo_url
+  const logoFilter = diseno?.logo_original_url
+    ? 'none'
+    : getLogoFilter(diseno?.logo_color_mode, diseno?.logo_custom_filter)
+
   return (
     <>
     <BannerPopup delay={2500} />
     <div style={{
-      minHeight: '100vh',
+      minHeight: '100dvh',
       display: 'flex', flexDirection: 'column', alignItems: 'center',
-      padding: '32px 20px 48px',
+      justifyContent: 'center',
+      padding: '16px 20px 20px',
+      gap: 10,
       background: '#FFF8F0',
       fontFamily: 'DM Sans, sans-serif',
+      boxSizing: 'border-box',
     }}>
 
-      {/* ── BETA BANNER — va primero ── */}
+      {/* ── Logo + Confirmación ── */}
+      <div style={{ textAlign: 'center' }}>
+        {logoSrc && (
+          <img
+            src={logoSrc}
+            alt="Casa del Pollo"
+            style={{ height: 36, maxWidth: 180, objectFit: 'contain', filter: logoFilter, marginBottom: 8, display: 'block', margin: '0 auto 8px' }}
+          />
+        )}
+        <div style={{ fontSize: 40 }}>🎉</div>
+        <div style={{
+          fontFamily: 'var(--font-title), sans-serif', fontWeight: 800,
+          fontSize: 22, color: '#1a1a1a', letterSpacing: '-0.5px', marginTop: 2,
+        }}>
+          ¡Pedido recibido!
+        </div>
+        <p style={{ fontSize: 13, color: '#888', margin: '2px 0 0' }}>
+          {sucursalActiva?.name || sucursalActiva?.nombre}
+        </p>
+      </div>
+
+      {/* ── BETA BANNER ── justo debajo de la confirmación ── */}
       <div style={{
         width: '100%', maxWidth: 340,
         background: '#FFFBEB',
         border: '1.5px solid #F59E0B44',
-        borderRadius: 16, padding: '16px 18px',
-        textAlign: 'center', marginBottom: 24,
-        boxShadow: '0 2px 12px rgba(245,158,11,0.12)',
+        borderRadius: 14, padding: '12px 16px',
+        boxShadow: '0 2px 10px rgba(245,158,11,0.10)',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 8 }}>
-          <span style={{ fontSize: 22 }}>🧪</span>
-          <span style={{
-            fontFamily: 'var(--font-title), sans-serif', fontWeight: 800,
-            fontSize: 15, color: '#92400E',
-          }}>¡Eres beta tester!</span>
-        </div>
-        <p style={{ fontSize: 12, color: '#78350F', lineHeight: 1.5, marginBottom: 12 }}>
-          Tu opinión nos ayuda a mejorar la app. La encuesta es anónima y toma menos de 1 minuto.
-        </p>
-        <button
-          onClick={() => setVista('feedback')}
-          style={{
-            background: '#F59E0B', color: 'white',
-            border: 'none', borderRadius: 999,
-            padding: '9px 20px', fontWeight: 700, fontSize: 13,
-            cursor: 'pointer', width: '100%',
-            fontFamily: 'DM Sans, sans-serif',
-            boxShadow: '0 2px 8px rgba(245,158,11,0.35)',
-          }}
-        >
-          ⭐ Calificar mi experiencia
-        </button>
-        <p style={{ fontSize: 11, color: '#B45309', marginTop: 8, opacity: 0.7 }}>
-          Redirigiendo en {cuenta}s…
-        </p>
-      </div>
-
-      {/* ── Logo de marca ── */}
-      {(diseno?.logo_original_url || diseno?.logo_url) && (
-        <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'center' }}>
-          <img
-            src={diseno.logo_original_url || diseno.logo_url}
-            alt="Casa del Pollo"
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 20, flexShrink: 0 }}>🧪</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: 'var(--font-title), sans-serif', fontWeight: 800, fontSize: 13, color: '#92400E', lineHeight: 1.2 }}>
+              ¡Eres beta tester!
+            </div>
+            <div style={{ fontSize: 11, color: '#78350F', lineHeight: 1.4, marginTop: 1 }}>
+              Encuesta anónima · menos de 1 min
+            </div>
+          </div>
+          <button
+            onClick={() => setVista('feedback')}
             style={{
-              height: 48,
-              maxWidth: 200,
-              objectFit: 'contain',
-              filter: diseno.logo_original_url
-                ? 'none'
-                : getLogoFilter(diseno.logo_color_mode, diseno.logo_custom_filter),
+              background: '#F59E0B', color: 'white',
+              border: 'none', borderRadius: 999,
+              padding: '7px 14px', fontWeight: 700, fontSize: 12,
+              cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
+              fontFamily: 'DM Sans, sans-serif',
+              boxShadow: '0 2px 6px rgba(245,158,11,0.35)',
             }}
-          />
+          >
+            ⭐ Calificar
+          </button>
         </div>
-      )}
-
-      {/* ── Confirmación ── */}
-      <div style={{ fontSize: 56, marginBottom: 8 }}>🎉</div>
-      <div style={{
-        fontFamily: 'var(--font-title), sans-serif', fontWeight: 800,
-        fontSize: 26, color: '#1a1a1a', marginBottom: 4, letterSpacing: '-0.5px',
-        textAlign: 'center',
-      }}>
-        ¡Pedido recibido!
+        <div style={{ fontSize: 10, color: '#B45309', textAlign: 'right', marginTop: 6, opacity: 0.7 }}>
+          Redirigiendo en {cuenta}s…
+        </div>
       </div>
-      <p style={{ fontSize: 14, color: '#888', marginBottom: 24, textAlign: 'center' }}>
-        Te esperamos en sucursal {sucursalActiva?.name || sucursalActiva?.nombre}
-      </p>
 
       {/* ── Recibo ── */}
       <div ref={reciboRef} style={{
         background: 'white',
-        borderRadius: 20, padding: '24px',
-        marginBottom: 20, width: '100%', maxWidth: 320,
+        borderRadius: 18, padding: '16px 20px',
+        width: '100%', maxWidth: 320,
         border: '1.5px solid #F3E8DC',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.07)',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
         textAlign: 'center',
       }}>
-        {/* Encabezado del recibo con logo */}
-        {(diseno?.logo_original_url || diseno?.logo_url || diseno?.logo_icon_url) ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 16, gap: 4 }}>
-            <img
-              src={diseno.logo_original_url || diseno.logo_url}
-              alt="Casa del Pollo"
-              style={{
-                height: 36,
-                maxWidth: 160,
-                objectFit: 'contain',
-                filter: diseno.logo_original_url
-                  ? 'none'
-                  : getLogoFilter(diseno.logo_color_mode, diseno.logo_custom_filter),
-              }}
-            />
-            <div style={{ fontSize: 12, color: '#999' }}>
-              Sucursal {sucursalActiva?.name || sucursalActiva?.nombre}
-            </div>
-          </div>
-        ) : (
-          <>
-            <div style={{
-              fontSize: 11, fontWeight: 700, letterSpacing: '1px',
-              textTransform: 'uppercase', color: '#aaa', marginBottom: 4,
-            }}>
+        {/* Cabecera del recibo */}
+        <div style={{ marginBottom: 12 }}>
+          {logoSrc ? (
+            <img src={logoSrc} alt="Casa del Pollo"
+              style={{ height: 26, maxWidth: 140, objectFit: 'contain', filter: logoFilter, display: 'block', margin: '0 auto 2px' }} />
+          ) : (
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: '#ccc' }}>
               Casa del Pollo
             </div>
-            <div style={{ fontSize: 13, color: '#999', marginBottom: 20 }}>
-              Sucursal {sucursalActiva?.name || sucursalActiva?.nombre}
-            </div>
-          </>
-        )}
+          )}
+          <div style={{ fontSize: 11, color: '#bbb' }}>
+            Sucursal {sucursalActiva?.name || sucursalActiva?.nombre}
+          </div>
+        </div>
 
         {ultimoNumeroOrden && (
           <div style={{
-            background: 'var(--rojo, #c1121f)', borderRadius: 14,
-            padding: '14px 24px', marginBottom: 16,
+            background: 'var(--rojo, #c1121f)', borderRadius: 12,
+            padding: '10px 24px', marginBottom: 10,
           }}>
             <p style={{
               fontSize: 10, fontWeight: 800, letterSpacing: '1.5px',
-              textTransform: 'uppercase', color: 'rgba(255,255,255,0.75)', marginBottom: 4,
+              textTransform: 'uppercase', color: 'rgba(255,255,255,0.75)', marginBottom: 2,
             }}>
               Número de orden
             </p>
             <p style={{
               fontFamily: 'var(--font-title), sans-serif', fontWeight: 900,
-              fontSize: 56, color: 'white', lineHeight: 1, letterSpacing: '-2px',
+              fontSize: 48, color: 'white', lineHeight: 1, letterSpacing: '-2px',
+              margin: 0,
             }}>
               {ultimoNumeroOrden}
             </p>
@@ -181,60 +162,56 @@ export default function Confirmado() {
 
         {ultimaHora && (
           <div style={{
-            background: '#FFF8F0', borderRadius: 10,
-            padding: '12px 16px', marginBottom: 8,
+            background: '#FFF8F0', borderRadius: 8,
+            padding: '8px 14px', marginBottom: 6,
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             border: '1px solid #F3E8DC',
           }}>
-            <p style={{
-              fontSize: 11, fontWeight: 700, letterSpacing: '0.8px',
-              textTransform: 'uppercase', color: '#aaa',
-            }}>
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.8px', textTransform: 'uppercase', color: '#aaa', margin: 0 }}>
               Hora de recogida
             </p>
-            <p style={{
-              fontFamily: 'var(--font-title), sans-serif', fontWeight: 800,
-              fontSize: 22, color: '#1a1a1a', letterSpacing: '-0.5px',
-            }}>
+            <p style={{ fontFamily: 'var(--font-title), sans-serif', fontWeight: 800, fontSize: 20, color: '#1a1a1a', margin: 0 }}>
               {ultimaHora}
             </p>
           </div>
         )}
 
-        <p style={{ fontSize: 11, color: '#bbb', marginTop: 14 }}>
+        <p style={{ fontSize: 10, color: '#ccc', marginTop: 8, marginBottom: 0 }}>
           Pago en el local al recoger
         </p>
       </div>
 
       {/* ── Acciones ── */}
-      <button
-        onClick={descargarRecibo}
-        style={{
-          background: 'white', color: '#555',
-          border: '1.5px solid #E8DDD5',
-          padding: '11px 20px', borderRadius: 'var(--radio, 12px)',
-          fontFamily: 'DM Sans, sans-serif', fontSize: 14,
-          cursor: 'pointer', marginBottom: 10,
-          width: '100%', maxWidth: 320,
-        }}
-      >
-        📥 Guardar recibo
-      </button>
-
-      <button
-        className="btn-primario"
-        onClick={() => setVista('menu')}
-        style={{ maxWidth: 320 }}
-      >
-        Hacer otro pedido
-      </button>
+      <div style={{ display: 'flex', gap: 8, width: '100%', maxWidth: 320 }}>
+        <button
+          onClick={descargarRecibo}
+          style={{
+            flex: 1,
+            background: 'white', color: '#666',
+            border: '1.5px solid #E8DDD5',
+            padding: '11px 10px', borderRadius: 'var(--radio, 12px)',
+            fontFamily: 'DM Sans, sans-serif', fontSize: 13,
+            cursor: 'pointer',
+          }}
+        >
+          📥 Guardar
+        </button>
+        <button
+          className="btn-primario"
+          onClick={() => setVista('menu')}
+          style={{ flex: 2 }}
+        >
+          Otro pedido
+        </button>
+      </div>
 
       <button
         onClick={() => setVista('sucursales')}
         style={{
-          marginTop: 10, background: 'none', border: 'none',
-          color: '#aaa', fontSize: 13, cursor: 'pointer',
+          background: 'none', border: 'none',
+          color: '#bbb', fontSize: 12, cursor: 'pointer',
           fontFamily: 'DM Sans, sans-serif',
+          marginTop: -2,
         }}
       >
         Cambiar sucursal
