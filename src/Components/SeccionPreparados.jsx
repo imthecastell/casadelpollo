@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import { rawCrop, cookedCrop } from './SeccionMarinados.jsx'
+import AvisoDisponibilidad from './AvisoDisponibilidad.jsx'
 
 // Milanesas simples (sin empanado ni empapelado)
 const ORDEN_SIMPLES = ['natural', 'aplanada']
@@ -26,13 +27,15 @@ const esNugget = (p) =>
   ['nugget', 'tender', 'trozo'].some(k => p.name.toLowerCase().includes(k))
 
 /* ── Fila de producto individual ── */
-function FilaProducto({ nombre, precio, nota, imagen, imagenCocinada, cantidad, onCambiar, onAgregar, agregado, idKey }) {
-  // Regla: las filas de menú siempre muestran el lado crudo
-  const thumb = imagen ? rawCrop(imagen) : null
+function FilaProducto({ nombre, precio, nota, imagen, imagenCocinada, sePuedeCocinar, recogida, onRecogida, cantidad, onCambiar, onAgregar, agregado, idKey }) {
+  const showCooked = !!(sePuedeCocinar && recogida === 'cocinado')
+  const thumb = imagen
+    ? (showCooked && (imagenCocinada || imagen) ? cookedCrop(imagenCocinada || imagen) : rawCrop(imagen))
+    : null
   return (
-    <div className="producto-row">
+    <div className="producto-row" style={{ flexWrap: 'wrap', alignItems: 'flex-start' }}>
       {thumb
-        ? <img src={thumb} alt="" className="producto-img" />
+        ? <img src={thumb} alt="" className="producto-img" style={{ transition: 'opacity 0.3s' }} />
         : <div className="producto-img-placeholder">🍗</div>
       }
       <div className="producto-info" style={{ flex: 1, minWidth: 0 }}>
@@ -41,6 +44,28 @@ function FilaProducto({ nombre, precio, nota, imagen, imagenCocinada, cantidad, 
           ${precio}/kg
           {nota && <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--rojo)' }}>{nota}</span>}
         </div>
+        {sePuedeCocinar && cantidad > 0 && (
+          <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+            <button
+              onClick={() => onRecogida?.('crudo')}
+              style={{
+                padding: '4px 10px', borderRadius: 999, fontSize: 11, fontWeight: 700, cursor: 'pointer', border: '1.5px solid',
+                background: recogida === 'crudo' ? 'var(--rojo)' : 'transparent',
+                color: recogida === 'crudo' ? '#fff' : 'var(--texto-suave)',
+                borderColor: recogida === 'crudo' ? 'var(--rojo)' : 'var(--gris)',
+              }}
+            >📦 Crudo</button>
+            <button
+              onClick={() => onRecogida?.('cocinado')}
+              style={{
+                padding: '4px 10px', borderRadius: 999, fontSize: 11, fontWeight: 700, cursor: 'pointer', border: '1.5px solid',
+                background: recogida === 'cocinado' ? 'var(--rojo)' : 'transparent',
+                color: recogida === 'cocinado' ? '#fff' : 'var(--texto-suave)',
+                borderColor: recogida === 'cocinado' ? 'var(--rojo)' : 'var(--gris)',
+              }}
+            >🔥 Cocinado</button>
+          </div>
+        )}
       </div>
       {cantidad === 0 ? (
         <button className="btn-add" onClick={() => onCambiar(1)}>+</button>
@@ -136,6 +161,8 @@ export default function SeccionPreparados() {
   const [empanizadasOpen, setEmpanizadasOpen]   = useState(false)
   const [nuggetsOpen, setNuggetsOpen]           = useState(false)
   const [agregado, setAgregado]                 = useState(null)
+  const [recogidaMap, setRecogidaMap]           = useState({})  // { [id]: 'crudo' | 'cocinado' }
+  const [mostrarAvisoDisp, setMostrarAvisoDisp] = useState(false)
 
   const todoPreparado = productos.filter(p => p.category_name === 'Preparados' && p.available !== false)
   const productosNormales = todoPreparado.filter(p => !esNugget(p))
@@ -163,6 +190,13 @@ export default function SeccionPreparados() {
     setTimeout(() => setAgregado(null), 1200)
   }
 
+  /* ── Handler modo recogida para preparados cocinados ── */
+  const handleRecogida = (id, modo, sePuedeCocinar) => {
+    if (!sePuedeCocinar) return
+    setRecogidaMap(prev => ({ ...prev, [id]: modo }))
+    if (modo === 'cocinado') setMostrarAvisoDisp(true)
+  }
+
   /* ── Handlers preparados normales ── */
   const cambiarPreparado = (id, nombre, delta) => {
     const paso = esAlbondiga(nombre) ? 10 : 1
@@ -177,8 +211,17 @@ export default function SeccionPreparados() {
   const agregarPreparado = (p) => {
     const cantidad = cantidades[p.id] || 0
     if (!cantidad) return
+    const recogida = recogidaMap[p.id] || 'crudo'
     const nota = esAlbondiga(p.name) ? ` (~${Math.round(cantidad / 20)} charola${cantidad >= 20 ? 's' : ''})` : ''
-    agregarAlCarrito({ tipo: 'preparado', nombre: p.name, cantidad, precioKg: p.price, precio: p.price, necesitaHora: true, resumen: `${p.name} × ${cantidad} pz${nota} · $${p.price}/kg` })
+    const tiempoEstimado = (p.se_puede_cocinar && recogida === 'cocinado') ? 20 : null
+    agregarAlCarrito({
+      tipo: 'preparado', nombre: p.name, cantidad,
+      precioKg: p.price, precio: p.price,
+      recogida: p.se_puede_cocinar ? recogida : undefined,
+      tiempoEstimado,
+      necesitaHora: true,
+      resumen: `${p.name} × ${cantidad} pz${nota}${recogida === 'cocinado' ? ' · Cocinado ~20 min' : ''} · $${p.price}/kg`
+    })
     setCantidades(prev => ({ ...prev, [p.id]: 0 }))
     marcarAgregado(p.id)
   }
@@ -250,6 +293,7 @@ export default function SeccionPreparados() {
 
   return (
     <div>
+      {mostrarAvisoDisp && <AvisoDisponibilidad onCerrar={() => setMostrarAvisoDisp(false)} />}
       <div className="seccion-titulo">Preparados y Milanesas</div>
       <p className="seccion-desc">Por pieza · precio por kg al pesar en el local</p>
 
@@ -261,6 +305,9 @@ export default function SeccionPreparados() {
             <FilaProducto
               key={p.id} idKey={p.id}
               nombre={p.name} precio={p.price} imagen={p.image_url} imagenCocinada={p.image_cooked_url}
+              sePuedeCocinar={!!p.se_puede_cocinar}
+              recogida={recogidaMap[p.id] || 'crudo'}
+              onRecogida={modo => handleRecogida(p.id, modo, p.se_puede_cocinar)}
               nota={esAlbondiga(p.name) ? '±10 pz · charola 20' : null}
               cantidad={cantidades[p.id] || 0}
               onCambiar={d => cambiarPreparado(p.id, p.name, d)}

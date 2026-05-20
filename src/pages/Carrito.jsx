@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
+import SemaforoCupo from '../Components/SemaforoCupo.jsx'
 
 function calcularLugaresBowls(carrito) {
   const numBowls = carrito.filter(i => i.tipo === 'bowl').length
@@ -165,6 +166,8 @@ export default function Carrito() {
                 />
               </div>
             </div>
+
+            <SemaforoCupo />
 
             <div style={{ background: 'var(--card-bg)', borderRadius: 'var(--radio-lg)', padding: '18px', boxShadow: 'var(--sombra)', marginBottom: 16 }}>
               <label className="config-label">Hora de recogida</label>

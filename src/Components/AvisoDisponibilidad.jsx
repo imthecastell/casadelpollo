@@ -1,18 +1,7 @@
-import { useApp } from '../data/AppContext.jsx'
-
-const FALLBACK = {
-  titulo: 'Cocinado en Air Fryer',
-  descripcion: 'Nuestros marinados y preparados se cocinan en air fryer sin grasas añadidas. El tiempo estimado de cocción se agrega automáticamente a tu pedido.',
-}
-
-export default function AvisoAirfryer({ onCerrar }) {
-  const { bannersAviso } = useApp()
-
+export default function AvisoDisponibilidad({ onCerrar }) {
   const cerrar = () => {
     if (onCerrar) onCerrar()
   }
-
-  const aviso = bannersAviso[0] || FALLBACK
 
   return (
     <div
@@ -27,7 +16,7 @@ export default function AvisoAirfryer({ onCerrar }) {
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: 'var(--cafe, #3d1c02)',
+          background: '#1a2f1a',
           borderRadius: 'var(--radio, 16px)',
           maxWidth: 340, width: '100%',
           padding: '28px 24px',
@@ -48,27 +37,20 @@ export default function AvisoAirfryer({ onCerrar }) {
           }}
         >×</button>
 
-        {aviso.imagen_url && (
-          <img
-            src={aviso.imagen_url} alt=""
-            style={{ width: 64, height: 64, objectFit: 'contain', marginBottom: 16 }}
-          />
-        )}
+        <div style={{ fontSize: 44, marginBottom: 14 }}>⚠️</div>
 
-        {aviso.titulo && (
-          <p style={{
-            fontFamily: 'Syne, sans-serif', fontWeight: 800,
-            fontSize: 18, color: 'var(--crema, #fff)', marginBottom: 10,
-          }}>
-            {aviso.titulo}
-          </p>
-        )}
+        <p style={{
+          fontFamily: 'Syne, sans-serif', fontWeight: 800,
+          fontSize: 17, color: '#fff', marginBottom: 10,
+        }}>
+          Alerta de disponibilidad
+        </p>
 
         <p style={{
           fontFamily: 'DM Sans, sans-serif', fontSize: 14,
-          color: 'rgba(255,255,255,0.8)', lineHeight: 1.6,
+          color: 'rgba(255,255,255,0.82)', lineHeight: 1.65,
         }}>
-          {aviso.descripcion || 'Nuestros preparados y marinados se cocinan en air fryer sin grasas añadidas.'}
+          Ordenar tus productos cocinados <strong style={{ color: '#7fcf7f' }}>no tiene costo extra</strong>, pero nuestra disponibilidad es limitada. Te recomendamos confirmar con anticipación.
         </p>
 
         <button
