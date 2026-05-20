@@ -4,9 +4,9 @@ import { cookedCrop } from './SeccionMarinados.jsx'
 
 const ORDEN_SIMPLES = ['natural', 'aplanada', 'empanizada', 'parmesano']
 
-// Imagen de grupo — reemplazar con URL real cuando esté subida a Cloudinary
-const EMPAP_IMG   = 'https://res.cloudinary.com/do4juvxio/image/upload/ar_4:3,c_fill,g_east,w_320/marinados/empapeladas.png'
-const NUGGETS_IMG = null // subir foto grupal y poner URL aquí: .../preparados/nuggets.png
+// Imágenes de grupo — lado cocinado (g_east) para las tarjetas de presentación
+const EMPAP_IMG   = 'https://res.cloudinary.com/do4juvxio/image/upload/ar_4:3,c_fill,g_east,w_600/marinados/empapeladas.png'
+const NUGGETS_IMG = 'https://res.cloudinary.com/do4juvxio/image/upload/c_fill,w_600/preparados/nuggets_grupo.png'
 
 const esSimpleMil = (p) => {
   const n = p.name.toLowerCase()
