@@ -6,12 +6,94 @@ import SeccionMarinados from '../Components/SeccionMarinados.jsx'
 import SeccionPreparados from '../Components/SeccionPreparados.jsx'
 import SeccionComplementos from "../Components/SeccionComplementos.jsx"
 import SeccionBowls from '../Components/SeccionBowls.jsx'
+import { cookedCrop } from '../Components/SeccionMarinados.jsx'
 import '../styles/menu.css'
 
+const BASE = 'https://res.cloudinary.com/do4juvxio/image/upload'
+
 const ENTRADAS = [
-  { id: 'pollo', titulo: 'Pollo fresco y marinados', descripcion: 'Piezas frescas, marinados, preparados, milanesas y complementos.', accion: 'Ver pollo', tab: 'fresco' },
-  { id: 'bowls', titulo: 'Bowls', descripcion: 'Arma tu bowl con base y marinado listo para recoger.', accion: 'Armar bowls', tab: 'bowls' },
+  {
+    id: 'pollo',
+    titulo: 'Pollo fresco y marinados',
+    descripcion: 'Marinados artesanales, preparados, milanesas y piezas frescas.',
+    accion: 'Ver pollo →',
+    tab: 'fresco',
+    color: '#1a0408',
+    imgs: [
+      cookedCrop(`${BASE}/marinados/adobado.png`),
+      cookedCrop(`${BASE}/marinados/teriyaki.png`),
+      cookedCrop(`${BASE}/marinados/hoisin.png`),
+      cookedCrop(`${BASE}/marinados/pollo%20al%20pastor.png`),
+      cookedCrop(`${BASE}/marinados/mostaza%20miel.png`),
+    ],
+  },
+  {
+    id: 'bowls',
+    titulo: 'Bowls',
+    descripcion: 'Arma tu bowl con base y marinado listo para recoger.',
+    accion: 'Armar bowl →',
+    tab: 'bowls',
+    color: '#0a2016',
+    imgs: [],
+  },
 ]
+
+function EntradaCard({ entrada, onClic }) {
+  const [idx, setIdx] = useState(0)
+  const imgs = entrada.imgs || []
+
+  useEffect(() => {
+    if (imgs.length <= 1) return
+    const t = setInterval(() => setIdx(p => (p + 1) % imgs.length), 3200)
+    return () => clearInterval(t)
+  }, [imgs.length])
+
+  return (
+    <button
+      onClick={onClic}
+      style={{
+        position: 'relative', overflow: 'hidden', minHeight: 190,
+        borderRadius: 24, border: 0, cursor: 'pointer',
+        textAlign: 'left', width: '100%', display: 'block', padding: 0,
+        boxShadow: 'var(--sombra-lg)',
+      }}
+    >
+      {/* Fondo sólido base */}
+      <div style={{ position: 'absolute', inset: 0, background: entrada.color }} />
+
+      {/* Slideshow imágenes cocinadas (lado derecho) */}
+      {imgs.map((img, i) => (
+        <div key={i} style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: `url(${img})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'right center',
+          opacity: i === idx ? 1 : 0,
+          transition: 'opacity 1s ease',
+        }} />
+      ))}
+
+      {/* Degradado: sólido a izquierda, transparente a derecha */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: `linear-gradient(to right, ${entrada.color} 0%, ${entrada.color} 42%, ${entrada.color}e0 58%, ${entrada.color}60 75%, transparent 100%)`,
+      }} />
+
+      {/* Contenido */}
+      <div style={{ position: 'relative', zIndex: 1, padding: '22px 20px', maxWidth: '68%', display: 'flex', flexDirection: 'column', gap: 8, minHeight: 190, justifyContent: 'center' }}>
+        <strong style={{ fontFamily: 'var(--font-title), sans-serif', fontWeight: 800, fontSize: 22, lineHeight: 1.1, color: '#fff', letterSpacing: '-0.3px' }}>
+          {entrada.titulo}
+        </strong>
+        <span style={{ color: 'rgba(255,255,255,0.78)', fontSize: 13, lineHeight: 1.4 }}>
+          {entrada.descripcion}
+        </span>
+        <em style={{ color: '#fff', fontStyle: 'normal', fontWeight: 700, fontSize: 12, letterSpacing: 1, textTransform: 'uppercase', opacity: 0.9, marginTop: 4 }}>
+          {entrada.accion}
+        </em>
+      </div>
+    </button>
+  )
+}
 
 const COMPONENTES = {
   fresco: SeccionFresco,
@@ -141,11 +223,7 @@ export default function MenuPrincipal() {
               <p className="seccion-desc">Sucursal {sucursalActiva?.name}</p>
             </div>
             {ENTRADAS.map(e => (
-              <button key={e.id} className={`menu-entrada-card menu-entrada-${e.id}`} onClick={() => elegirEntrada(e)}>
-                <strong>{e.titulo}</strong>
-                <span>{e.descripcion}</span>
-                <em>{e.accion} →</em>
-              </button>
+              <EntradaCard key={e.id} entrada={e} onClic={() => elegirEntrada(e)} />
             ))}
           </section>
         ) : tabActiva === 'bowls' ? (

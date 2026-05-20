@@ -171,11 +171,11 @@
 .card-marinado {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px 18px;
+  gap: 14px;
+  padding: 10px 14px 10px 10px;
   background: var(--card-bg);
   border: 2px solid transparent;
-  border-radius: 16px;
+  border-radius: 18px;
   box-shadow: var(--sombra);
   cursor: pointer;
   text-align: left;
@@ -183,6 +183,7 @@
   position: relative;
   margin-bottom: 8px;
   width: 100%;
+  overflow: hidden;
 }
 .card-marinado:hover {
   border-color: var(--rojo);

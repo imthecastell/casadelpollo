@@ -2,6 +2,29 @@ import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import AvisoAirfryer from './AvisoAirfryer.jsx'
 
+function rawCrop(url) {
+  if (!url || !url.includes('cloudinary.com')) return url
+  return url.replace('/upload/', '/upload/ar_4:3,c_fill,g_west,w_320/')
+}
+
+export function cookedCrop(url) {
+  if (!url || !url.includes('cloudinary.com')) return url
+  return url.replace('/upload/', '/upload/ar_4:3,c_fill,g_east,w_320/')
+}
+
+function MarimadoImg({ imageUrl }) {
+  if (!imageUrl) return (
+    <div style={{ width: 88, height: 66, borderRadius: 12, background: 'var(--crema-oscura)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, flexShrink: 0, order: -1 }}>🍯</div>
+  )
+  return (
+    <img
+      src={rawCrop(imageUrl)}
+      alt=""
+      style={{ width: 88, height: 66, borderRadius: 12, objectFit: 'cover', flexShrink: 0, order: -1 }}
+    />
+  )
+}
+
 const MIN = 200
 const MAX = 2000
 const PASO = 50
@@ -77,10 +100,7 @@ export default function SeccionMarinados() {
             className={`card-marinado ${seleccion?.id === p.id ? 'card-marinado-activo' : ''}`}
             onClick={() => setSeleccion(seleccion?.id === p.id ? null : p)}
           >
-            {p.image_url
-              ? <img className="marinado-img" src={p.image_url} alt="" />
-              : <div className="marinado-img-placeholder">🍯</div>
-            }
+            <MarimadoImg imageUrl={p.image_url} />
             <div>
               <div className="producto-nombre">{p.name}</div>
               <div className="producto-precio">${p.price}/kg</div>
