@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useApp } from '../data/AppContext.jsx'
+import LogoPlaceholder from '../Components/LogoPlaceholder.jsx'
 import { SECCIONES } from '../data/menu.js'
 import SeccionFresco from '../Components/SeccionFresco.jsx'
 import SeccionMarinados from '../Components/SeccionMarinados.jsx'
@@ -206,12 +207,26 @@ export default function MenuPrincipal() {
       }}>
         <div className="header-inner" style={{ position: 'relative' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {!mostrarAtajos && (
+            {!mostrarAtajos ? (
               <button onClick={volver} style={{ background: 'none', border: 'none', color: 'var(--rojo)', fontSize: 14, fontFamily: 'var(--font-body),sans-serif', cursor: 'pointer', fontWeight: 600, padding: 0 }}>
                 ← Menú
               </button>
+            ) : (
+              /* ── Icon placeholder — sobre hero oscuro ── */
+              <LogoPlaceholder
+                type="icon"
+                width={44} height={44}
+                style={{ border: '1.5px dashed rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.1)' }}
+              />
             )}
           </div>
+
+          {/* Icon centrado en vista de sección */}
+          {!mostrarAtajos && (
+            <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none' }}>
+              <LogoPlaceholder type="icon" width={30} height={30} />
+            </div>
+          )}
 
           <button className="carrito-btn" onClick={() => setVista('carrito')}>
             🛒{totalItems > 0 && <span className="carrito-badge">{totalItems}</span>}

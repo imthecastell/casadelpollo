@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import SemaforoCupo from '../Components/SemaforoCupo.jsx'
+import LogoPlaceholder from '../Components/LogoPlaceholder.jsx'
 
 function calcularLugaresBowls(carrito) {
   const numBowls = carrito.filter(i => i.tipo === 'bowl').length
@@ -81,6 +82,15 @@ export default function Carrito() {
           >
             ← Seguir pidiendo
           </button>
+
+          {/* Icon centrado — fondo de header es var(--rojo) */}
+          <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none' }}>
+            <LogoPlaceholder
+              type="icon"
+              width={30} height={30}
+              style={{ border: '1.5px dashed rgba(255,255,255,0.45)', background: 'rgba(255,255,255,0.1)' }}
+            />
+          </div>
 
           <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--rojo)', fontFamily: 'var(--font-body), sans-serif' }}>
             {totalItems} {totalItems === 1 ? 'item' : 'items'}

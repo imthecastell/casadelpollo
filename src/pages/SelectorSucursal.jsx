@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useApp } from '../data/AppContext.jsx'
+import LogoPlaceholder from '../Components/LogoPlaceholder.jsx'
 import '../styles/selector.css'
 
 /* Carrusel de productos cocinados */
@@ -96,6 +97,15 @@ export default function SelectorSucursal() {
 
   return (
     <div className="selector-wrap">
+
+      {/* Logo */}
+      <div className="selector-header">
+        <LogoPlaceholder
+          type="logotipo"
+          width={200} height={42}
+          style={{ border: '1.5px dashed rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.08)', margin: '0 auto' }}
+        />
+      </div>
 
       {/* Hero */}
       <div className="selector-hero">

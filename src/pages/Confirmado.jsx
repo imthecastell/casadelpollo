@@ -1,6 +1,7 @@
 import { useApp } from '../data/AppContext.jsx'
 import { useRef, useEffect, useState } from 'react'
 import BannerPopup from '../Components/BannerPopup.jsx'
+import LogoPlaceholder from '../Components/LogoPlaceholder.jsx'
 
 export default function Confirmado() {
   const { setVista, sucursalActiva, ultimoNumeroOrden, ultimaHora } = useApp()
@@ -44,6 +45,9 @@ export default function Confirmado() {
       fontFamily: 'DM Sans, sans-serif',
       boxSizing: 'border-box',
     }}>
+
+      {/* ── Logotipo ── */}
+      <LogoPlaceholder type="logotipo" width={170} height={40} />
 
       {/* ── Confirmación ── */}
       <div style={{ textAlign: 'center' }}>
@@ -106,8 +110,8 @@ export default function Confirmado() {
         textAlign: 'center',
       }}>
         {/* Cabecera del recibo */}
-        <div style={{ marginBottom: 12 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#555', marginBottom: 2 }}>Casa del Pollo</div>
+        <div style={{ marginBottom: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+          <LogoPlaceholder type="color" width={120} height={26} />
           <div style={{ fontSize: 11, color: '#bbb' }}>
             Sucursal {sucursalActiva?.name || sucursalActiva?.nombre}
           </div>
