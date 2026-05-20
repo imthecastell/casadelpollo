@@ -41,7 +41,7 @@ export default function SeccionFresco() {
       <p className="seccion-desc">Precio por kg · se cobra al pesar en el local</p>
       {productosSeccion.map(p => {
         const cantidad = cantidades[p.id] || 0
-        const thumb = p.image_url ? cookedCrop(p.image_url) : null
+        const thumb = p.image_cooked_url || (p.image_url ? cookedCrop(p.image_url) : null)
         return (
           <div key={p.id} className="producto-row">
             {thumb

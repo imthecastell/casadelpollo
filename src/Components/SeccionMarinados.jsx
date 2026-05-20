@@ -12,13 +12,14 @@ export function cookedCrop(url) {
   return url.replace('/upload/', '/upload/ar_4:3,c_fill,g_east,w_320/')
 }
 
-function MarimadoImg({ imageUrl }) {
-  if (!imageUrl) return (
+function MarimadoImg({ imageUrl, imageCookedUrl }) {
+  const src = imageCookedUrl || (imageUrl ? cookedCrop(imageUrl) : null)
+  if (!src) return (
     <div style={{ width: 72, height: 72, borderRadius: 14, background: 'var(--crema-oscura)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, flexShrink: 0, order: -1 }}>🍯</div>
   )
   return (
     <img
-      src={cookedCrop(imageUrl)}
+      src={src}
       alt=""
       style={{ width: 72, height: 72, borderRadius: 14, objectFit: 'cover', flexShrink: 0, order: -1 }}
     />
@@ -100,7 +101,7 @@ export default function SeccionMarinados() {
             className={`card-marinado ${seleccion?.id === p.id ? 'card-marinado-activo' : ''}`}
             onClick={() => setSeleccion(seleccion?.id === p.id ? null : p)}
           >
-            <MarimadoImg imageUrl={p.image_url} />
+            <MarimadoImg imageUrl={p.image_url} imageCookedUrl={p.image_cooked_url} />
             <div>
               <div className="producto-nombre">{p.name}</div>
               <div className="producto-precio">${p.price}/kg</div>

@@ -17,8 +17,8 @@ const esNugget = (p) =>
   ['nugget', 'tender', 'trozo'].some(k => p.name.toLowerCase().includes(k))
 
 /* ── Fila de producto individual ── */
-function FilaProducto({ nombre, precio, nota, imagen, cantidad, onCambiar, onAgregar, agregado, idKey }) {
-  const thumb = imagen ? cookedCrop(imagen) : null
+function FilaProducto({ nombre, precio, nota, imagen, imagenCocinada, cantidad, onCambiar, onAgregar, agregado, idKey }) {
+  const thumb = imagenCocinada || (imagen ? cookedCrop(imagen) : null)
   return (
     <div className="producto-row">
       {thumb
@@ -225,7 +225,7 @@ export default function SeccionPreparados() {
           {productosNormales.map(p => (
             <FilaProducto
               key={p.id} idKey={p.id}
-              nombre={p.name} precio={p.price} imagen={p.image_url}
+              nombre={p.name} precio={p.price} imagen={p.image_url} imagenCocinada={p.image_cooked_url}
               nota={esAlbondiga(p.name) ? '±10 pz · charola 20' : null}
               cantidad={cantidades[p.id] || 0}
               onCambiar={d => cambiarPreparado(p.id, p.name, d)}
@@ -267,7 +267,7 @@ export default function SeccionPreparados() {
           {milSimples.map(m => (
             <FilaProducto
               key={m.id} idKey={m.id}
-              nombre={m.name} precio={m.price} imagen={m.image_url}
+              nombre={m.name} precio={m.price} imagen={m.image_url} imagenCocinada={m.image_cooked_url}
               cantidad={cantSimples[m.id] || 0}
               onCambiar={d => cambiarSimple(m.id, d)}
               onAgregar={() => agregarSimple(m)}
