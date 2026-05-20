@@ -181,7 +181,15 @@ export default function MenuPrincipal() {
     <div className="app-wrapper">
 
       {/* ── Header ── */}
-      <header className="header" style={{ background: mostrarAtajos ? 'transparent' : undefined, backdropFilter: mostrarAtajos ? 'none' : undefined, boxShadow: mostrarAtajos ? 'none' : undefined, borderBottom: mostrarAtajos ? 'none' : undefined }}>
+      {/* position:absolute cuando hay hero para que no deje barra blanca encima */}
+      <header className="header" style={{
+        position:     mostrarAtajos ? 'absolute' : undefined,
+        width:        mostrarAtajos ? '100%' : undefined,
+        background:   mostrarAtajos ? 'transparent' : undefined,
+        backdropFilter: mostrarAtajos ? 'none' : undefined,
+        boxShadow:    mostrarAtajos ? 'none' : undefined,
+        borderBottom: mostrarAtajos ? 'none' : undefined,
+      }}>
         <div className="header-inner">
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {!mostrarAtajos ? (

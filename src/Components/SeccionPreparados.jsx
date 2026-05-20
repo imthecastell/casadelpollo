@@ -1,16 +1,25 @@
 import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
-import { cookedCrop } from './SeccionMarinados.jsx'
+import { rawCrop, cookedCrop } from './SeccionMarinados.jsx'
 
-const ORDEN_SIMPLES = ['natural', 'aplanada', 'empanizada', 'parmesano']
+// Milanesas simples (sin empanado ni empapelado)
+const ORDEN_SIMPLES = ['natural', 'aplanada']
 
-// Imágenes de grupo — lado cocinado (g_east) para las tarjetas de presentación
-const EMPAP_IMG   = 'https://res.cloudinary.com/do4juvxio/image/upload/ar_4:3,c_fill,g_east,w_600/marinados/empapeladas.png'
-const NUGGETS_IMG = 'https://res.cloudinary.com/do4juvxio/image/upload/c_fill,w_600/preparados/nuggets_grupo.png'
+// Imágenes de grupo — cocinado para carruseles/cards de grupo
+const CDN = 'https://res.cloudinary.com/do4juvxio/image/upload'
+const COOK_HALF = (f) => `${CDN}/c_crop,fl_relative,x_0.50,y_0.00,w_0.50,h_1.00/ar_4:3,c_fill,w_600/${f}`
+const EMPAP_IMG        = COOK_HALF('marinados/empapeladas.png')
+const EMPANIZADAS_IMG  = COOK_HALF('milanesas/empanadas.png')
+const NUGGETS_IMG      = `${CDN}/c_fill,w_600/preparados/nuggets_grupo.png`
 
 const esSimpleMil = (p) => {
   const n = p.name.toLowerCase()
   return ORDEN_SIMPLES.some(k => n.includes(k)) && !n.includes('empapelada')
+}
+
+const esEmpanizada = (p) => {
+  const n = p.name.toLowerCase()
+  return (n.includes('empanizada') || n.includes('parmesano')) && !n.includes('empapelada')
 }
 
 const esNugget = (p) =>
@@ -18,7 +27,8 @@ const esNugget = (p) =>
 
 /* ── Fila de producto individual ── */
 function FilaProducto({ nombre, precio, nota, imagen, imagenCocinada, cantidad, onCambiar, onAgregar, agregado, idKey }) {
-  const thumb = imagenCocinada || (imagen ? cookedCrop(imagen) : null)
+  // Regla: las filas de menú siempre muestran el lado crudo
+  const thumb = imagen ? rawCrop(imagen) : null
   return (
     <div className="producto-row">
       {thumb
@@ -112,13 +122,15 @@ function FilaVariante({ nombre, cantidad, onCambiar, onAgregar, agregado, idKey 
 /* ════════════════════════════════════════════════ */
 export default function SeccionPreparados() {
   const { agregarAlCarrito, productos } = useApp()
-  const [cantidades, setCantidades]       = useState({})  // preparados normales
-  const [cantSimples, setCantSimples]     = useState({})  // milanesas simples
-  const [cantEmpapeladas, setCantEmpapeladas] = useState({})
-  const [cantNuggets, setCantNuggets]     = useState({})
-  const [empapOpen, setEmpapOpen]         = useState(false)
-  const [nuggetsOpen, setNuggetsOpen]     = useState(false)
-  const [agregado, setAgregado]           = useState(null)
+  const [cantidades, setCantidades]             = useState({})
+  const [cantSimples, setCantSimples]           = useState({})
+  const [cantEmpapeladas, setCantEmpapeladas]   = useState({})
+  const [cantEmpanizadas, setCantEmpanizadas]   = useState({})
+  const [cantNuggets, setCantNuggets]           = useState({})
+  const [empapOpen, setEmpapOpen]               = useState(false)
+  const [empanizadasOpen, setEmpanizadasOpen]   = useState(false)
+  const [nuggetsOpen, setNuggetsOpen]           = useState(false)
+  const [agregado, setAgregado]                 = useState(null)
 
   const todoPreparado = productos.filter(p => p.category_name === 'Preparados' && p.available !== false)
   const productosNormales = todoPreparado.filter(p => !esNugget(p))
@@ -133,8 +145,10 @@ export default function SeccionPreparados() {
       const bi = ORDEN_SIMPLES.findIndex(k => b.name.toLowerCase().includes(k))
       return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi)
     })
-  const milEmpapeladas = milanesas.filter(p => !esSimpleMil(p))
-  const precioEmpapelada = milEmpapeladas[0]?.price ?? 230
+  const milEmpanizadas  = milanesas.filter(esEmpanizada)
+  const milEmpapeladas  = milanesas.filter(p => !esSimpleMil(p) && !esEmpanizada(p))
+  const precioEmpanizada  = milEmpanizadas[0]?.price ?? 225
+  const precioEmpapelada  = milEmpapeladas[0]?.price ?? 230
 
   const esAlbondiga = (nombre) =>
     nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').includes('albondiga')
@@ -195,6 +209,22 @@ export default function SeccionPreparados() {
     agregarAlCarrito({ tipo: 'milanesa', nombre: `Empapelada ${nombreSabor}`, cantidad, precioKg: flavor.price, precio: flavor.price, necesitaHora: true, resumen: `Empapelada ${nombreSabor} × ${cantidad} pz · $${flavor.price}/kg` })
     setCantEmpapeladas(prev => ({ ...prev, [flavor.id]: 0 }))
     marcarAgregado(`emp-${flavor.id}`)
+  }
+
+  /* ── Handlers empanizadas ── */
+  const cambiarEmpanizada = (id, delta) =>
+    setCantEmpanizadas(prev => {
+      const actual = prev[id] || 0
+      if (delta < 0 && actual <= 1) return { ...prev, [id]: 0 }
+      return { ...prev, [id]: actual === 0 ? 1 : Math.max(0, actual + delta) }
+    })
+
+  const agregarEmpanizada = (m) => {
+    const cantidad = cantEmpanizadas[m.id] || 0
+    if (!cantidad) return
+    agregarAlCarrito({ tipo: 'milanesa', nombre: m.name, cantidad, precioKg: m.price, precio: m.price, necesitaHora: true, resumen: `${m.name} × ${cantidad} pz · $${m.price}/kg` })
+    setCantEmpanizadas(prev => ({ ...prev, [m.id]: 0 }))
+    marcarAgregado(`epz-${m.id}`)
   }
 
   /* ── Handlers nuggets ── */
@@ -274,6 +304,26 @@ export default function SeccionPreparados() {
               agregado={agregado}
             />
           ))}
+
+          {milEmpanizadas.length > 0 && (
+            <GrupoExpandible
+              titulo="Milanesas Empanizadas" precio={precioEmpanizada}
+              imagen={EMPANIZADAS_IMG} emoji="🥩"
+              conteo={milEmpanizadas.length}
+              open={empanizadasOpen} onToggle={() => setEmpanizadasOpen(v => !v)}
+            >
+              {milEmpanizadas.map(m => (
+                <FilaVariante
+                  key={m.id} idKey={`epz-${m.id}`}
+                  nombre={m.name}
+                  cantidad={cantEmpanizadas[m.id] || 0}
+                  onCambiar={d => cambiarEmpanizada(m.id, d)}
+                  onAgregar={() => agregarEmpanizada(m)}
+                  agregado={agregado}
+                />
+              ))}
+            </GrupoExpandible>
+          )}
 
           {milEmpapeladas.length > 0 && (
             <GrupoExpandible

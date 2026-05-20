@@ -7,7 +7,7 @@
 
 /* ─── HEADER / LOGO ─── */
 .selector-header {
-  padding: 48px 32px 16px;
+  padding: 32px 32px 12px;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -16,13 +16,13 @@
 
 /* ─── HERO ─── */
 .selector-hero {
-  margin: 4px 20px 24px;
-  border-radius: 20px;
+  margin: 4px 20px 20px;
+  border-radius: 22px;
   overflow: hidden;
-  aspect-ratio: 16/9;
   position: relative;
+  height: clamp(180px, 44vw, 280px);
   background: linear-gradient(135deg, #5a1a10 0%, #c1121f 60%, #d4a017 100%);
-  box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.16);
   flex-shrink: 0;
 }
 
@@ -36,8 +36,11 @@
 .selector-hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 55%);
+  background: linear-gradient(to top, rgba(10,4,2,0.78) 0%, rgba(10,4,2,0.25) 50%, transparent 100%);
+  z-index: 1;
 }
+
+.selector-hero-caption { z-index: 2; }
 
 .selector-hero-caption {
   position: absolute;

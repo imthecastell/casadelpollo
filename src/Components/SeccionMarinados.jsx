@@ -26,20 +26,38 @@ export function rawCrop(url, size = 320) {
   return buildSideUrl(url, 0.0, size)
 }
 
-function MarimadoImg({ imageUrl, imageCookedUrl }) {
-  // Siempre normaliza via cookedCrop para garantizar el crop correcto,
-  // independientemente del formato almacenado en BD.
-  const base = imageCookedUrl || imageUrl
-  const src  = base ? cookedCrop(base) : null
-  if (!src) return (
-    <div style={{ width: 72, height: 72, borderRadius: 14, background: 'var(--crema-oscura)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, flexShrink: 0, order: -1 }}>🍯</div>
+function MarimadoImg({ imageUrl, imageCookedUrl, isSelected, recogida }) {
+  const rawSrc    = imageUrl ? rawCrop(imageUrl) : null
+  const cookedSrc = (imageCookedUrl || imageUrl) ? cookedCrop(imageCookedUrl || imageUrl) : null
+  const showCooked = !!(isSelected && recogida === 'cocinado' && cookedSrc)
+  const size = isSelected ? 90 : 72
+  const dur  = '0.38s cubic-bezier(.34,1.56,.64,1)'
+
+  const imgStyle = (visible) => ({
+    position: 'absolute', inset: 0, width: '100%', height: '100%',
+    objectFit: 'cover', transition: 'opacity 0.4s ease',
+    opacity: visible ? 1 : 0,
+  })
+
+  if (!rawSrc && !cookedSrc) return (
+    <div style={{
+      width: size, height: size, borderRadius: 14, flexShrink: 0, order: -1,
+      background: 'var(--crema-oscura)', display: 'flex', alignItems: 'center',
+      justifyContent: 'center', fontSize: 28,
+      transition: `width ${dur}, height ${dur}`,
+    }}>🍯</div>
   )
+
   return (
-    <img
-      src={src}
-      alt=""
-      style={{ width: 72, height: 72, borderRadius: 14, objectFit: 'cover', flexShrink: 0, order: -1 }}
-    />
+    <div style={{
+      position: 'relative', width: size, height: size, borderRadius: 14,
+      flexShrink: 0, order: -1, overflow: 'hidden',
+      transition: `width ${dur}, height ${dur}`,
+      boxShadow: isSelected ? '0 4px 16px rgba(0,0,0,0.18)' : 'none',
+    }}>
+      {rawSrc    && <img src={rawSrc}    alt="" style={imgStyle(!showCooked)} />}
+      {cookedSrc && <img src={cookedSrc} alt="" style={imgStyle(showCooked)}  />}
+    </div>
   )
 }
 
@@ -118,7 +136,12 @@ export default function SeccionMarinados() {
             className={`card-marinado ${seleccion?.id === p.id ? 'card-marinado-activo' : ''}`}
             onClick={() => setSeleccion(seleccion?.id === p.id ? null : p)}
           >
-            <MarimadoImg imageUrl={p.image_url} imageCookedUrl={p.image_cooked_url} />
+            <MarimadoImg
+              imageUrl={p.image_url}
+              imageCookedUrl={p.image_cooked_url}
+              isSelected={seleccion?.id === p.id}
+              recogida={recogida}
+            />
             <div>
               <div className="producto-nombre">{p.name}</div>
               <div className="producto-precio">${p.price}/kg</div>
@@ -144,7 +167,7 @@ export default function SeccionMarinados() {
 
               {seleccion?.se_puede_cocinar && (
                 <div>
-                  <label className="config-label">Como lo quieres?</label>
+                  <label className="config-label">¿Cómo lo quieres?</label>
                   <div className="recogida-opts">
                     <button
                       className={`recogida-opt ${recogida === 'crudo' ? 'recogida-activo' : ''}`}
