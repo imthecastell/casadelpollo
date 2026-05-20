@@ -229,3 +229,9 @@
   color: var(--texto-suave, #6B6866);
   white-space: nowrap;
 }
+
+/* ── Barra de progreso del banner de bienvenida ── */
+@keyframes banner-progress {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
