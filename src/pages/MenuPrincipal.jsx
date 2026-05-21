@@ -223,15 +223,15 @@ export default function MenuPrincipal() {
             )}
           </div>
 
-          {/* Icon centrado en navbar de sección — fondo var(--rojo) oscuro → blanco */}
+          {/* Icon centrado en navbar de sección — header claro → color del tema */}
           {!mostrarAtajos && (
             <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none' }}>
               <LogoSlot
                 type="icon"
                 src={diseno?.logo_icon_url}
-                mode="blanco"
+                mode="original"
                 width={30} height={30}
-                placeholderStyle={{ border: '1.5px dashed rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.1)' }}
+                placeholderStyle={{ border: '1.5px dashed var(--rojo)', background: 'rgba(0,0,0,0.03)', color: 'var(--rojo)' }}
               />
             </div>
           )}
