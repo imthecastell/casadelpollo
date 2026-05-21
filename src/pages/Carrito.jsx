@@ -83,13 +83,12 @@ export default function Carrito() {
             ← Seguir pidiendo
           </button>
 
-          {/* Icon centrado — fondo de header es var(--rojo) */}
+          {/* Icon centrado — fondo var(--rojo) oscuro → forzar blanco */}
           <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none' }}>
             <LogoSlot
               type="icon"
               src={diseno?.logo_icon_url}
-              mode={diseno?.logo_color_mode}
-              customFilter={diseno?.logo_custom_filter}
+              mode="blanco"
               width={30} height={30}
               placeholderStyle={{ border: '1.5px dashed rgba(255,255,255,0.45)', background: 'rgba(255,255,255,0.1)' }}
             />

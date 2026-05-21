@@ -46,12 +46,11 @@ export default function Confirmado() {
       boxSizing: 'border-box',
     }}>
 
-      {/* ── Logotipo ── */}
+      {/* ── Logotipo — fondo crema claro → versión a color, sin filtro ── */}
       <LogoSlot
         type="logotipo"
-        src={diseno?.logo_url}
-        mode={diseno?.logo_color_mode}
-        customFilter={diseno?.logo_custom_filter}
+        src={diseno?.logo_original_url || diseno?.logo_url}
+        mode="original"
         width={170} height={40}
       />
 

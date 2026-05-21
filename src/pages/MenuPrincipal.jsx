@@ -212,27 +212,26 @@ export default function MenuPrincipal() {
                 ← Menú
               </button>
             ) : (
-              /* ── Icon sobre hero oscuro ── */
+              /* ── Icon sobre hero oscuro → forzar blanco ── */
               <LogoSlot
                 type="icon"
                 src={diseno?.logo_icon_url}
-                mode={diseno?.logo_color_mode}
-                customFilter={diseno?.logo_custom_filter}
+                mode="blanco"
                 width={44} height={44}
                 placeholderStyle={{ border: '1.5px dashed rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.1)' }}
               />
             )}
           </div>
 
-          {/* Icon centrado en vista de sección */}
+          {/* Icon centrado en navbar de sección — fondo var(--rojo) oscuro → blanco */}
           {!mostrarAtajos && (
             <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none' }}>
               <LogoSlot
                 type="icon"
                 src={diseno?.logo_icon_url}
-                mode={diseno?.logo_color_mode}
-                customFilter={diseno?.logo_custom_filter}
+                mode="blanco"
                 width={30} height={30}
+                placeholderStyle={{ border: '1.5px dashed rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.1)' }}
               />
             </div>
           )}

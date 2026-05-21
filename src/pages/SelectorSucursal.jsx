@@ -98,15 +98,13 @@ export default function SelectorSucursal() {
   return (
     <div className="selector-wrap">
 
-      {/* Logo */}
+      {/* Logo — fondo crema claro → versión a color, sin filtro */}
       <div className="selector-header">
         <LogoSlot
           type="logotipo"
-          src={diseno?.logo_url}
-          mode={diseno?.logo_color_mode}
-          customFilter={diseno?.logo_custom_filter}
-          width={200} height={42}
-          placeholderStyle={{ border: '1.5px dashed rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.08)', margin: '0 auto' }}
+          src={diseno?.logo_original_url || diseno?.logo_url}
+          mode="original"
+          width={260} height={70}
           imgStyle={{ margin: '0 auto' }}
         />
       </div>
