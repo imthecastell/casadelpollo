@@ -37,7 +37,7 @@ function precioItem(item) {
 }
 
 export default function Carrito() {
-  const { carrito, eliminarDelCarrito, confirmarPedido, setVista, slots, totalItems, diseno } = useApp()
+  const { carrito, eliminarDelCarrito, confirmarPedido, setVista, slots, totalItems, diseno, cocInicio, cocFin } = useApp()
   const [horaSeleccionada, setHoraSeleccionada] = useState(null)
   const [nombre, setNombre] = useState('')
   const [telefono, setTelefono] = useState('')
@@ -50,9 +50,24 @@ export default function Carrito() {
   const ahora = new Date()
   const minutosActuales = ahora.getHours() * 60 + ahora.getMinutes()
 
+  // ¿El pedido incluye productos que se cocinan?
+  const tieneCocinados = carrito.some(i =>
+    i.se_puede_cocinar ||
+    i.tipo === 'marinado' ||
+    i.tipo === 'preparado' ||
+    i.tipo === 'milanesa'
+  )
+
   const slotsDisponibles = slots.filter(s => {
     const lugaresLibres = s.capacidadTotal - s.ordenesReservadas
-    return lugaresLibres >= Math.max(lugaresBowls, 1) && minutosDeHora(s.hora) >= minutosActuales + tiempoPreparacionPedido
+    if (lugaresLibres < Math.max(lugaresBowls, 1)) return false
+    if (minutosDeHora(s.hora) < minutosActuales + tiempoPreparacionPedido) return false
+    // Si hay cocinados, restringir al rango configurado para esa sucursal
+    if (tieneCocinados && cocInicio && cocFin) {
+      const min = minutosDeHora(s.hora)
+      if (min < minutosDeHora(cocInicio) || min > minutosDeHora(cocFin)) return false
+    }
+    return true
   })
 
   const puedeConfirmar = nombre.trim().length > 0 && telefonoDigitos.length === 10 && horaSeleccionada
@@ -185,6 +200,11 @@ export default function Carrito() {
 
             <div style={{ background: 'var(--card-bg)', borderRadius: 'var(--radio-lg)', padding: '18px', boxShadow: 'var(--sombra)', marginBottom: 16 }}>
               <label className="config-label">Hora de recogida</label>
+              {tieneCocinados && cocInicio && cocFin && (
+                <div style={{ fontSize: 12, color: '#92400E', background: '#FFFBEB', border: '1px solid #F59E0B44', borderRadius: 8, padding: '7px 12px', marginBottom: 10 }}>
+                  🍗 Tu pedido incluye productos cocinados · slots disponibles entre <b>{cocInicio}</b> y <b>{cocFin}</b>
+                </div>
+              )}
               {slotsDisponibles.length === 0 ? (
                 <p style={{ fontSize: 13, color: 'var(--rojo)' }}>No hay horarios disponibles con el tiempo de preparacion requerido.</p>
               ) : (

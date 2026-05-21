@@ -35,7 +35,10 @@ export async function getBanners(tipo) {
   return res.json();
 }
 
-export async function getSchedule() {
-  const res = await fetch(`${API_URL}/api/schedule`);
+export async function getSchedule(branchId) {
+  const url = branchId
+    ? `${API_URL}/api/schedule/${branchId}`
+    : `${API_URL}/api/schedule`;
+  const res = await fetch(url);
   return res.json();
 }

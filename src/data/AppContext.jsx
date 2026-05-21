@@ -10,6 +10,8 @@ export function AppProvider({ children }) {
   const [vista, setVista] = useState('sucursales')
   const [schedule, setSchedule] = useState(null)
   const [slots, setSlots] = useState(() => generarSlots(new Date()))
+  const [cocInicio, setCocInicio] = useState(null)
+  const [cocFin, setCocFin] = useState(null)
   const [sucursales, setSucursales] = useState([])
   const [productos, setProductos] = useState([])
   const [promociones, setPromociones] = useState([])
@@ -59,6 +61,7 @@ export function AppProvider({ children }) {
       .then(data => setBannersAviso(Array.isArray(data) ? data : []))
       .catch(() => setBannersAviso([]))
 
+    // Horario global de fallback (sin sucursal aún)
     getSchedule()
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
@@ -82,6 +85,22 @@ export function AppProvider({ children }) {
       getPromotions(sucursalActiva.id)
         .then(data => setPromociones(Array.isArray(data) ? data : []))
         .catch(() => setPromociones([]))
+
+      // Horario específico de la sucursal
+      getSchedule(sucursalActiva.id)
+        .then(data => {
+          // El endpoint por sucursal devuelve { horarios, cocinados_inicio, cocinados_fin }
+          const horarios = data?.horarios
+          const ci = data?.cocinados_inicio
+          const cf = data?.cocinados_fin
+          if (Array.isArray(horarios) && horarios.length > 0) {
+            setSchedule(horarios)
+            setSlots(generarSlots(new Date(), horarios))
+          }
+          setCocInicio(ci || null)
+          setCocFin(cf || null)
+        })
+        .catch(() => {})
     }
   }, [sucursalActiva])
 
@@ -191,6 +210,7 @@ export function AppProvider({ children }) {
   sucursales,
   productos,
   schedule,
+  cocInicio, cocFin,
   promociones,
   banners,
   bannersMenu,
