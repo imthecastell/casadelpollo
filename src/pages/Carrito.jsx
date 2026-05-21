@@ -103,9 +103,13 @@ export default function Carrito() {
             <LogoSlot
               type="icon"
               src={diseno?.logo_icon_url}
-              mode="blanco"
+              mode="original"
               width={30} height={30}
-              placeholderStyle={{ border: '1.5px dashed rgba(255,255,255,0.45)', background: 'rgba(255,255,255,0.1)' }}
+              placeholderStyle={{
+                border: '1.5px dashed var(--rojo)',
+                background: 'rgba(0,0,0,0.03)',
+                color: 'var(--rojo)',
+              }}
             />
           </div>
 

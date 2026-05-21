@@ -37,7 +37,7 @@ export default function LogoPlaceholder({ type = 'logotipo', width, height, styl
       <span style={{
         fontSize: 9,
         fontWeight: 700,
-        color: '#B0B0B0',
+        color: 'inherit',
         textTransform: 'uppercase',
         letterSpacing: '0.8px',
         userSelect: 'none',
