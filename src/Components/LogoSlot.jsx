@@ -34,6 +34,24 @@ export default function LogoSlot({
   placeholderStyle = {},
 }) {
   if (src) {
+    // modo "tema": usa CSS mask para que el icono tome el color var(--rojo)
+    // exactamente igual que los botones de la interfaz
+    if (mode === 'tema') {
+      return (
+        <div
+          style={{
+            width,
+            height,
+            flexShrink: 0,
+            background: 'var(--rojo)',
+            WebkitMask: `url(${src}) no-repeat center / contain`,
+            mask:        `url(${src}) no-repeat center / contain`,
+            ...imgStyle,
+          }}
+        />
+      )
+    }
+
     return (
       <img
         src={src}

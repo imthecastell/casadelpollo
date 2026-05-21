@@ -223,13 +223,13 @@ export default function MenuPrincipal() {
             )}
           </div>
 
-          {/* Icon centrado en navbar de sección — header claro → color del tema */}
+          {/* Icon centrado en navbar de sección — mismo color que botones (var(--rojo)) */}
           {!mostrarAtajos && (
             <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none' }}>
               <LogoSlot
                 type="icon"
                 src={diseno?.logo_icon_url}
-                mode="original"
+                mode="tema"
                 width={30} height={30}
                 placeholderStyle={{ border: '1.5px dashed var(--rojo)', background: 'rgba(0,0,0,0.03)', color: 'var(--rojo)' }}
               />
