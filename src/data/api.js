@@ -1,4 +1,4 @@
-const API_URL = 'https://casadelpollo-backend-production.up.railway.app';
+const API_URL = 'https://casadelpollo-backend.onrender.com';
 
 export async function getBranches() {
   const res = await fetch(`${API_URL}/api/branches`);
