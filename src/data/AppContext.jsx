@@ -25,6 +25,27 @@ export function AppProvider({ children }) {
   const [bannersAviso, setBannersAviso] = useState([])
 
   useEffect(() => {
+    // Carga el diseño del primer branch activo con reintento automático.
+    // Render free tier puede tardar ~50s en arrancar; si getDesign falla o devuelve
+    // vacío en el primer intento, reintentamos en background a los 3 segundos (hasta 2 veces).
+    // Devuelve la promesa del primer intento para que `cargando` espere ese resultado.
+    const cargarDiseno = (branchId) => {
+      const intentar = (intento) =>
+        getDesign(branchId)
+          .then(d => {
+            if (d && !d.error && (d.logo_url || d.primary_color)) {
+              setDiseno(d)
+            } else if (intento < 2) {
+              // Respuesta vacía/inválida → reintento en background
+              setTimeout(() => intentar(intento + 1), 3000)
+            }
+          })
+          .catch(() => {
+            if (intento < 2) setTimeout(() => intentar(intento + 1), 3000)
+          })
+      return intentar(0) // retorna la promesa del primer intento
+    }
+
     getBranches()
       .then(data => {
         const lista = Array.isArray(data) ? data : []
@@ -33,9 +54,7 @@ export function AppProvider({ children }) {
         // tenga acceso al logo dinámico antes de que el usuario elija sucursal
         const primerActivo = lista.find(b => b.active)
         if (primerActivo) {
-          return getDesign(primerActivo.id)
-            .then(d => { if (d && Object.keys(d).length > 0) setDiseno(d) })
-            .catch(() => {})
+          return cargarDiseno(primerActivo.id)
         }
       })
       .catch(() => setSucursales([]))
