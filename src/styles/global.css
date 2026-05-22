@@ -267,6 +267,24 @@ body {
 .btn-add:hover { transform: scale(1.1); filter: brightness(1.1); }
 .btn-add:active { transform: scale(0.93); }
 
+/* Versión div del btn-add para usarse dentro de <button> (card-marinado) */
+.card-add {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--button-bg);
+  color: #fff;
+  font-size: 22px;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 1;
+  box-shadow: 0 2px 8px rgba(146,43,33,0.22);
+  pointer-events: none;
+}
+
 .qty-pill {
   display: flex;
   align-items: center;

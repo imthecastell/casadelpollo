@@ -149,7 +149,10 @@ export default function SeccionMarinados() {
               <div className="producto-nombre">{p.name}</div>
               <div className="producto-precio">${p.price}/kg</div>
             </div>
-            {seleccion?.id === p.id && <div className="card-check">✓</div>}
+            {seleccion?.id === p.id
+              ? <div className="card-check">✓</div>
+              : <div className="card-add">+</div>
+            }
           </button>
 
           {seleccion?.id === p.id && (

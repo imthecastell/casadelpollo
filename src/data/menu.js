@@ -133,6 +133,13 @@ export const SECCIONES = [
     emoji: '🥣',
     tipo: 'bowls',
   },
+  {
+    id: 'nuevo',
+    nombre: 'Nuevo',
+    tabLabel: 'Nuevo',
+    emoji: '✨',
+    tipo: 'nuevo',
+  },
 ]
 
 export const AIRFRYER_CONFIG = {

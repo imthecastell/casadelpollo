@@ -87,7 +87,10 @@ function CardProducto({ producto, seleccion, cantidad, recogida, onSeleccionar, 
             <div style={{ fontSize: 11, color: 'var(--rojo)', marginTop: 2 }}>±10 pz · charola 20</div>
           )}
         </div>
-        {isActive && <div className="card-check">✓</div>}
+        {isActive
+          ? <div className="card-check">✓</div>
+          : <div className="card-add">+</div>
+        }
       </button>
 
       {isActive && (

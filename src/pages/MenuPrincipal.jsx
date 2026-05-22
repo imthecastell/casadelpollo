@@ -7,6 +7,7 @@ import SeccionMarinados from '../Components/SeccionMarinados.jsx'
 import SeccionPreparados from '../Components/SeccionPreparados.jsx'
 import SeccionComplementos from '../Components/SeccionComplementos.jsx'
 import SeccionBowls from '../Components/SeccionBowls.jsx'
+import SeccionNuevo from '../Components/SeccionNuevo.jsx'
 import '../styles/menu.css'
 
 const BASE = 'https://res.cloudinary.com/do4juvxio/image/upload'
@@ -26,13 +27,14 @@ const HERO_IMGS = [
   COOK('marinados/barbacoa.png',           '3:2', 960),
 ]
 
-/* ─── Strip de categorías — sin Nuggets para que quepan todos sin scroll ─── */
+/* ─── Strip de categorías ─── */
 const CATS = [
   { label: 'Marinados',      emoji: '🍯', img: COOK('marinados/teriyaki.png',          '1:1', 180), tab: 'marinados'  },
   { label: 'Milanesas',      emoji: '🥩', img: COOK('milanesas/milanesa_natural.png',  '1:1', 180), tab: 'preparados' },
   { label: 'Preparados',     emoji: '🍳', img: COOK('preparados/pechuga_rellena.png',  '1:1', 180), tab: 'preparados' },
   { label: 'Pollo\nFresco',  emoji: '🐔', img: COOK('fresco/piernita.png',             '1:1', 180), tab: 'fresco'     },
   { label: 'Bowls',          emoji: '🥣', img: COOK('marinados/agridulce.png',         '1:1', 180), tab: 'bowls'      },
+  { label: '✨ Nuevo',        emoji: '✨', img: null,                                               tab: 'nuevo'      },
 ]
 
 /* ─── Cards de entrada ─── */
@@ -141,7 +143,7 @@ function EntradaCard({ entrada, onClic }) {
   )
 }
 
-const COMPONENTES = { fresco: SeccionFresco, marinados: SeccionMarinados, preparados: SeccionPreparados, complementos: SeccionComplementos, bowls: SeccionBowls }
+const COMPONENTES = { fresco: SeccionFresco, marinados: SeccionMarinados, preparados: SeccionPreparados, complementos: SeccionComplementos, bowls: SeccionBowls, nuevo: SeccionNuevo }
 const TABS_POLLO  = SECCIONES
 
 /* ── Calcula si la sucursal está abierta ahora ── */
