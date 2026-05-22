@@ -36,8 +36,17 @@ function precioExtra(producto, gramosExtra) {
   return (gramosExtra / 1000) * precioKg
 }
 
-/* ── Componente de imagen de base (placeholder verde/madera) ── */
-function BaseImg({ nombre }) {
+/* ── Componente de imagen de base ── */
+function BaseImg({ nombre, imageUrl }) {
+  if (imageUrl) {
+    return (
+      <div style={{
+        position: 'absolute', inset: 0,
+        backgroundImage: `url(${imageUrl})`,
+        backgroundSize: 'cover', backgroundPosition: 'center',
+      }} />
+    )
+  }
   const emojis = { 'Arroz': '🍚', 'Pasta': '🍝', 'Ensalada': '🥗' }
   const emoji = Object.entries(emojis).find(([k]) => nombre?.includes(k))?.[1] || '🥣'
   return (
@@ -68,10 +77,10 @@ function BowlHero({ marinado, base, defaultImg }) {
         transition: 'opacity 0.9s ease',
       }} />
 
-      {/* Overlay base (emoji) */}
+      {/* Overlay base (imagen real o emoji) */}
       {showBase && (
         <div style={{ position: 'absolute', inset: 0, opacity: showBase ? 1 : 0, transition: 'opacity 0.7s ease' }}>
-          <BaseImg nombre={base?.name} />
+          <BaseImg nombre={base?.name} imageUrl={base?.image_url} />
         </div>
       )}
 
