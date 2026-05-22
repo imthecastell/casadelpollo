@@ -24,8 +24,8 @@ function cookedHero(url, w = 900) {
   return `${CDN}/c_crop,fl_relative,x_0.50,y_0.00,w_0.50,h_1.00/ar_16:9,c_fill,w_${w}/${path}`
 }
 
-/* Imagen de bowl por defecto — lado cocinado del teriyaki */
-const BOWL_DEFAULT = cookedHero('marinados/teriyaki.png')
+/* Imagen de portada de la sección bowls */
+const BOWL_DEFAULT = `${CDN}/ar_16:9,c_fill,w_900/design/fqcs5srwvt8ksqezoqqu.png`
 
 function calcularLugares(numBowls) {
   return Math.ceil(numBowls / 2)
