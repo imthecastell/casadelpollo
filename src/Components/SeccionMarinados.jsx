@@ -145,7 +145,7 @@ export default function SeccionMarinados() {
               isSelected={seleccion?.id === p.id}
               recogida={recogida}
             />
-            <div>
+            <div style={{ flex: 1, minWidth: 0 }}>
               <div className="producto-nombre">{p.name}</div>
               <div className="producto-precio">${p.price}/kg</div>
             </div>
