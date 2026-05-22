@@ -1,6 +1,6 @@
 /**
  * SeccionNuevo — pestaña sandbox, completamente aislada.
- * Diseño premium: grid 2 col vertical (móvil) → 1 col horizontal (desktop ≥ 640px)
+ * Al seleccionar una card muta a vista expandida (hero + config embebido).
  * Solo modifica ESTE archivo para iterar en el diseño.
  */
 import { useState } from 'react'
@@ -44,10 +44,10 @@ const PRODUCTOS = [
 const MIN = 200, MAX = 2000, PASO = 50
 
 /* ══════════════════════════════════════════
-   CSS inyectado — 100 % aislado (prefijo nv-)
+   CSS aislado — prefijo nv-
    ══════════════════════════════════════════ */
 const CSS_NUEVO = `
-/* grid */
+/* ── grid ── */
 .nv-grid {
   display: grid;
   gap: 14px;
@@ -55,7 +55,7 @@ const CSS_NUEVO = `
   padding: 0 0 8px;
 }
 
-/* card base */
+/* ── card compacta (no seleccionada) ── */
 .nv-card {
   background: var(--crema);
   border-radius: 24px;
@@ -64,7 +64,7 @@ const CSS_NUEVO = `
   transition:
     transform    0.35s cubic-bezier(.22,1,.36,1),
     box-shadow   0.35s cubic-bezier(.22,1,.36,1),
-    border-color 0.2s  ease;
+    border-color 0.2s ease;
   cursor: pointer;
   border: 2.5px solid transparent;
   display: flex;
@@ -78,12 +78,8 @@ const CSS_NUEVO = `
 }
 .nv-card:hover     { transform: translateY(-4px); box-shadow: 0 18px 40px rgba(120,90,60,0.12); }
 .nv-card:active    { transform: scale(0.97); }
-.nv-card.nv-activa {
-  border-color: var(--rojo);
-  box-shadow: 0 0 0 3px rgba(146,43,33,0.12), 0 14px 36px rgba(120,90,60,0.12);
-}
 
-/* imagen */
+/* ── imagen compacta ── */
 .nv-img {
   aspect-ratio: 1 / 1;
   overflow: hidden;
@@ -91,137 +87,134 @@ const CSS_NUEVO = `
   flex-shrink: 0;
 }
 .nv-img img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
   object-fit: cover;
   transition: transform 0.6s ease, opacity 0.4s ease;
 }
 .nv-card:hover .nv-img img { transform: scale(1.05); }
 .nv-img-emoji {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 48px;
-  background: var(--crema-oscura);
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 48px; background: var(--crema-oscura);
 }
 
-/* barra inferior */
+/* ── barra de contenido compacta ── */
 .nv-content {
-  background: #ffffff;
+  background: #fff;
   padding: 11px 13px;
-  display: flex;
-  align-items: center;
+  display: flex; align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  flex: 1;
+  gap: 8px; flex: 1;
 }
 .nv-info { min-width: 0; flex: 1; }
 .nv-nombre {
   font-family: var(--font-title), sans-serif;
-  font-weight: 700;
-  font-size: 12.5px;
-  color: #111;
-  margin-bottom: 3px;
-  line-height: 1.25;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight: 700; font-size: 12.5px; color: #111;
+  margin-bottom: 3px; line-height: 1.25;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .nv-precio {
   font-family: var(--font-title), sans-serif;
-  font-weight: 700;
-  font-size: 12px;
-  color: var(--rojo);
+  font-weight: 700; font-size: 12px; color: var(--rojo);
 }
-.nv-sub {
-  font-size: 10px;
-  color: #aaa;
-  margin-top: 1px;
-}
+.nv-sub { font-size: 10px; color: #aaa; margin-top: 1px; }
 
-/* botón acción (div, no button — evita nesting) */
+/* ── botón + / ✓ en card compacta ── */
 .nv-btn {
-  width: 34px; height: 34px;
-  border-radius: 50%;
-  background: #EFE7DD;
-  color: var(--rojo);
+  width: 34px; height: 34px; border-radius: 50%;
+  background: #EFE7DD; color: var(--rojo);
   font-size: 17px; font-weight: 700; line-height: 1;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
   transition: all 0.3s cubic-bezier(.22,1,.36,1);
 }
-.nv-card:hover .nv-btn,
-.nv-card.nv-activa .nv-btn {
-  background: var(--rojo);
-  color: #fff;
-}
+.nv-card:hover .nv-btn { background: var(--rojo); color: #fff; }
 
-/* check overlay */
-.nv-check {
-  position: absolute; top: 8px; right: 8px;
-  width: 24px; height: 24px;
-  background: var(--rojo);
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  color: #fff; font-size: 12px; font-weight: 800;
-  box-shadow: 0 2px 8px rgba(146,43,33,0.45);
-  z-index: 2;
-  animation: nvPop 0.25s cubic-bezier(.22,1,.36,1);
-}
-@keyframes nvPop {
-  from { transform: scale(0); opacity: 0; }
-  to   { transform: scale(1); opacity: 1; }
-}
-
-/* ── configurador ── */
-.nv-config {
-  margin-top: 20px;
-  background: #ffffff;
-  border-radius: 24px;
-  padding: 20px 18px;
-  box-shadow: 0 8px 32px rgba(120,90,60,0.10);
-  display: flex;
+/* ══════════════════════════════════════════
+   CARD EXPANDIDA — muta al seleccionar
+   ══════════════════════════════════════════ */
+.nv-expanded {
+  grid-column: 1 / -1;         /* ocupa ambas columnas */
   flex-direction: column;
-  gap: 18px;
-  animation: nvSlide 0.22s cubic-bezier(.22,1,.36,1);
+  border-radius: 24px;
+  border-color: var(--rojo);
+  box-shadow: 0 0 0 3px rgba(146,43,33,0.12), 0 20px 48px rgba(120,90,60,0.16);
+  cursor: default;
+  animation: nvMuta 0.36s cubic-bezier(.22,1,.36,1);
+  height: auto;
+  transform: none !important;  /* disable hover translate on expanded */
 }
-@keyframes nvSlide {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0);    }
+@keyframes nvMuta {
+  from { opacity: 0.4; transform: scale(0.95) translateY(6px); }
+  to   { opacity: 1;   transform: scale(1)    translateY(0);   }
 }
 
-.nv-config-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding-bottom: 14px;
-  border-bottom: 1.5px solid var(--crema-oscura);
-}
-.nv-config-thumb {
-  width: 52px; height: 52px;
-  border-radius: 14px;
+/* ── hero imagen grande ── */
+.nv-hero {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
   overflow: hidden;
   flex-shrink: 0;
 }
-.nv-config-thumb img { width: 100%; height: 100%; object-fit: cover; }
-.nv-config-title {
-  font-family: var(--font-title), sans-serif;
-  font-weight: 800; font-size: 17px; color: var(--texto);
+.nv-hero img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: opacity 0.5s ease;
 }
-.nv-config-price { font-size: 12px; color: var(--texto-suave); margin-top: 2px; }
+.nv-hero-gradient {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.05) 55%, transparent 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+.nv-hero-badge {
+  position: absolute; bottom: 12px; left: 14px;
+  padding: 5px 13px;
+  border-radius: 50px;
+  font-family: var(--font-title), sans-serif;
+  font-weight: 700; font-size: 12px; color: #fff;
+  background: rgba(0,0,0,0.42);
+  backdrop-filter: blur(10px);
+  z-index: 2;
+  transition: all 0.35s ease;
+  pointer-events: none;
+}
+.nv-hero-close {
+  position: absolute; top: 10px; right: 10px;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(8px);
+  color: #fff; font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  border: none; cursor: pointer; z-index: 3;
+  transition: background 0.2s;
+}
+.nv-hero-close:hover { background: rgba(0,0,0,0.65); }
 
-/* recogida */
+/* ── configurador embebido ── */
+.nv-inner {
+  background: #fff;
+  padding: 16px 16px 20px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.nv-inner-head {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;
+}
+.nv-inner-name {
+  font-family: var(--font-title), sans-serif;
+  font-weight: 800; font-size: 19px; color: var(--texto); line-height: 1.15;
+}
+.nv-inner-price { font-size: 13px; color: var(--texto-suave); margin-top: 3px; }
+
+/* recogida opts */
 .nv-recogida { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .nv-rec-opt {
   display: flex; flex-direction: column; align-items: center; gap: 5px;
-  padding: 14px 10px;
-  border-radius: 16px;
-  border: 2px solid var(--crema-oscura);
-  background: var(--crema);
+  padding: 14px 10px; border-radius: 16px;
+  border: 2px solid var(--crema-oscura); background: var(--crema);
   cursor: pointer;
   transition: all 0.22s cubic-bezier(.22,1,.36,1);
   font-family: var(--font-title), sans-serif;
@@ -232,88 +225,160 @@ const CSS_NUEVO = `
 .nv-rec-sub    { font-size: 10px; color: var(--texto-suave); }
 
 /* footer */
-.nv-footer {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+.nv-footer { display: flex; align-items: center; gap: 12px; }
 .nv-total-label { font-size: 10px; color: var(--texto-suave); margin-bottom: 1px; }
 .nv-total-num {
   font-family: var(--font-title), sans-serif;
   font-weight: 800; font-size: 26px; color: var(--rojo); line-height: 1;
 }
 .nv-agregar {
-  flex: 1;
-  padding: 14px 16px;
-  background: var(--rojo);
-  color: #fff;
-  border: none;
-  border-radius: 50px;
-  font-family: var(--font-title), sans-serif;
-  font-weight: 700; font-size: 14px;
-  cursor: pointer;
+  flex: 1; padding: 14px 16px; background: var(--rojo); color: #fff; border: none;
+  border-radius: 50px; font-family: var(--font-title), sans-serif;
+  font-weight: 700; font-size: 14px; cursor: pointer;
   transition: all 0.3s cubic-bezier(.22,1,.36,1);
   box-shadow: 0 4px 16px rgba(146,43,33,0.28);
 }
 .nv-agregar:hover    { filter: brightness(1.08); transform: translateY(-1px); }
-.nv-agregar:active   { transform: scale(0.97); filter: brightness(0.97); }
+.nv-agregar:active   { transform: scale(0.97); }
 .nv-agregar.nv-listo { background: var(--verde); box-shadow: none; }
 
-/* ══ DESKTOP ≥ 640px: cards horizontales ══ */
+/* ══ DESKTOP ≥ 640px: cards compactas horizontales ══ */
 @media (min-width: 640px) {
   .nv-grid { grid-template-columns: 1fr; gap: 20px; }
 
-  .nv-card {
+  .nv-card:not(.nv-expanded) {
+    flex-direction: row; height: 200px; border-radius: 28px;
+  }
+  .nv-card:not(.nv-expanded) .nv-img { width: 42%; aspect-ratio: auto; height: 100%; }
+  .nv-card:not(.nv-expanded) .nv-content { flex: 1; padding: 32px 36px; }
+  .nv-card:not(.nv-expanded) .nv-nombre { font-size: 22px; white-space: normal; margin-bottom: 6px; }
+  .nv-card:not(.nv-expanded) .nv-precio { font-size: 16px; }
+  .nv-card:not(.nv-expanded) .nv-sub    { font-size: 12px; margin-top: 4px; }
+  .nv-card:not(.nv-expanded) .nv-btn    { width: 52px; height: 52px; font-size: 22px; }
+
+  /* Expanded en desktop: imagen izquierda + config derecha */
+  .nv-expanded {
     flex-direction: row;
-    height: 200px;
+    min-height: 300px;
     border-radius: 28px;
+    align-items: stretch;
   }
-  .nv-img { width: 42%; aspect-ratio: auto; height: 100%; }
-
-  .nv-content { flex: 1; padding: 32px 36px; }
-
-  .nv-nombre {
-    font-size: 22px;
-    white-space: normal;
-    margin-bottom: 6px;
-  }
-  .nv-precio { font-size: 16px; }
-  .nv-sub    { font-size: 12px; margin-top: 4px; }
-
-  .nv-btn    { width: 52px; height: 52px; font-size: 22px; }
-
-  .nv-check  { top: 12px; right: 12px; width: 28px; height: 28px; font-size: 14px; }
+  .nv-hero { width: 45%; aspect-ratio: auto; height: auto; }
+  .nv-inner { flex: 1; padding: 28px 32px; justify-content: center; }
+  .nv-inner-name { font-size: 22px; }
 }
 `
 
-/* ── Card individual ── */
-function NvCard({ p, isSelected, recogida, onClick }) {
-  const showCooked = isSelected && recogida === 'cocinado'
-
+/* ── Card compacta (no seleccionada) ── */
+function NvCardCompact({ p, onClick }) {
   return (
-    <button className={`nv-card ${isSelected ? 'nv-activa' : ''}`} onClick={onClick}>
+    <button className="nv-card" onClick={onClick}>
       <div className="nv-img">
-        {p.image_url ? (
-          <>
-            <img src={p.image_url}        alt={p.name}                 style={{ opacity: showCooked ? 0 : 1 }} />
-            <img src={p.image_cooked_url} alt={`${p.name} cocinado`}  style={{ opacity: showCooked ? 1 : 0 }} />
-          </>
-        ) : (
-          <div className="nv-img-emoji">{p.emoji}</div>
-        )}
+        {p.image_url
+          ? <img src={p.image_url} alt={p.name} style={{ opacity: 1 }} />
+          : <div className="nv-img-emoji">{p.emoji}</div>
+        }
       </div>
-
       <div className="nv-content">
         <div className="nv-info">
           <div className="nv-nombre">{p.name}</div>
           <div className="nv-precio">${p.price}{p.unidad}</div>
           {p.se_puede_cocinar && <div className="nv-sub">crudo o cocinado</div>}
         </div>
-        <div className="nv-btn">{isSelected ? '✓' : '+'}</div>
+        <div className="nv-btn">+</div>
+      </div>
+    </button>
+  )
+}
+
+/* ── Card expandida (seleccionada — muta aquí) ── */
+function NvCardExpandida({ p, recogida, gramos, precioTotal, agregado, onClose, onGramosChange, onRecogidaChange, onAgregar }) {
+  const showCooked = recogida === 'cocinado'
+
+  return (
+    <div className="nv-card nv-expanded">
+
+      {/* Hero con crossfade */}
+      <div className="nv-hero">
+        {p.image_url
+          ? <>
+              <img src={p.image_url}        alt={p.name}               style={{ opacity: showCooked ? 0 : 1 }} />
+              <img src={p.image_cooked_url} alt={`${p.name} cocinado`} style={{ opacity: showCooked ? 1 : 0 }} />
+            </>
+          : <div style={{ position: 'absolute', inset: 0, background: 'var(--crema-oscura)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 72 }}>{p.emoji}</div>
+        }
+        <div className="nv-hero-gradient" />
+        <div className="nv-hero-badge">
+          {showCooked ? '🔥 Cocinado' : '📦 Crudo'}
+        </div>
+        <button className="nv-hero-close" onClick={onClose}>✕</button>
       </div>
 
-      {isSelected && <div className="nv-check">✓</div>}
-    </button>
+      {/* Configurador embebido */}
+      <div className="nv-inner">
+
+        {/* Nombre + precio */}
+        <div className="nv-inner-head">
+          <div>
+            <div className="nv-inner-name">{p.name}</div>
+            <div className="nv-inner-price">${p.price}{p.unidad}</div>
+          </div>
+        </div>
+
+        {/* Cantidad */}
+        <div>
+          <label className="config-label">Cantidad</label>
+          <div className="cantidad-ctrl">
+            <button className="cantidad-btn" onClick={() => onGramosChange(-PASO)} disabled={gramos <= MIN}>−</button>
+            <span className="cantidad-num" style={{ fontSize: 20, minWidth: 60, textAlign: 'center' }}>
+              {gramos}g
+            </span>
+            <button className="cantidad-btn" onClick={() => onGramosChange(PASO)} disabled={gramos >= MAX}>+</button>
+          </div>
+          <div style={{ fontSize: 11, color: 'var(--texto-suave)', marginTop: 6 }}>{MIN}g — {MAX}g · cada {PASO}g</div>
+        </div>
+
+        {/* Crudo / Cocinado */}
+        {p.se_puede_cocinar && (
+          <div>
+            <label className="config-label">¿Cómo lo quieres?</label>
+            <div className="nv-recogida">
+              <button
+                className={`nv-rec-opt ${recogida === 'crudo' ? 'nv-on' : ''}`}
+                onClick={() => onRecogidaChange('crudo')}
+              >
+                <span style={{ fontSize: 22 }}>📦</span>
+                <div className="nv-rec-titulo">Crudo</div>
+                <div className="nv-rec-sub">Lo llevas en frío</div>
+              </button>
+              <button
+                className={`nv-rec-opt ${recogida === 'cocinado' ? 'nv-on' : ''}`}
+                onClick={() => onRecogidaChange('cocinado')}
+              >
+                <span style={{ fontSize: 22 }}>🔥</span>
+                <div className="nv-rec-titulo">Cocinado</div>
+                <div className="nv-rec-sub">Listo para comer</div>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Total + Agregar */}
+        <div className="nv-footer">
+          <div>
+            <div className="nv-total-label">Total estimado</div>
+            <div className="nv-total-num">${precioTotal.toFixed(2)}</div>
+          </div>
+          <button
+            className={`nv-agregar ${agregado ? 'nv-listo' : ''}`}
+            onClick={onAgregar}
+          >
+            {agregado ? '✓ Agregado' : 'Agregar al pedido'}
+          </button>
+        </div>
+
+      </div>
+    </div>
   )
 }
 
@@ -329,7 +394,7 @@ export default function SeccionNuevo() {
     if (seleccion?.id === p.id) {
       setSeleccion(null); setGramos(300); setRecogida('crudo')
     } else {
-      setSeleccion(p);    setGramos(300); setRecogida('crudo')
+      setSeleccion(p); setGramos(300); setRecogida('crudo')
     }
   }
 
@@ -356,9 +421,6 @@ export default function SeccionNuevo() {
   }
 
   const precioTotal = seleccion ? (gramos / 1000) * seleccion.price : 0
-  const thumbImg    = seleccion
-    ? (recogida === 'cocinado' ? seleccion.image_cooked_url : seleccion.image_url)
-    : null
 
   return (
     <div>
@@ -367,92 +429,30 @@ export default function SeccionNuevo() {
       <div className="seccion-titulo">✨ Nuevo</div>
       <p className="seccion-desc">Selecciona un producto para configurar tu pedido</p>
 
-      {/* Grid de cards */}
       <div className="nv-grid">
-        {PRODUCTOS.map(p => (
-          <NvCard
-            key={p.id}
-            p={p}
-            isSelected={seleccion?.id === p.id}
-            recogida={recogida}
-            onClick={() => seleccionar(p)}
-          />
-        ))}
+        {PRODUCTOS.map(p => {
+          const isSelected = seleccion?.id === p.id
+
+          if (isSelected) {
+            return (
+              <NvCardExpandida
+                key={p.id}
+                p={p}
+                recogida={recogida}
+                gramos={gramos}
+                precioTotal={precioTotal}
+                agregado={agregado}
+                onClose={() => seleccionar(p)}
+                onGramosChange={cambiarGramos}
+                onRecogidaChange={setRecogida}
+                onAgregar={handleAgregar}
+              />
+            )
+          }
+
+          return <NvCardCompact key={p.id} p={p} onClick={() => seleccionar(p)} />
+        })}
       </div>
-
-      {/* Configurador — panel debajo del grid */}
-      {seleccion && (
-        <div className="nv-config">
-
-          {/* Header */}
-          <div className="nv-config-header">
-            {thumbImg && (
-              <div className="nv-config-thumb">
-                <img src={thumbImg} alt={seleccion.name} />
-              </div>
-            )}
-            <div>
-              <div className="nv-config-title">{seleccion.name}</div>
-              <div className="nv-config-price">${seleccion.price}{seleccion.unidad}</div>
-            </div>
-          </div>
-
-          {/* Cantidad */}
-          <div>
-            <label className="config-label">Cantidad</label>
-            <div className="cantidad-ctrl">
-              <button className="cantidad-btn" onClick={() => cambiarGramos(-PASO)} disabled={gramos <= MIN}>−</button>
-              <span className="cantidad-num" style={{ fontSize: 20, minWidth: 60, textAlign: 'center' }}>
-                {gramos}g
-              </span>
-              <button className="cantidad-btn" onClick={() => cambiarGramos(PASO)} disabled={gramos >= MAX}>+</button>
-            </div>
-            <div style={{ fontSize: 11, color: 'var(--texto-suave)', marginTop: 6 }}>
-              {MIN}g — {MAX}g · cada {PASO}g
-            </div>
-          </div>
-
-          {/* Crudo / Cocinado */}
-          {seleccion.se_puede_cocinar && (
-            <div>
-              <label className="config-label">¿Cómo lo quieres?</label>
-              <div className="nv-recogida">
-                <button
-                  className={`nv-rec-opt ${recogida === 'crudo' ? 'nv-on' : ''}`}
-                  onClick={() => setRecogida('crudo')}
-                >
-                  <span style={{ fontSize: 22 }}>📦</span>
-                  <div className="nv-rec-titulo">Crudo</div>
-                  <div className="nv-rec-sub">Lo llevas en frío</div>
-                </button>
-                <button
-                  className={`nv-rec-opt ${recogida === 'cocinado' ? 'nv-on' : ''}`}
-                  onClick={() => setRecogida('cocinado')}
-                >
-                  <span style={{ fontSize: 22 }}>🔥</span>
-                  <div className="nv-rec-titulo">Cocinado</div>
-                  <div className="nv-rec-sub">Listo para comer</div>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Total + botón */}
-          <div className="nv-footer">
-            <div>
-              <div className="nv-total-label">Total estimado</div>
-              <div className="nv-total-num">${precioTotal.toFixed(2)}</div>
-            </div>
-            <button
-              className={`nv-agregar ${agregado ? 'nv-listo' : ''}`}
-              onClick={handleAgregar}
-            >
-              {agregado ? '✓ Agregado' : 'Agregar al pedido'}
-            </button>
-          </div>
-
-        </div>
-      )}
     </div>
   )
 }
