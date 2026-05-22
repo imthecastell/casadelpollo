@@ -209,20 +209,32 @@ const CSS_NUEVO = `
 }
 .nv-inner-price { font-size: 13px; color: var(--texto-suave); margin-top: 3px; }
 
-/* recogida opts */
-.nv-recogida { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+/* recogida opts — apilados verticalmente, layout horizontal */
+.nv-recogida { display: flex; flex-direction: column; gap: 8px; }
 .nv-rec-opt {
-  display: flex; flex-direction: column; align-items: center; gap: 5px;
-  padding: 14px 10px; border-radius: 16px;
+  display: flex; flex-direction: row; align-items: center; gap: 14px;
+  padding: 13px 16px; border-radius: 14px;
   border: 2px solid var(--crema-oscura); background: var(--crema);
-  cursor: pointer;
+  cursor: pointer; text-align: left; width: 100%;
   transition: all 0.22s cubic-bezier(.22,1,.36,1);
   font-family: var(--font-title), sans-serif;
 }
 .nv-rec-opt:hover  { border-color: var(--rojo); background: #fff; }
-.nv-rec-opt.nv-on  { border-color: var(--rojo); background: #fff; box-shadow: 0 0 0 3px rgba(146,43,33,0.09); }
-.nv-rec-titulo { font-weight: 700; font-size: 12px; color: var(--texto); }
-.nv-rec-sub    { font-size: 10px; color: var(--texto-suave); }
+.nv-rec-opt.nv-on  {
+  border-color: var(--rojo); background: #fff;
+  box-shadow: 0 0 0 3px rgba(146,43,33,0.09);
+}
+.nv-rec-icon {
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  background: var(--crema-oscura);
+  transition: background 0.2s;
+}
+.nv-rec-opt.nv-on .nv-rec-icon { background: rgba(146,43,33,0.10); }
+.nv-rec-texto { display: flex; flex-direction: column; gap: 1px; }
+.nv-rec-titulo { font-weight: 700; font-size: 13px; color: var(--texto); }
+.nv-rec-sub    { font-size: 11px; color: var(--texto-suave); }
 
 /* footer */
 .nv-footer { display: flex; align-items: center; gap: 12px; }
@@ -232,13 +244,14 @@ const CSS_NUEVO = `
   font-weight: 800; font-size: 26px; color: var(--rojo); line-height: 1;
 }
 .nv-agregar {
-  flex: 1; padding: 14px 16px; background: var(--rojo); color: #fff; border: none;
+  padding: 14px 28px; background: var(--rojo); color: #fff; border: none;
   border-radius: 50px; font-family: var(--font-title), sans-serif;
-  font-weight: 700; font-size: 14px; cursor: pointer;
+  font-weight: 700; font-size: 15px; cursor: pointer;
   transition: all 0.3s cubic-bezier(.22,1,.36,1);
   box-shadow: 0 4px 16px rgba(146,43,33,0.28);
+  white-space: nowrap;
 }
-.nv-agregar:hover    { filter: brightness(1.08); transform: translateY(-1px); }
+.nv-agregar:hover    { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(146,43,33,0.35); }
 .nv-agregar:active   { transform: scale(0.97); }
 .nv-agregar.nv-listo { background: var(--verde); box-shadow: none; }
 
@@ -347,17 +360,21 @@ function NvCardExpandida({ p, recogida, gramos, precioTotal, agregado, onClose, 
                 className={`nv-rec-opt ${recogida === 'crudo' ? 'nv-on' : ''}`}
                 onClick={() => onRecogidaChange('crudo')}
               >
-                <span style={{ fontSize: 22 }}>📦</span>
-                <div className="nv-rec-titulo">Crudo</div>
-                <div className="nv-rec-sub">Lo llevas en frío</div>
+                <div className="nv-rec-icon">📦</div>
+                <div className="nv-rec-texto">
+                  <div className="nv-rec-titulo">Crudo</div>
+                  <div className="nv-rec-sub">Lo llevas en frío</div>
+                </div>
               </button>
               <button
                 className={`nv-rec-opt ${recogida === 'cocinado' ? 'nv-on' : ''}`}
                 onClick={() => onRecogidaChange('cocinado')}
               >
-                <span style={{ fontSize: 22 }}>🔥</span>
-                <div className="nv-rec-titulo">Cocinado</div>
-                <div className="nv-rec-sub">Listo para comer</div>
+                <div className="nv-rec-icon">🔥</div>
+                <div className="nv-rec-texto">
+                  <div className="nv-rec-titulo">Cocinado</div>
+                  <div className="nv-rec-sub">Listo para comer</div>
+                </div>
               </button>
             </div>
           </div>
@@ -373,7 +390,7 @@ function NvCardExpandida({ p, recogida, gramos, precioTotal, agregado, onClose, 
             className={`nv-agregar ${agregado ? 'nv-listo' : ''}`}
             onClick={onAgregar}
           >
-            {agregado ? '✓ Agregado' : 'Agregar al pedido'}
+            {agregado ? '✓ Listo' : 'Agregar'}
           </button>
         </div>
 
