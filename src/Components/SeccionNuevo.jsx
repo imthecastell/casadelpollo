@@ -182,6 +182,13 @@ const CSS_NUEVO = `
   transition: all 0.35s ease;
   pointer-events: none;
 }
+.nv-hero-note {
+  position: absolute; bottom: 10px; right: 12px;
+  font-size: 9px; color: rgba(255,255,255,0.6);
+  font-style: italic; letter-spacing: 0.2px;
+  z-index: 2; pointer-events: none;
+}
+
 .nv-hero-close {
   position: absolute; top: 10px; right: 10px;
   width: 28px; height: 28px; border-radius: 50%;
@@ -324,6 +331,7 @@ function NvCardExpandida({ p, recogida, gramos, precioTotal, agregado, onClose, 
         <div className="nv-hero-badge">
           {showCooked ? '🔥 Cocinado' : '📦 Crudo'}
         </div>
+        <div className="nv-hero-note">* Imagen ilustrativa</div>
         <button className="nv-hero-close" onClick={onClose}>✕</button>
       </div>
 
