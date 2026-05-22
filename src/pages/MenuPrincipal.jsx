@@ -318,11 +318,11 @@ export default function MenuPrincipal() {
                 ¿Qué vas a pedir?
               </span>
             </div>
-            <div style={{ display: 'flex', gap: 12, overflowX: 'auto', padding: '0 20px 16px', scrollbarWidth: 'none' }}>
+            <div style={{ display: 'flex', padding: '0 12px 16px' }}>
               {CATS.map(cat => (
                 <button key={cat.label} onClick={() => irA(cat.tab)}
-                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0, padding: 0 }}>
-                  <div style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', boxShadow: '0 3px 12px rgba(0,0,0,0.14)', border: '2.5px solid var(--card-bg)' }}>
+                  style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', padding: '0 4px', minWidth: 0 }}>
+                  <div style={{ width: '100%', aspectRatio: '1', maxWidth: 76, borderRadius: '50%', overflow: 'hidden', boxShadow: '0 3px 12px rgba(0,0,0,0.14)', border: '2.5px solid var(--card-bg)' }}>
                     {cat.img
                       ? <img src={cat.img} alt={cat.label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       : <div style={{ width: '100%', height: '100%', background: 'var(--crema-oscura)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>{cat.emoji}</div>
