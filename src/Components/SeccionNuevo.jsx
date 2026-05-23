@@ -270,11 +270,13 @@ const CSS_NUEVO = `
 
 /* ── Card compacta (no seleccionada) ── */
 function NvCardCompact({ p, onClick }) {
+  // Mostrar siempre la foto cocinada si existe — es más apetecible como thumbnail
+  const thumb = p.image_cooked_url || p.image_url
   return (
     <button className="nv-card" onClick={onClick}>
       <div className="nv-img">
-        {p.image_url
-          ? <img src={p.image_url} alt={p.name} style={{ opacity: 1 }} />
+        {thumb
+          ? <img src={thumb} alt={p.name} style={{ opacity: 1 }} />
           : <div className="nv-img-emoji">{p.emoji}</div>
         }
       </div>
@@ -399,17 +401,19 @@ export default function SeccionNuevo() {
   const { agregarAlCarrito, productos } = useApp()
   const [seleccion, setSeleccion] = useState(null)
   const [cantidad, setCantidad]   = useState(300)   // gramos o piezas según producto
-  const [recogida, setRecogida]   = useState('crudo')
+  const [recogida, setRecogida]   = useState('cocinado')  // cocinado por defecto — más atractivo
   const [agregado, setAgregado]   = useState(false)
 
   // Productos marcados is_nuevo, disponibles en esta sucursal
   const nuevos = productos.filter(p => p.is_nuevo && p.available !== false)
 
   const seleccionar = (p) => {
+    // Defecto cocinado si el producto puede pedirse así, crudo si no aplica
+    const defRecogida = p.se_puede_cocinar ? 'cocinado' : 'crudo'
     if (seleccion?.id === p.id) {
-      setSeleccion(null); setCantidad(esPorGramos(p) ? 300 : 1); setRecogida('crudo')
+      setSeleccion(null); setCantidad(esPorGramos(p) ? 300 : 1); setRecogida(defRecogida)
     } else {
-      setSeleccion(p); setCantidad(esPorGramos(p) ? 300 : 1); setRecogida('crudo')
+      setSeleccion(p); setCantidad(esPorGramos(p) ? 300 : 1); setRecogida(defRecogida)
     }
   }
 
@@ -452,7 +456,7 @@ export default function SeccionNuevo() {
     setAgregado(true)
     setTimeout(() => {
       setAgregado(false); setSeleccion(null)
-      setCantidad(seleccion && esPorGramos(seleccion) ? 300 : 1); setRecogida('crudo')
+      setCantidad(seleccion && esPorGramos(seleccion) ? 300 : 1); setRecogida('cocinado')
     }, 1200)
   }
 
