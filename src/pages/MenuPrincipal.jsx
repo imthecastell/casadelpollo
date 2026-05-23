@@ -17,6 +17,9 @@ const COOK = (f, ar = '4:3', w = 600) =>
 /* foto entera sin crop (para imágenes que no son combo) */
 const FULL = (f, ar = '4:3', w = 600) =>
   `${BASE}/ar_${ar},c_fill,w_${w}/${f}`
+/* crop lado crudo (izquierdo) */
+const RAW  = (f, ar = '4:3', w = 600) =>
+  `${BASE}/c_crop,fl_relative,x_0.00,y_0.00,w_0.50,h_1.00/ar_${ar},c_fill,w_${w}/${f}`
 
 /* ─── Imágenes que rotan en el hero ─── */
 const HERO_IMGS = [
@@ -33,8 +36,7 @@ const CATS_ALL = [
   { label: 'Marinados',      emoji: '🍯', img: COOK('marinados/teriyaki.png',          '1:1', 180), tab: 'marinados'   },
   { label: 'Milanesas',      emoji: '🥩', img: COOK('milanesas/milanesa_natural.png',  '1:1', 180), tab: 'preparados'  },
   { label: 'Preparados',     emoji: '🍳', img: COOK('preparados/pechuga_rellena.png',  '1:1', 180), tab: 'preparados'  },
-  { label: 'Pollo\nFresco',  emoji: '🐔', img: COOK('fresco/piernita.png',             '1:1', 180), tab: 'fresco'      },
-  { label: 'Extras',         emoji: '🥗', img: null,                                               tab: 'complementos'},
+  { label: 'Pollo\nFresco',  emoji: '🐔', img: RAW ('fresco/piernita.png',             '1:1', 180), tab: 'fresco'      },
   { label: 'Bowls',          emoji: '🥣', img: COOK('marinados/agridulce.png',         '1:1', 180), tab: 'bowls'       },
 ]
 
