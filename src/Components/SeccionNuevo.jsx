@@ -206,6 +206,7 @@ const CSS_NUEVO = `
   background: #fff;
   padding: 16px 16px 20px;
   display: flex; flex-direction: column; gap: 16px;
+  min-width: 0; overflow: hidden;
 }
 .nv-inner-head {
   display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;
@@ -251,12 +252,13 @@ const CSS_NUEVO = `
   font-weight: 800; font-size: 26px; color: var(--rojo); line-height: 1;
 }
 .nv-agregar {
-  padding: 14px 28px; background: var(--rojo); color: #fff; border: none;
+  flex: 1; min-width: 0;
+  padding: 14px 16px; background: var(--rojo); color: #fff; border: none;
   border-radius: 50px; font-family: var(--font-title), sans-serif;
-  font-weight: 700; font-size: 15px; cursor: pointer;
+  font-weight: 700; font-size: 15px; cursor: pointer; text-align: center;
   transition: all 0.3s cubic-bezier(.22,1,.36,1);
   box-shadow: 0 4px 16px rgba(146,43,33,0.28);
-  white-space: nowrap;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .nv-agregar:hover    { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(146,43,33,0.35); }
 .nv-agregar:active   { transform: scale(0.97); }
@@ -284,7 +286,7 @@ const CSS_NUEVO = `
     align-items: stretch;
   }
   .nv-hero { width: 45%; aspect-ratio: auto; height: auto; }
-  .nv-inner { flex: 1; padding: 28px 32px; justify-content: center; }
+  .nv-inner { flex: 1; min-width: 0; padding: 28px 32px; justify-content: center; }
   .nv-inner-name { font-size: 22px; }
 }
 `
