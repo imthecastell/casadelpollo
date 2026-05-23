@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import { rawCrop, cookedCrop } from './SeccionMarinados.jsx'
 import AvisoDisponibilidad from './AvisoDisponibilidad.jsx'
@@ -193,9 +193,18 @@ function GrupoExpandible({ titulo, precio, unidad = '/kg', imagen, emoji, conteo
 
 /* ── Variante dentro del grupo expandido ── */
 /* Muestra selector crudo/cocinado cuando sePuedeCocinar=true y cantidad > 0 */
-function FilaVariante({ nombre, cantidad, sePuedeCocinar = false, onCambiar, onAgregar, agregado, idKey }) {
+function FilaVariante({ nombre, cantidad, sePuedeCocinar = false, onCambiar, onAgregar, agregado, idKey, onPrimerCocinado }) {
   const [recogida, setRecogida] = useState('crudo')
+  const yaDisparo = useRef(false)
   const mostrarOpciones = sePuedeCocinar && cantidad > 0
+
+  const elegirRecogidaLocal = (modo) => {
+    setRecogida(modo)
+    if (modo === 'cocinado' && !yaDisparo.current) {
+      yaDisparo.current = true
+      onPrimerCocinado?.()
+    }
+  }
 
   const btnRecogida = (modo) => ({
     flex: 1, padding: '7px 4px', borderRadius: 10,
@@ -244,10 +253,10 @@ function FilaVariante({ nombre, cantidad, sePuedeCocinar = false, onCambiar, onA
           borderTop: '1px solid rgba(0,0,0,0.05)',
           display: 'flex', gap: 6, alignItems: 'center',
         }}>
-          <button style={btnRecogida('crudo')} onClick={() => setRecogida('crudo')}>
+          <button style={btnRecogida('crudo')} onClick={() => elegirRecogidaLocal('crudo')}>
             📦 Crudo
           </button>
-          <button style={btnRecogida('cocinado')} onClick={() => setRecogida('cocinado')}>
+          <button style={btnRecogida('cocinado')} onClick={() => elegirRecogidaLocal('cocinado')}>
             🔥 Cocinado
           </button>
           <button
@@ -272,6 +281,8 @@ export default function SeccionPreparados() {
   const [recogida, setRecogida]     = useState('crudo')
   const [mostrarAvisoDisp, setMostrarAvisoDisp] = useState(false)
   const [agregado, setAgregado]     = useState(null)
+  // Rastrea qué producto ya mostró el aviso — no vuelve a mostrarse para el mismo id
+  const avisadoIds = useRef(new Set())
 
   // Estado de grupos expandibles
   const [cantNuggets,    setCantNuggets]    = useState({})
@@ -332,9 +343,17 @@ export default function SeccionPreparados() {
     setCantidad(prev => Math.max(min, prev + delta * paso))
   }
 
+  // Muestra el aviso solo la primera vez que cada producto activa "cocinado"
+  const mostrarAviso = (id) => {
+    if (!avisadoIds.current.has(id)) {
+      avisadoIds.current.add(id)
+      setMostrarAvisoDisp(true)
+    }
+  }
+
   const elegirRecogida = (modo) => {
     setRecogida(modo)
-    if (modo === 'cocinado') setMostrarAvisoDisp(true)
+    if (modo === 'cocinado') mostrarAviso(seleccion?.id)
   }
 
   const agregarActivo = () => {
@@ -422,10 +441,7 @@ export default function SeccionPreparados() {
   return (
     <div>
       {mostrarAvisoDisp && (
-        <AvisoDisponibilidad onCerrar={() => {
-          sessionStorage.setItem('aviso_disp_visto', '1')
-          setMostrarAvisoDisp(false)
-        }} />
+        <AvisoDisponibilidad onCerrar={() => setMostrarAvisoDisp(false)} />
       )}
 
       <div className="seccion-titulo">Preparados y Milanesas</div>
@@ -464,6 +480,7 @@ export default function SeccionPreparados() {
                 cantidad={cantNuggets[p.id] || 0}
                 onCambiar={d => cambiarNugget(p.id, d)}
                 onAgregar={r => agregarNugget(p, r)}
+                onPrimerCocinado={() => mostrarAviso(p.id)}
                 agregado={agregado}
               />
             ))}
@@ -491,6 +508,7 @@ export default function SeccionPreparados() {
                 cantidad={cantEmpanadas[p.id] || 0}
                 onCambiar={d => cambiarEmpanada(p.id, d)}
                 onAgregar={r => agregarEmpanada(p, r)}
+                onPrimerCocinado={() => mostrarAviso(p.id)}
                 agregado={agregado}
               />
             ))}
@@ -517,6 +535,7 @@ export default function SeccionPreparados() {
                 cantidad={cantPechugas[p.id] || 0}
                 onCambiar={d => cambiarPechuga(p.id, d)}
                 onAgregar={r => agregarPechuga(p, r)}
+                onPrimerCocinado={() => mostrarAviso(p.id)}
                 agregado={agregado}
               />
             ))}
@@ -554,6 +573,7 @@ export default function SeccionPreparados() {
                   cantidad={cantEmpanizadas[m.id] || 0}
                   onCambiar={d => cambiarEmpanizada(m.id, d)}
                   onAgregar={r => agregarEmpanizada(m, r)}
+                  onPrimerCocinado={() => mostrarAviso(m.id)}
                   agregado={agregado}
                 />
               ))}
@@ -575,6 +595,7 @@ export default function SeccionPreparados() {
                   cantidad={cantEmpapeladas[flavor.id] || 0}
                   onCambiar={d => cambiarEmpap(flavor.id, d)}
                   onAgregar={r => agregarEmpap(flavor, r)}
+                  onPrimerCocinado={() => mostrarAviso(flavor.id)}
                   agregado={agregado}
                 />
               ))}
