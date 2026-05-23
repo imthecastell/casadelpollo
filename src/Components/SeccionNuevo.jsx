@@ -6,42 +6,19 @@
 import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 
-const CDN = 'https://res.cloudinary.com/do4juvxio/image/upload'
+// unidad display según precio_tipo del producto
+const unidadDe = (p) => {
+  if (p.precio_tipo === 'por_pieza' || p.precio_tipo === 'por_porcion') return '/pz'
+  if (p.precio_tipo === 'por_gramos') return '/100g'
+  return '/kg'   // al_pesar (default)
+}
 
-const PRODUCTOS = [
-  {
-    id: 'nuevo-1',
-    name: 'Pollo al Pastor',
-    price: 240,
-    unidad: '/kg',
-    se_puede_cocinar: true,
-    emoji: '🍯',
-    image_url:        `${CDN}/c_crop,fl_relative,x_0.00,y_0.00,w_0.50,h_1.00/ar_4:3,c_fill,w_600/marinados/pollo%20al%20pastor.png`,
-    image_cooked_url: `${CDN}/c_crop,fl_relative,x_0.50,y_0.00,w_0.50,h_1.00/ar_4:3,c_fill,w_600/marinados/pollo%20al%20pastor.png`,
-  },
-  {
-    id: 'nuevo-2',
-    name: 'Pechuga Rellena',
-    price: 265,
-    unidad: '/kg',
-    se_puede_cocinar: true,
-    emoji: '🍗',
-    image_url:        `${CDN}/c_crop,fl_relative,x_0.00,y_0.00,w_0.50,h_1.00/ar_4:3,c_fill,w_600/preparados/pechuga_rellena.png`,
-    image_cooked_url: `${CDN}/c_crop,fl_relative,x_0.50,y_0.00,w_0.50,h_1.00/ar_4:3,c_fill,w_600/preparados/pechuga_rellena.png`,
-  },
-  {
-    id: 'nuevo-3',
-    name: 'Milanesa Natural',
-    price: 175,
-    unidad: '/kg',
-    se_puede_cocinar: true,
-    emoji: '🥩',
-    image_url:        `${CDN}/c_crop,fl_relative,x_0.00,y_0.00,w_0.50,h_1.00/ar_4:3,c_fill,w_600/milanesas/milanesa_natural.png`,
-    image_cooked_url: `${CDN}/c_crop,fl_relative,x_0.50,y_0.00,w_0.50,h_1.00/ar_4:3,c_fill,w_600/milanesas/milanesa_natural.png`,
-  },
-]
+// ¿Este producto usa gramos o piezas?
+const esPorGramos = (p) =>
+  !p.precio_tipo || p.precio_tipo === 'al_pesar' || p.precio_tipo === 'por_gramos'
 
-const MIN = 200, MAX = 2000, PASO = 50
+const MIN_G = 200, MAX_G = 2000, PASO_G = 50
+const MIN_PZ = 1,  MAX_PZ = 20
 
 /* ══════════════════════════════════════════
    CSS aislado — prefijo nv-
@@ -314,7 +291,7 @@ function NvCardCompact({ p, onClick }) {
 }
 
 /* ── Card expandida (seleccionada — muta aquí) ── */
-function NvCardExpandida({ p, recogida, gramos, precioTotal, agregado, onClose, onGramosChange, onRecogidaChange, onAgregar }) {
+function NvCardExpandida({ p, recogida, gramos, precioTotal, agregado, onClose, onCantidadChange, onRecogidaChange, onAgregar }) {
   const showCooked = recogida === 'cocinado'
 
   return (
@@ -351,14 +328,22 @@ function NvCardExpandida({ p, recogida, gramos, precioTotal, agregado, onClose, 
         {/* Cantidad */}
         <div>
           <label className="config-label">Cantidad</label>
-          <div className="cantidad-ctrl">
-            <button className="cantidad-btn" onClick={() => onGramosChange(-PASO)} disabled={gramos <= MIN}>−</button>
-            <span className="cantidad-num" style={{ fontSize: 20, minWidth: 60, textAlign: 'center' }}>
-              {gramos}g
-            </span>
-            <button className="cantidad-btn" onClick={() => onGramosChange(PASO)} disabled={gramos >= MAX}>+</button>
-          </div>
-          <div style={{ fontSize: 11, color: 'var(--texto-suave)', marginTop: 6 }}>{MIN}g — {MAX}g · cada {PASO}g</div>
+          {esPorGramos(p) ? (
+            <>
+              <div className="cantidad-ctrl">
+                <button className="cantidad-btn" onClick={() => onCantidadChange(-PASO_G)} disabled={gramos <= MIN_G}>−</button>
+                <span className="cantidad-num" style={{ fontSize: 20, minWidth: 60, textAlign: 'center' }}>{gramos}g</span>
+                <button className="cantidad-btn" onClick={() => onCantidadChange(PASO_G)}  disabled={gramos >= MAX_G}>+</button>
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--texto-suave)', marginTop: 6 }}>{MIN_G}g — {MAX_G}g · cada {PASO_G}g</div>
+            </>
+          ) : (
+            <div className="cantidad-ctrl">
+              <button className="cantidad-btn" onClick={() => onCantidadChange(-1)} disabled={gramos <= MIN_PZ}>−</button>
+              <span className="cantidad-num" style={{ fontSize: 20, minWidth: 60, textAlign: 'center' }}>{gramos} pz</span>
+              <button className="cantidad-btn" onClick={() => onCantidadChange(1)}  disabled={gramos >= MAX_PZ}>+</button>
+            </div>
+          )}
         </div>
 
         {/* Crudo / Cocinado */}
@@ -411,43 +396,65 @@ function NvCardExpandida({ p, recogida, gramos, precioTotal, agregado, onClose, 
 
 /* ── Sección principal ── */
 export default function SeccionNuevo() {
-  const { agregarAlCarrito } = useApp()
+  const { agregarAlCarrito, productos } = useApp()
   const [seleccion, setSeleccion] = useState(null)
-  const [gramos, setGramos]       = useState(300)
+  const [cantidad, setCantidad]   = useState(300)   // gramos o piezas según producto
   const [recogida, setRecogida]   = useState('crudo')
   const [agregado, setAgregado]   = useState(false)
 
+  // Productos marcados is_nuevo, disponibles en esta sucursal
+  const nuevos = productos.filter(p => p.is_nuevo && p.available !== false)
+
   const seleccionar = (p) => {
     if (seleccion?.id === p.id) {
-      setSeleccion(null); setGramos(300); setRecogida('crudo')
+      setSeleccion(null); setCantidad(esPorGramos(p) ? 300 : 1); setRecogida('crudo')
     } else {
-      setSeleccion(p); setGramos(300); setRecogida('crudo')
+      setSeleccion(p); setCantidad(esPorGramos(p) ? 300 : 1); setRecogida('crudo')
     }
   }
 
-  const cambiarGramos = (delta) =>
-    setGramos(prev => Math.min(MAX, Math.max(MIN, prev + delta)))
+  const cambiarCantidad = (delta) => {
+    if (!seleccion) return
+    if (esPorGramos(seleccion)) {
+      setCantidad(prev => Math.min(MAX_G, Math.max(MIN_G, prev + delta)))
+    } else {
+      setCantidad(prev => Math.min(MAX_PZ, Math.max(MIN_PZ, prev + delta)))
+    }
+  }
+
+  const calcTotal = () => {
+    if (!seleccion) return 0
+    if (esPorGramos(seleccion)) return (cantidad / 1000) * seleccion.price
+    return cantidad * seleccion.price
+  }
 
   const handleAgregar = () => {
     if (!seleccion) return
-    const precioTotal = (gramos / 1000) * seleccion.price
+    const precioTotal = calcTotal()
+    const porGramos   = esPorGramos(seleccion)
     agregarAlCarrito({
       tipo: 'marinado',
       nombre: seleccion.name,
-      gramos, recogida,
+      gramos: porGramos ? cantidad : undefined,
+      cantidad: porGramos ? undefined : cantidad,
+      recogida,
       tiempoEstimado: recogida === 'cocinado' ? 25 : null,
       precio: seleccion.price,
       precioTotal,
-      imagen_url: recogida === 'cocinado' ? seleccion.image_cooked_url : seleccion.image_url,
-      resumen: `${seleccion.name} ${gramos}g · ${recogida === 'crudo' ? 'Crudo' : 'Cocinado ~25 min'} · $${precioTotal.toFixed(2)}`,
+      necesitaHora: true,
+      imagen_url: recogida === 'cocinado'
+        ? (seleccion.image_cooked_url || seleccion.image_url)
+        : seleccion.image_url,
+      resumen: porGramos
+        ? `${seleccion.name} ${cantidad}g · ${recogida === 'crudo' ? 'Crudo' : 'Cocinado ~25 min'} · $${precioTotal.toFixed(2)}`
+        : `${seleccion.name} × ${cantidad} pz · ${recogida === 'crudo' ? 'Crudo' : 'Cocinado ~25 min'} · $${precioTotal.toFixed(2)}`,
     })
     setAgregado(true)
     setTimeout(() => {
-      setAgregado(false); setSeleccion(null); setGramos(300); setRecogida('crudo')
+      setAgregado(false); setSeleccion(null)
+      setCantidad(seleccion && esPorGramos(seleccion) ? 300 : 1); setRecogida('crudo')
     }, 1200)
   }
-
-  const precioTotal = seleccion ? (gramos / 1000) * seleccion.price : 0
 
   return (
     <div>
@@ -456,30 +463,38 @@ export default function SeccionNuevo() {
       <div className="seccion-titulo">✨ Nuevo</div>
       <p className="seccion-desc">Selecciona un producto para configurar tu pedido</p>
 
-      <div className="nv-grid">
-        {PRODUCTOS.map(p => {
-          const isSelected = seleccion?.id === p.id
+      {nuevos.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--texto-suave)', fontSize: 14 }}>
+          <div style={{ fontSize: 36, marginBottom: 12 }}>✨</div>
+          Próximamente novedades
+        </div>
+      ) : (
+        <div className="nv-grid">
+          {nuevos.map(p => {
+            const isSelected = seleccion?.id === p.id
+            // adaptar campos DB al formato que espera NvCard
+            const card = { ...p, unidad: unidadDe(p), emoji: '✨' }
 
-          if (isSelected) {
-            return (
-              <NvCardExpandida
-                key={p.id}
-                p={p}
-                recogida={recogida}
-                gramos={gramos}
-                precioTotal={precioTotal}
-                agregado={agregado}
-                onClose={() => seleccionar(p)}
-                onGramosChange={cambiarGramos}
-                onRecogidaChange={setRecogida}
-                onAgregar={handleAgregar}
-              />
-            )
-          }
-
-          return <NvCardCompact key={p.id} p={p} onClick={() => seleccionar(p)} />
-        })}
-      </div>
+            if (isSelected) {
+              return (
+                <NvCardExpandida
+                  key={p.id}
+                  p={card}
+                  recogida={recogida}
+                  gramos={cantidad}
+                  precioTotal={calcTotal()}
+                  agregado={agregado}
+                  onClose={() => seleccionar(p)}
+                  onCantidadChange={cambiarCantidad}
+                  onRecogidaChange={setRecogida}
+                  onAgregar={handleAgregar}
+                />
+              )
+            }
+            return <NvCardCompact key={p.id} p={card} onClick={() => seleccionar(p)} />
+          })}
+        </div>
+      )}
     </div>
   )
 }

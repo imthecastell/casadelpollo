@@ -51,6 +51,13 @@ export const MILANESAS = {
 
 export const SECCIONES = [
   {
+    id: 'nuevo',
+    nombre: 'Nuevo',
+    tabLabel: 'Nuevo',
+    emoji: '✨',
+    tipo: 'nuevo',
+  },
+  {
     id: 'fresco',
     nombre: 'Pollo Fresco',
     tabLabel: 'Fresco',
@@ -132,13 +139,6 @@ export const SECCIONES = [
     tabLabel: 'Bowls',
     emoji: '🥣',
     tipo: 'bowls',
-  },
-  {
-    id: 'nuevo',
-    nombre: 'Nuevo',
-    tabLabel: 'Nuevo',
-    emoji: '✨',
-    tipo: 'nuevo',
   },
 ]
 
