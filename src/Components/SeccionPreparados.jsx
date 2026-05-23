@@ -281,8 +281,8 @@ export default function SeccionPreparados() {
   const [recogida, setRecogida]     = useState('crudo')
   const [mostrarAvisoDisp, setMostrarAvisoDisp] = useState(false)
   const [agregado, setAgregado]     = useState(null)
-  // Rastrea qué producto ya mostró el aviso — no vuelve a mostrarse para el mismo id
-  const avisadoIds = useRef(new Set())
+  // Muestra el aviso solo una vez por sesión
+  const avisoVisto = useRef(false)
 
   // Estado de grupos expandibles
   const [cantNuggets,    setCantNuggets]    = useState({})
@@ -343,17 +343,17 @@ export default function SeccionPreparados() {
     setCantidad(prev => Math.max(min, prev + delta * paso))
   }
 
-  // Muestra el aviso solo la primera vez que cada producto activa "cocinado"
-  const mostrarAviso = (id) => {
-    if (!avisadoIds.current.has(id)) {
-      avisadoIds.current.add(id)
+  // Muestra el aviso la primera vez que se elige cocinado en la sesión
+  const mostrarAviso = () => {
+    if (!avisoVisto.current) {
+      avisoVisto.current = true
       setMostrarAvisoDisp(true)
     }
   }
 
   const elegirRecogida = (modo) => {
     setRecogida(modo)
-    if (modo === 'cocinado') mostrarAviso(seleccion?.id)
+    if (modo === 'cocinado') mostrarAviso()
   }
 
   const agregarActivo = () => {
@@ -480,7 +480,7 @@ export default function SeccionPreparados() {
                 cantidad={cantNuggets[p.id] || 0}
                 onCambiar={d => cambiarNugget(p.id, d)}
                 onAgregar={r => agregarNugget(p, r)}
-                onPrimerCocinado={() => mostrarAviso(p.id)}
+                onPrimerCocinado={mostrarAviso}
                 agregado={agregado}
               />
             ))}
@@ -508,7 +508,7 @@ export default function SeccionPreparados() {
                 cantidad={cantEmpanadas[p.id] || 0}
                 onCambiar={d => cambiarEmpanada(p.id, d)}
                 onAgregar={r => agregarEmpanada(p, r)}
-                onPrimerCocinado={() => mostrarAviso(p.id)}
+                onPrimerCocinado={mostrarAviso}
                 agregado={agregado}
               />
             ))}
@@ -535,7 +535,7 @@ export default function SeccionPreparados() {
                 cantidad={cantPechugas[p.id] || 0}
                 onCambiar={d => cambiarPechuga(p.id, d)}
                 onAgregar={r => agregarPechuga(p, r)}
-                onPrimerCocinado={() => mostrarAviso(p.id)}
+                onPrimerCocinado={mostrarAviso}
                 agregado={agregado}
               />
             ))}
@@ -573,7 +573,7 @@ export default function SeccionPreparados() {
                   cantidad={cantEmpanizadas[m.id] || 0}
                   onCambiar={d => cambiarEmpanizada(m.id, d)}
                   onAgregar={r => agregarEmpanizada(m, r)}
-                  onPrimerCocinado={() => mostrarAviso(m.id)}
+                  onPrimerCocinado={mostrarAviso}
                   agregado={agregado}
                 />
               ))}
@@ -595,7 +595,7 @@ export default function SeccionPreparados() {
                   cantidad={cantEmpapeladas[flavor.id] || 0}
                   onCambiar={d => cambiarEmpap(flavor.id, d)}
                   onAgregar={r => agregarEmpap(flavor, r)}
-                  onPrimerCocinado={() => mostrarAviso(flavor.id)}
+                  onPrimerCocinado={mostrarAviso}
                   agregado={agregado}
                 />
               ))}
