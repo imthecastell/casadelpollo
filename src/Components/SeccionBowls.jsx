@@ -6,7 +6,6 @@ const PRECIO_BASE_BOWL = 110
 const GRAMOS_BASE = 200
 const PASO_EXTRA = 50
 const MAX_EXTRA = 400
-const BASES_NOMBRES = ['Arroz basmati blanco', 'Arroz basmati a la jardinera', 'Pasta poblana', 'Pasta de tomate', 'Ensalada']
 
 /* ── Crop helpers para imágenes de bowl ── */
 const CDN = 'https://res.cloudinary.com/do4juvxio/image/upload'
@@ -130,12 +129,31 @@ function BowlHero({ marinado, base, defaultImg }) {
 function BowlBuilder({ numero, onAgregar, productos, defaultImg }) {
   const [baseId, setBaseId] = useState('')
   const [marinadoId, setMarinadoId] = useState('')
+  const [marinadoCat, setMarinadoCat] = useState('')
   const [extraBase, setExtraBase] = useState(0)
   const [extraMarinado, setExtraMarinado] = useState(0)
   const [agregado, setAgregado] = useState(false)
 
-  const bases = productos.filter(p => BASES_NOMBRES.includes(p.name) && p.available !== false)
-  const marinados = productos.filter(p => p.category_name === 'Marinados' && p.available !== false)
+  const bases = productos.filter(p =>
+    p.is_bowl_base &&
+    (p.category_name?.toLowerCase().includes('complement') || p.category_name?.toLowerCase().includes('extra')) &&
+    p.available !== false
+  )
+  const marinados = productos.filter(p =>
+    p.is_bowl_base &&
+    (p.category_name?.toLowerCase().includes('marinado') ||
+     p.category_name?.toLowerCase().includes('preparado') ||
+     p.category_name?.toLowerCase().includes('milanesa')) &&
+    p.available !== false
+  )
+  // Agrupar marinados por categoría
+  const marinadoGroups = {}
+  marinados.forEach(p => {
+    const cat = p.category_name || 'Otros'
+    if (!marinadoGroups[cat]) marinadoGroups[cat] = []
+    marinadoGroups[cat].push(p)
+  })
+
   const base = bases.find(p => String(p.id) === baseId)
   const marinado = marinados.find(p => String(p.id) === marinadoId)
   const listo = base && marinado
@@ -157,6 +175,7 @@ function BowlBuilder({ numero, onAgregar, productos, defaultImg }) {
   const limpiar = () => {
     setBaseId('')
     setMarinadoId('')
+    setMarinadoCat('')
     setExtraBase(0)
     setExtraMarinado(0)
   }
@@ -223,22 +242,84 @@ function BowlBuilder({ numero, onAgregar, productos, defaultImg }) {
 
         <div className="bowl-field">
           <label className="config-label">Marinado</label>
-          <select className="bowl-select" value={marinadoId} onChange={e => setMarinadoId(e.target.value)}>
-            <option value="">Elige el marinado</option>
-            {marinados.map(m => (
-              <option key={m.id} value={m.id}>{m.name}</option>
-            ))}
-          </select>
-          <div className="bowl-extra-row">
-            <span>{gramosMarinadoTotal}g</span>
-            <div className="cantidad-ctrl">
-              <button className="cantidad-btn" onClick={() => cambiarExtra('marinado', -PASO_EXTRA)} disabled={extraMarinado <= 0}>-</button>
-              <span className="cantidad-num">{extraMarinado ? `+${extraMarinado}` : '200'}</span>
-              <button className="cantidad-btn" onClick={() => cambiarExtra('marinado', PASO_EXTRA)} disabled={extraMarinado >= MAX_EXTRA}>+</button>
+
+          {marinado ? (
+            /* ── Marinado seleccionado ── */
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', background: '#f0f4ff', borderRadius: 8, border: '1.5px solid #4a7fd4', marginBottom: 8 }}>
+                {(marinado.image_cooked_url || marinado.image_url)
+                  ? <img src={marinado.image_cooked_url || marinado.image_url} alt="" style={{ width: 38, height: 30, borderRadius: 5, objectFit: 'cover', flexShrink: 0, border: '1px solid #dde' }} />
+                  : <div style={{ width: 38, height: 30, borderRadius: 5, background: '#e8eeff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>🥩</div>
+                }
+                <span style={{ flex: 1, fontWeight: 700, fontSize: 13, color: '#1a3a6b' }}>{marinado.name}</span>
+                <button
+                  onClick={() => { setMarinadoId(''); setMarinadoCat(''); }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888', fontSize: 12, padding: '4px 6px', borderRadius: 4 }}>
+                  cambiar ✕
+                </button>
+              </div>
+              <div className="bowl-extra-row">
+                <span>{gramosMarinadoTotal}g</span>
+                <div className="cantidad-ctrl">
+                  <button className="cantidad-btn" onClick={() => cambiarExtra('marinado', -PASO_EXTRA)} disabled={extraMarinado <= 0}>-</button>
+                  <span className="cantidad-num">{extraMarinado ? `+${extraMarinado}` : '200'}</span>
+                  <button className="cantidad-btn" onClick={() => cambiarExtra('marinado', PASO_EXTRA)} disabled={extraMarinado >= MAX_EXTRA}>+</button>
+                </div>
+              </div>
+              {extraMarinado > 0 && (
+                <div className="bowl-extra-precio">Extra marinado: +${precioExtra(marinado, extraMarinado).toFixed(2)}</div>
+              )}
             </div>
-          </div>
-          {marinado && extraMarinado > 0 && (
-            <div className="bowl-extra-precio">Extra marinado: +${precioExtra(marinado, extraMarinado).toFixed(2)}</div>
+          ) : (
+            /* ── Selector por categorías ── */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+              {Object.entries(marinadoGroups).map(([catName, items]) => {
+                const isOpen = marinadoCat === catName
+                return (
+                  <div key={catName}>
+                    {/* Cabecera de categoría */}
+                    <button
+                      style={{
+                        width: '100%', textAlign: 'left', padding: '10px 14px',
+                        background: isOpen ? 'var(--crema-oscuro, #f5ede3)' : '#f7f7f7',
+                        border: `1.5px solid ${isOpen ? 'var(--rojo, #c1121f)' : '#e0e0e0'}`,
+                        borderRadius: isOpen ? '8px 8px 0 0' : 8,
+                        cursor: 'pointer', display: 'flex', justifyContent: 'space-between',
+                        alignItems: 'center', color: '#1a1a1a',
+                      }}
+                      onClick={() => setMarinadoCat(isOpen ? '' : catName)}>
+                      <span style={{ fontWeight: 700, fontSize: 14 }}>{catName}</span>
+                      <span style={{ fontSize: 12, color: '#888', fontWeight: 500 }}>
+                        {items.length} opciones {isOpen ? '▲' : '▼'}
+                      </span>
+                    </button>
+
+                    {/* Lista de productos */}
+                    {isOpen && (
+                      <div style={{ border: '1.5px solid var(--rojo, #c1121f)', borderTop: 'none', borderRadius: '0 0 8px 8px', overflow: 'hidden', background: 'white' }}>
+                        {items.map((item, idx) => (
+                          <button
+                            key={item.id}
+                            style={{
+                              width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                              padding: '9px 12px', background: 'white', border: 'none',
+                              borderBottom: idx < items.length - 1 ? '1px solid #f0f0f0' : 'none',
+                              cursor: 'pointer', textAlign: 'left',
+                            }}
+                            onClick={() => { setMarinadoId(String(item.id)); setMarinadoCat(''); }}>
+                            {(item.image_cooked_url || item.image_url)
+                              ? <img src={item.image_cooked_url || item.image_url} alt="" style={{ width: 38, height: 30, borderRadius: 5, objectFit: 'cover', flexShrink: 0, border: '1px solid #eee' }} />
+                              : <div style={{ width: 38, height: 30, borderRadius: 5, background: '#f5f0e8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>🥩</div>
+                            }
+                            <span style={{ fontSize: 13, fontWeight: 500, color: '#222' }}>{item.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
           )}
         </div>
 
