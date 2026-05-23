@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import LogoSlot from '../Components/LogoSlot.jsx'
 import { SECCIONES } from '../data/menu.js'
@@ -9,6 +9,16 @@ import SeccionComplementos from '../Components/SeccionComplementos.jsx'
 import SeccionBowls from '../Components/SeccionBowls.jsx'
 import SeccionNuevo from '../Components/SeccionNuevo.jsx'
 import '../styles/menu.css'
+
+/* Shufflea un array sin mutar el original — orden diferente cada sesión */
+function shuffle(arr) {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
 
 const BASE = 'https://res.cloudinary.com/do4juvxio/image/upload'
 /* crop lado cocinado (derecho) con fl_relative — funciona con cualquier resolución */
@@ -94,7 +104,7 @@ function HeroSlide({ imgs, idx }) {
 /* ── Card de entrada ── */
 function EntradaCard({ entrada, onClic }) {
   const [idx, setIdx] = useState(0)
-  const imgs = entrada.imgs || []
+  const imgs = useMemo(() => shuffle(entrada.imgs || []), [])
   const inv  = !!entrada.invertido   // si true: imagen izquierda, texto derecha
   useEffect(() => {
     if (imgs.length <= 1) return
@@ -183,13 +193,14 @@ export default function MenuPrincipal() {
   })
   const [heroIdx, setHeroIdx]             = useState(0)
   const [bannerActivo, setBannerActivo]   = useState(0)
+  const heroImgs = useMemo(() => shuffle(HERO_IMGS), [])
 
   const SeccionActiva = COMPONENTES[tabActiva]
   const bannerMenuActual = bannersMenu[bannerActivo]
 
   /* rotación hero */
   useEffect(() => {
-    const t = setInterval(() => setHeroIdx(p => (p + 1) % HERO_IMGS.length), 4000)
+    const t = setInterval(() => setHeroIdx(p => (p + 1) % heroImgs.length), 4000)
     return () => clearInterval(t)
   }, [])
 
@@ -279,11 +290,11 @@ export default function MenuPrincipal() {
 
           {/* ── Hero ── */}
           <div style={{ position: 'relative', height: '52vh', minHeight: 280, maxHeight: 420, overflow: 'hidden' }}>
-            <HeroSlide imgs={HERO_IMGS} idx={heroIdx} />
+            <HeroSlide imgs={heroImgs} idx={heroIdx} />
 
             {/* Dots hero */}
             <div style={{ position: 'absolute', bottom: 80, right: 16, display: 'flex', gap: 5, zIndex: 2 }}>
-              {HERO_IMGS.map((_, i) => (
+              {heroImgs.map((_, i) => (
                 <button key={i} onClick={() => setHeroIdx(i)} style={{
                   width: i === heroIdx ? 20 : 6, height: 6,
                   borderRadius: 3, border: 'none', padding: 0, cursor: 'pointer',
