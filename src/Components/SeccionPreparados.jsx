@@ -9,9 +9,10 @@ const ORDEN_SIMPLES = ['natural', 'aplanada']
 // Imágenes de grupo
 const CDN = 'https://res.cloudinary.com/do4juvxio/image/upload'
 const COOK_HALF = (f) => `${CDN}/c_crop,fl_relative,x_0.50,y_0.00,w_0.50,h_1.00/ar_4:3,c_fill,w_600/${f}`
-const EMPAP_IMG       = COOK_HALF('marinados/empapeladas.png')
-const EMPANIZADAS_IMG = COOK_HALF('milanesas/empanadas.png')
-const NUGGETS_IMG     = `${CDN}/c_fill,w_600/preparados/nuggets_grupo.png`
+const EMPAP_IMG           = COOK_HALF('marinados/empapeladas.png')
+const EMPANIZADAS_IMG     = COOK_HALF('milanesas/empanadas.png')
+const NUGGETS_IMG         = `${CDN}/c_fill,w_600/preparados/nuggets_grupo.png`
+const PECHUGA_RELLENA_IMG = COOK_HALF('preparados/pechuga_rellena.png')
 
 const esSimpleMil = (p) => {
   const n = p.name.toLowerCase()
@@ -21,10 +22,10 @@ const esEmpanizada = (p) => {
   const n = p.name.toLowerCase()
   return (n.includes('empanizada') || n.includes('parmesano')) && !n.includes('empapelada')
 }
-const esNugget = (p) =>
-  ['nugget', 'tender', 'trozo'].some(k => p.name.toLowerCase().includes(k))
-const esEmpanada = (p) => p.name.toLowerCase().includes('empanada')
-const esAlbondiga = (nombre) =>
+const esNugget       = (p) => ['nugget', 'tender', 'trozo'].some(k => p.name.toLowerCase().includes(k))
+const esEmpanada     = (p) => p.name.toLowerCase().includes('empanada')
+const esPechugaRell  = (p) => p.name.toLowerCase().includes('pechuga rellena')
+const esAlbondiga    = (nombre) =>
   nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').includes('albondiga')
 
 /* ── Imagen con transición crudo ↔ cocinado (igual que en Marinados) ── */
@@ -114,7 +115,7 @@ function CardProducto({ producto, seleccion, cantidad, recogida, onSeleccionar, 
             )}
           </div>
 
-          {/* ¿Cómo lo quieres? — igual que en Marinados */}
+          {/* ¿Cómo lo quieres? */}
           {producto.se_puede_cocinar && (
             <div>
               <label className="config-label">¿Cómo lo quieres?</label>
@@ -157,7 +158,7 @@ function CardProducto({ producto, seleccion, cantidad, recogida, onSeleccionar, 
   )
 }
 
-/* ── Fila expandible de grupo (Nuggets / Empanizadas / Empapeladas / Empanadas) ── */
+/* ── Fila expandible de grupo ── */
 function GrupoExpandible({ titulo, precio, unidad = '/kg', imagen, emoji, conteo, open, onToggle, children }) {
   return (
     <div>
@@ -191,22 +192,68 @@ function GrupoExpandible({ titulo, precio, unidad = '/kg', imagen, emoji, conteo
 }
 
 /* ── Variante dentro del grupo expandido ── */
-function FilaVariante({ nombre, cantidad, onCambiar, onAgregar, agregado, idKey }) {
+/* Muestra selector crudo/cocinado cuando sePuedeCocinar=true y cantidad > 0 */
+function FilaVariante({ nombre, cantidad, sePuedeCocinar = false, onCambiar, onAgregar, agregado, idKey }) {
+  const [recogida, setRecogida] = useState('crudo')
+  const mostrarOpciones = sePuedeCocinar && cantidad > 0
+
+  const btnRecogida = (modo) => ({
+    flex: 1, padding: '7px 4px', borderRadius: 10,
+    border: `1.5px solid ${recogida === modo ? 'var(--rojo)' : 'rgba(0,0,0,0.1)'}`,
+    background: recogida === modo ? 'var(--rojo)' : 'transparent',
+    color: recogida === modo ? '#fff' : 'var(--texto)',
+    fontSize: 12, fontWeight: 700, cursor: 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+    transition: 'all 0.18s',
+  })
+
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'var(--card-bg)', borderRadius: 14, border: '1px solid rgba(0,0,0,0.05)' }}>
-      <div className="producto-nombre" style={{ flex: 1 }}>{nombre}</div>
-      {cantidad === 0 ? (
-        <button className="btn-add" onClick={() => onCambiar(1)}>+</button>
-      ) : (
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <div className="qty-pill">
-            <button className="qty-pill-btn" onClick={() => onCambiar(-1)} disabled={cantidad <= 1}>−</button>
-            <span className="qty-pill-num">{cantidad}</span>
-            <button className="qty-pill-btn" onClick={() => onCambiar(1)}>+</button>
+    <div style={{
+      background: 'var(--card-bg)', borderRadius: 14,
+      border: '1px solid rgba(0,0,0,0.05)', overflow: 'hidden',
+    }}>
+      {/* Fila nombre + controles */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px' }}>
+        <div className="producto-nombre" style={{ flex: 1 }}>{nombre}</div>
+        {cantidad === 0 ? (
+          <button className="btn-add" onClick={() => onCambiar(1)}>+</button>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div className="qty-pill">
+              <button className="qty-pill-btn" onClick={() => onCambiar(-1)} disabled={cantidad <= 1}>−</button>
+              <span className="qty-pill-num">{cantidad}</span>
+              <button className="qty-pill-btn" onClick={() => onCambiar(1)}>+</button>
+            </div>
+            {/* Botón agregar solo cuando no hay opciones de cocción */}
+            {!mostrarOpciones && (
+              <button
+                className={`btn-confirm ${agregado === idKey ? 'confirmado' : ''}`}
+                onClick={() => onAgregar('crudo')}
+              >
+                {agregado === idKey ? '✓' : 'Agregar'}
+              </button>
+            )}
           </div>
+        )}
+      </div>
+
+      {/* Toggle crudo/cocinado + botón agregar */}
+      {mostrarOpciones && (
+        <div style={{
+          padding: '8px 12px 12px',
+          borderTop: '1px solid rgba(0,0,0,0.05)',
+          display: 'flex', gap: 6, alignItems: 'center',
+        }}>
+          <button style={btnRecogida('crudo')} onClick={() => setRecogida('crudo')}>
+            📦 Crudo
+          </button>
+          <button style={btnRecogida('cocinado')} onClick={() => setRecogida('cocinado')}>
+            🔥 Cocinado
+          </button>
           <button
             className={`btn-confirm ${agregado === idKey ? 'confirmado' : ''}`}
-            onClick={onAgregar}
+            style={{ flexShrink: 0 }}
+            onClick={() => onAgregar(recogida)}
           >
             {agregado === idKey ? '✓' : 'Agregar'}
           </button>
@@ -220,7 +267,6 @@ function FilaVariante({ nombre, cantidad, onCambiar, onAgregar, agregado, idKey 
 export default function SeccionPreparados() {
   const { agregarAlCarrito, productos } = useApp()
 
-  // Un solo producto activo a la vez (mismo patrón que Marinados)
   const [seleccion, setSeleccion]   = useState(null)
   const [cantidad, setCantidad]     = useState(1)
   const [recogida, setRecogida]     = useState('crudo')
@@ -228,32 +274,38 @@ export default function SeccionPreparados() {
   const [agregado, setAgregado]     = useState(null)
 
   // Estado de grupos expandibles
-  const [cantEmpapeladas, setCantEmpapeladas]   = useState({})
-  const [cantEmpanizadas, setCantEmpanizadas]   = useState({})
-  const [cantNuggets, setCantNuggets]           = useState({})
-  const [cantEmpanadas, setCantEmpanadas]       = useState({})
-  const [empapOpen, setEmpapOpen]               = useState(false)
-  const [empanizadasOpen, setEmpanizadasOpen]   = useState(false)
-  const [nuggetsOpen, setNuggetsOpen]           = useState(false)
-  const [empanadasOpen, setEmpanadasOpen]       = useState(false)
+  const [cantNuggets,    setCantNuggets]    = useState({})
+  const [cantEmpanadas,  setCantEmpanadas]  = useState({})
+  const [cantPechugas,   setCantPechugas]   = useState({})
+  const [cantEmpanizadas,setCantEmpanizadas]= useState({})
+  const [cantEmpapeladas,setCantEmpapeladas]= useState({})
 
-  // Filtros de productos
+  const [nuggetsOpen,      setNuggetsOpen]      = useState(false)
+  const [empanadasOpen,    setEmpanadasOpen]    = useState(false)
+  const [pechugasOpen,     setPechugasOpen]     = useState(false)
+  const [empanizadasOpen,  setEmpanizadasOpen]  = useState(false)
+  const [empapOpen,        setEmpapOpen]        = useState(false)
+
+  // ── Filtros ──
   const todoPreparado = productos.filter(p => p.category_name === 'Preparados' && p.available !== false)
-  const productosNormales = todoPreparado.filter(p => !esNugget(p) && !esEmpanada(p))
-  const nuggets   = todoPreparado.filter(esNugget)
-  const empanadas = todoPreparado.filter(esEmpanada)
-  const precioNuggets = nuggets[0]?.price ?? 205
+  const productosNormales = todoPreparado.filter(p =>
+    !esNugget(p) && !esEmpanada(p) && !esPechugaRell(p)
+  )
+  const nuggets        = todoPreparado.filter(esNugget)
+  const empanadas      = todoPreparado.filter(esEmpanada)
+  const pechugasRell   = todoPreparado.filter(esPechugaRell)
+  const precioNuggets  = nuggets[0]?.price ?? 205
 
-  const milanesas = productos.filter(p => p.category_name === 'Milanesas' && p.available !== false)
-  const milSimples = milanesas
+  const milanesas      = productos.filter(p => p.category_name === 'Milanesas' && p.available !== false)
+  const milSimples     = milanesas
     .filter(esSimpleMil)
     .sort((a, b) => {
       const ai = ORDEN_SIMPLES.findIndex(k => a.name.toLowerCase().includes(k))
       const bi = ORDEN_SIMPLES.findIndex(k => b.name.toLowerCase().includes(k))
       return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi)
     })
-  const milEmpanizadas = milanesas.filter(esEmpanizada)
-  const milEmpapeladas = milanesas.filter(p => !esSimpleMil(p) && !esEmpanizada(p))
+  const milEmpanizadas  = milanesas.filter(esEmpanizada)
+  const milEmpapeladas  = milanesas.filter(p => !esSimpleMil(p) && !esEmpanizada(p))
   const precioEmpanizada = milEmpanizadas[0]?.price ?? 225
   const precioEmpapelada = milEmpapeladas[0]?.price ?? 230
 
@@ -262,13 +314,10 @@ export default function SeccionPreparados() {
     setTimeout(() => setAgregado(null), 1200)
   }
 
-  /* ── Handlers del producto activo ── */
+  /* ── Producto individual activo ── */
   const seleccionar = (producto) => {
     if (seleccion?.id === producto.id) {
-      // Deseleccionar
-      setSeleccion(null)
-      setCantidad(1)
-      setRecogida('crudo')
+      setSeleccion(null); setCantidad(1); setRecogida('crudo')
     } else {
       setSeleccion(producto)
       setCantidad(esAlbondiga(producto.name) ? 10 : 1)
@@ -285,9 +334,7 @@ export default function SeccionPreparados() {
 
   const elegirRecogida = (modo) => {
     setRecogida(modo)
-    if (modo === 'cocinado') {
-      setMostrarAvisoDisp(true)
-    }
+    if (modo === 'cocinado') setMostrarAvisoDisp(true)
   }
 
   const agregarActivo = () => {
@@ -297,95 +344,80 @@ export default function SeccionPreparados() {
       : ''
     const tiempoEstimado = (seleccion.se_puede_cocinar && recogida === 'cocinado') ? 20 : null
     agregarAlCarrito({
-      tipo: 'preparado',
-      nombre: seleccion.name,
-      cantidad,
-      precioKg: seleccion.price,
-      precio: seleccion.price,
+      tipo: 'preparado', nombre: seleccion.name, cantidad,
+      precioKg: seleccion.price, precio: seleccion.price,
       recogida: seleccion.se_puede_cocinar ? recogida : undefined,
-      tiempoEstimado,
-      necesitaHora: true,
+      tiempoEstimado, necesitaHora: true,
       imagen_url: recogida === 'cocinado'
         ? cookedCrop(seleccion.image_cooked_url || seleccion.image_url)
         : rawCrop(seleccion.image_url),
       resumen: `${seleccion.name} × ${cantidad} pz${nota}${recogida === 'cocinado' ? ' · Cocinado ~20 min' : ''} · $${seleccion.price}/kg`,
     })
     marcarAgregado(seleccion.id)
-    setSeleccion(null)
-    setCantidad(1)
-    setRecogida('crudo')
+    setSeleccion(null); setCantidad(1); setRecogida('crudo')
   }
 
-  /* ── Handlers de grupos ── */
-  const cambiarNugget = (id, delta) =>
-    setCantNuggets(prev => {
+  /* ── Helpers de grupos ── */
+  const mkCambiar = (setter) => (id, delta) =>
+    setter(prev => {
       const actual = prev[id] || 0
       if (delta < 0 && actual <= 1) return { ...prev, [id]: 0 }
       return { ...prev, [id]: actual === 0 ? 1 : Math.max(0, actual + delta) }
     })
 
-  const agregarNugget = (p) => {
-    const c = cantNuggets[p.id] || 0
-    if (!c) return
-    agregarAlCarrito({ tipo: 'preparado', nombre: p.name, cantidad: c, precioKg: p.price, precio: p.price, necesitaHora: true, imagen_url: rawCrop(p.image_url || p.image_cooked_url), resumen: `${p.name} × ${c} pz · $${p.price}/kg` })
-    setCantNuggets(prev => ({ ...prev, [p.id]: 0 }))
-    marcarAgregado(`nug-${p.id}`)
-  }
+  const cambiarNugget     = mkCambiar(setCantNuggets)
+  const cambiarEmpanada   = mkCambiar(setCantEmpanadas)
+  const cambiarPechuga    = mkCambiar(setCantPechugas)
+  const cambiarEmpanizada = mkCambiar(setCantEmpanizadas)
+  const cambiarEmpap      = mkCambiar(setCantEmpapeladas)
 
-  const cambiarEmpanada = (id, delta) =>
-    setCantEmpanadas(prev => {
-      const actual = prev[id] || 0
-      if (delta < 0 && actual <= 1) return { ...prev, [id]: 0 }
-      return { ...prev, [id]: actual === 0 ? 1 : Math.max(0, actual + delta) }
-    })
+  /* ── agregarGrupo genérico ── */
+  const mkAgregar = (cantState, setter, idPrefix, tipo, getNombre, getResumen) =>
+    (p, recogida = 'crudo') => {
+      const c = cantState[p.id] || 0
+      if (!c) return
+      const tiempoEstimado = recogida === 'cocinado' ? 20 : null
+      agregarAlCarrito({
+        tipo, nombre: getNombre(p), cantidad: c,
+        precioKg: p.price, precio: p.price,
+        recogida, tiempoEstimado, necesitaHora: true,
+        imagen_url: recogida === 'cocinado'
+          ? cookedCrop(p.image_cooked_url || p.image_url)
+          : rawCrop(p.image_url || p.image_cooked_url),
+        resumen: getResumen(p, c, recogida),
+      })
+      setter(prev => ({ ...prev, [p.id]: 0 }))
+      marcarAgregado(`${idPrefix}-${p.id}`)
+    }
 
-  const agregarEmpanada = (p) => {
-    const c = cantEmpanadas[p.id] || 0
-    if (!c) return
-    agregarAlCarrito({
-      tipo: 'preparado',
-      nombre: p.name,
-      cantidad: c,
-      precio: p.price,
-      precioKg: p.price,
-      necesitaHora: true,
-      imagen_url: rawCrop(p.image_url || p.image_cooked_url),
-      resumen: `${p.name} × ${c} pz · $${p.price}/pz`,
-    })
-    setCantEmpanadas(prev => ({ ...prev, [p.id]: 0 }))
-    marcarAgregado(`empa-${p.id}`)
-  }
-
-  const cambiarEmpap = (id, delta) =>
-    setCantEmpapeladas(prev => {
-      const actual = prev[id] || 0
-      if (delta < 0 && actual <= 1) return { ...prev, [id]: 0 }
-      return { ...prev, [id]: actual === 0 ? 1 : Math.max(0, actual + delta) }
-    })
-
-  const agregarEmpap = (flavor) => {
-    const c = cantEmpapeladas[flavor.id] || 0
-    if (!c) return
-    const nombreSabor = flavor.name.replace(/^milanesa\s*/i, '')
-    agregarAlCarrito({ tipo: 'milanesa', nombre: `Empapelada ${nombreSabor}`, cantidad: c, precioKg: flavor.price, precio: flavor.price, necesitaHora: true, imagen_url: rawCrop(flavor.image_url || flavor.image_cooked_url), resumen: `Empapelada ${nombreSabor} × ${c} pz · $${flavor.price}/kg` })
-    setCantEmpapeladas(prev => ({ ...prev, [flavor.id]: 0 }))
-    marcarAgregado(`emp-${flavor.id}`)
-  }
-
-  const cambiarEmpanizada = (id, delta) =>
-    setCantEmpanizadas(prev => {
-      const actual = prev[id] || 0
-      if (delta < 0 && actual <= 1) return { ...prev, [id]: 0 }
-      return { ...prev, [id]: actual === 0 ? 1 : Math.max(0, actual + delta) }
-    })
-
-  const agregarEmpanizada = (m) => {
-    const c = cantEmpanizadas[m.id] || 0
-    if (!c) return
-    agregarAlCarrito({ tipo: 'milanesa', nombre: m.name, cantidad: c, precioKg: m.price, precio: m.price, necesitaHora: true, imagen_url: rawCrop(m.image_url || m.image_cooked_url), resumen: `${m.name} × ${c} pz · $${m.price}/kg` })
-    setCantEmpanizadas(prev => ({ ...prev, [m.id]: 0 }))
-    marcarAgregado(`epz-${m.id}`)
-  }
+  const agregarNugget = mkAgregar(
+    cantNuggets, setCantNuggets, 'nug', 'preparado',
+    p => p.name,
+    (p, c, r) => `${p.name} × ${c} pz · $${p.price}/kg${r === 'cocinado' ? ' · Cocinado ~20 min' : ''}`,
+  )
+  const agregarEmpanada = mkAgregar(
+    cantEmpanadas, setCantEmpanadas, 'empa', 'preparado',
+    p => p.name,
+    (p, c, r) => `${p.name} × ${c} pz · $${p.price}/pz${r === 'cocinado' ? ' · Cocinado ~20 min' : ''}`,
+  )
+  const agregarPechuga = mkAgregar(
+    cantPechugas, setCantPechugas, 'pech', 'preparado',
+    p => p.name,
+    (p, c, r) => `${p.name} × ${c} pz · $${p.price}/kg${r === 'cocinado' ? ' · Cocinado ~20 min' : ''}`,
+  )
+  const agregarEmpanizada = mkAgregar(
+    cantEmpanizadas, setCantEmpanizadas, 'epz', 'milanesa',
+    p => p.name,
+    (p, c, r) => `${p.name} × ${c} pz · $${p.price}/kg${r === 'cocinado' ? ' · Cocinado ~20 min' : ''}`,
+  )
+  const agregarEmpap = mkAgregar(
+    cantEmpapeladas, setCantEmpapeladas, 'emp', 'milanesa',
+    p => `Empapelada ${p.name.replace(/^milanesa\s*/i, '')}`,
+    (p, c, r) => {
+      const sabor = p.name.replace(/^milanesa\s*/i, '')
+      return `Empapelada ${sabor} × ${c} pz · $${p.price}/kg${r === 'cocinado' ? ' · Cocinado ~20 min' : ''}`
+    },
+  )
 
   return (
     <div>
@@ -399,21 +431,16 @@ export default function SeccionPreparados() {
       <div className="seccion-titulo">Preparados y Milanesas</div>
       <p className="seccion-desc">Por pieza · precio por kg al pesar en el local</p>
 
-      {/* ── Preparados normales ── */}
+      {/* ── Preparados normales (cards individuales) ── */}
       {productosNormales.length > 0 && (
         <div className="subseccion-menu">
           <div className="config-label" style={{ marginBottom: 12 }}>Preparados</div>
           {productosNormales.map(p => (
             <CardProducto
-              key={p.id}
-              producto={p}
-              seleccion={seleccion}
-              cantidad={cantidad}
-              recogida={recogida}
-              onSeleccionar={seleccionar}
-              onCambiar={cambiarCantidad}
-              onAgregar={agregarActivo}
-              onRecogida={elegirRecogida}
+              key={p.id} producto={p}
+              seleccion={seleccion} cantidad={cantidad} recogida={recogida}
+              onSeleccionar={seleccionar} onCambiar={cambiarCantidad}
+              onAgregar={agregarActivo} onRecogida={elegirRecogida}
               agregado={agregado}
             />
           ))}
@@ -433,9 +460,10 @@ export default function SeccionPreparados() {
               <FilaVariante
                 key={p.id} idKey={`nug-${p.id}`}
                 nombre={p.name}
+                sePuedeCocinar={!!p.se_puede_cocinar}
                 cantidad={cantNuggets[p.id] || 0}
                 onCambiar={d => cambiarNugget(p.id, d)}
-                onAgregar={() => agregarNugget(p)}
+                onAgregar={r => agregarNugget(p, r)}
                 agregado={agregado}
               />
             ))}
@@ -452,16 +480,41 @@ export default function SeccionPreparados() {
             unidad="/pz"
             emoji="🥟"
             conteo={empanadas.length}
-            open={empanadasOpen}
-            onToggle={() => setEmpanadasOpen(v => !v)}
+            open={empanadasOpen} onToggle={() => setEmpanadasOpen(v => !v)}
           >
             {empanadas.map(p => (
               <FilaVariante
                 key={p.id} idKey={`empa-${p.id}`}
                 nombre={p.name.replace(/^empanada\s+de\s+/i, '')}
+                sePuedeCocinar={!!p.se_puede_cocinar}
                 cantidad={cantEmpanadas[p.id] || 0}
                 onCambiar={d => cambiarEmpanada(p.id, d)}
-                onAgregar={() => agregarEmpanada(p)}
+                onAgregar={r => agregarEmpanada(p, r)}
+                agregado={agregado}
+              />
+            ))}
+          </GrupoExpandible>
+        </div>
+      )}
+
+      {/* ── Pechugas Rellenas ── */}
+      {pechugasRell.length > 0 && (
+        <div className="subseccion-menu">
+          <GrupoExpandible
+            titulo="Pechugas Rellenas"
+            precio={pechugasRell[0]?.price ?? 0}
+            imagen={PECHUGA_RELLENA_IMG} emoji="🍗"
+            conteo={pechugasRell.length}
+            open={pechugasOpen} onToggle={() => setPechugasOpen(v => !v)}
+          >
+            {pechugasRell.map(p => (
+              <FilaVariante
+                key={p.id} idKey={`pech-${p.id}`}
+                nombre={p.name.replace(/^pechuga\s+rellena\s+(?:de\s+)?/i, '')}
+                sePuedeCocinar={!!p.se_puede_cocinar}
+                cantidad={cantPechugas[p.id] || 0}
+                onCambiar={d => cambiarPechuga(p.id, d)}
+                onAgregar={r => agregarPechuga(p, r)}
                 agregado={agregado}
               />
             ))}
@@ -476,15 +529,10 @@ export default function SeccionPreparados() {
 
           {milSimples.map(m => (
             <CardProducto
-              key={m.id}
-              producto={m}
-              seleccion={seleccion}
-              cantidad={cantidad}
-              recogida={recogida}
-              onSeleccionar={seleccionar}
-              onCambiar={cambiarCantidad}
-              onAgregar={agregarActivo}
-              onRecogida={elegirRecogida}
+              key={m.id} producto={m}
+              seleccion={seleccion} cantidad={cantidad} recogida={recogida}
+              onSeleccionar={seleccionar} onCambiar={cambiarCantidad}
+              onAgregar={agregarActivo} onRecogida={elegirRecogida}
               agregado={agregado}
             />
           ))}
@@ -500,9 +548,10 @@ export default function SeccionPreparados() {
                 <FilaVariante
                   key={m.id} idKey={`epz-${m.id}`}
                   nombre={m.name}
+                  sePuedeCocinar={!!m.se_puede_cocinar}
                   cantidad={cantEmpanizadas[m.id] || 0}
                   onCambiar={d => cambiarEmpanizada(m.id, d)}
-                  onAgregar={() => agregarEmpanizada(m)}
+                  onAgregar={r => agregarEmpanizada(m, r)}
                   agregado={agregado}
                 />
               ))}
@@ -520,9 +569,10 @@ export default function SeccionPreparados() {
                 <FilaVariante
                   key={flavor.id} idKey={`emp-${flavor.id}`}
                   nombre={flavor.name.replace(/^milanesa\s*/i, '')}
+                  sePuedeCocinar={!!flavor.se_puede_cocinar}
                   cantidad={cantEmpapeladas[flavor.id] || 0}
                   onCambiar={d => cambiarEmpap(flavor.id, d)}
-                  onAgregar={() => agregarEmpap(flavor)}
+                  onAgregar={r => agregarEmpap(flavor, r)}
                   agregado={agregado}
                 />
               ))}
