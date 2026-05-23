@@ -452,7 +452,7 @@ export default function SeccionPreparados() {
         <div className="subseccion-menu">
           <GrupoExpandible
             titulo="Nuggets" precio={precioNuggets}
-            imagen={NUGGETS_IMG} emoji="🍗"
+            imagen={nuggets[0]?.image_url || NUGGETS_IMG} emoji="🍗"
             conteo={nuggets.length}
             open={nuggetsOpen} onToggle={() => setNuggetsOpen(v => !v)}
           >
@@ -478,6 +478,7 @@ export default function SeccionPreparados() {
             titulo="Empanadas"
             precio={empanadas[0]?.price ?? 0}
             unidad="/pz"
+            imagen={empanadas[0]?.image_url || undefined}
             emoji="🥟"
             conteo={empanadas.length}
             open={empanadasOpen} onToggle={() => setEmpanadasOpen(v => !v)}
@@ -503,7 +504,8 @@ export default function SeccionPreparados() {
           <GrupoExpandible
             titulo="Pechugas Rellenas"
             precio={pechugasRell[0]?.price ?? 0}
-            imagen={PECHUGA_RELLENA_IMG} emoji="🍗"
+            imagen={pechugasRell[0]?.image_url || PECHUGA_RELLENA_IMG}
+            emoji="🍗"
             conteo={pechugasRell.length}
             open={pechugasOpen} onToggle={() => setPechugasOpen(v => !v)}
           >
