@@ -58,24 +58,6 @@ export const SECCIONES = [
     tipo: 'nuevo',
   },
   {
-    id: 'fresco',
-    nombre: 'Pollo Fresco',
-    tabLabel: 'Fresco',
-    emoji: '🍗',
-    tipo: 'piezas',
-    productos: [
-      { id: 'entero', nombre: 'Pollo entero', precioKg: 85, disponible: { vinedos: true, parque: true, country: true } },
-      { id: 'pechuga', nombre: 'Pechuga c/hueso', precioKg: 125, disponible: { vinedos: true, parque: true, country: true } },
-      { id: 'filete', nombre: 'Filete', precioKg: 170, disponible: { vinedos: true, parque: true, country: true } },
-      { id: 'pierna-completa', nombre: 'Pierna completa', precioKg: 70, disponible: { vinedos: true, parque: true, country: true } },
-      { id: 'muslo', nombre: 'Muslo', precioKg: 100, disponible: { vinedos: true, parque: true, country: true } },
-      { id: 'piernita', nombre: 'Piernita', precioKg: 100, disponible: { vinedos: true, parque: true, country: true } },
-      { id: 'ala', nombre: 'Ala', precioKg: 100, disponible: { vinedos: true, parque: true, country: true } },
-      { id: 'higaditos', nombre: 'Higaditos', precioKg: 45, disponible: { vinedos: true, parque: true, country: true } },
-      { id: 'molleja', nombre: 'Molleja', precioKg: 45, disponible: { vinedos: true, parque: true, country: true } },
-    ]
-  },
-  {
     id: 'marinados',
     nombre: 'Marinados',
     tabLabel: 'Marinados',
@@ -112,6 +94,24 @@ export const SECCIONES = [
       { id: 'tenders', nombre: 'Tenders', precioKg: 145, disponible: { vinedos: true, parque: false, country: true } },
       { id: 'hamburguesa', nombre: 'Hamburguesa', precioKg: 225, disponible: { vinedos: true, parque: false, country: true } },
       { id: 'medallon', nombre: 'Medallon con tocino', precioKg: 160, disponible: { vinedos: true, parque: false, country: true } },
+    ]
+  },
+  {
+    id: 'fresco',
+    nombre: 'Pollo Fresco',
+    tabLabel: 'Fresco',
+    emoji: '🍗',
+    tipo: 'piezas',
+    productos: [
+      { id: 'entero', nombre: 'Pollo entero', precioKg: 85, disponible: { vinedos: true, parque: true, country: true } },
+      { id: 'pechuga', nombre: 'Pechuga c/hueso', precioKg: 125, disponible: { vinedos: true, parque: true, country: true } },
+      { id: 'filete', nombre: 'Filete', precioKg: 170, disponible: { vinedos: true, parque: true, country: true } },
+      { id: 'pierna-completa', nombre: 'Pierna completa', precioKg: 70, disponible: { vinedos: true, parque: true, country: true } },
+      { id: 'muslo', nombre: 'Muslo', precioKg: 100, disponible: { vinedos: true, parque: true, country: true } },
+      { id: 'piernita', nombre: 'Piernita', precioKg: 100, disponible: { vinedos: true, parque: true, country: true } },
+      { id: 'ala', nombre: 'Ala', precioKg: 100, disponible: { vinedos: true, parque: true, country: true } },
+      { id: 'higaditos', nombre: 'Higaditos', precioKg: 45, disponible: { vinedos: true, parque: true, country: true } },
+      { id: 'molleja', nombre: 'Molleja', precioKg: 45, disponible: { vinedos: true, parque: true, country: true } },
     ]
   },
   {

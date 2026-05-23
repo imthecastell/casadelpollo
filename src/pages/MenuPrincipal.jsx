@@ -28,13 +28,14 @@ const HERO_IMGS = [
 ]
 
 /* ─── Strip de categorías ─── */
-const CATS = [
-  { label: 'Marinados',      emoji: '🍯', img: COOK('marinados/teriyaki.png',          '1:1', 180), tab: 'marinados'  },
-  { label: 'Milanesas',      emoji: '🥩', img: COOK('milanesas/milanesa_natural.png',  '1:1', 180), tab: 'preparados' },
-  { label: 'Preparados',     emoji: '🍳', img: COOK('preparados/pechuga_rellena.png',  '1:1', 180), tab: 'preparados' },
-  { label: 'Pollo\nFresco',  emoji: '🐔', img: COOK('fresco/piernita.png',             '1:1', 180), tab: 'fresco'     },
-  { label: 'Bowls',          emoji: '🥣', img: COOK('marinados/agridulce.png',         '1:1', 180), tab: 'bowls'      },
-  { label: '✨ Nuevo',        emoji: '✨', img: null,                                               tab: 'nuevo'      },
+const CATS_ALL = [
+  { label: '✨ Nuevo',        emoji: '✨', img: null,                                               tab: 'nuevo'       },
+  { label: 'Marinados',      emoji: '🍯', img: COOK('marinados/teriyaki.png',          '1:1', 180), tab: 'marinados'   },
+  { label: 'Milanesas',      emoji: '🥩', img: COOK('milanesas/milanesa_natural.png',  '1:1', 180), tab: 'preparados'  },
+  { label: 'Preparados',     emoji: '🍳', img: COOK('preparados/pechuga_rellena.png',  '1:1', 180), tab: 'preparados'  },
+  { label: 'Pollo\nFresco',  emoji: '🐔', img: COOK('fresco/piernita.png',             '1:1', 180), tab: 'fresco'      },
+  { label: 'Extras',         emoji: '🥗', img: null,                                               tab: 'complementos'},
+  { label: 'Bowls',          emoji: '🥣', img: COOK('marinados/agridulce.png',         '1:1', 180), tab: 'bowls'       },
 ]
 
 /* ─── Cards de entrada ─── */
@@ -144,7 +145,6 @@ function EntradaCard({ entrada, onClic }) {
 }
 
 const COMPONENTES = { fresco: SeccionFresco, marinados: SeccionMarinados, preparados: SeccionPreparados, complementos: SeccionComplementos, bowls: SeccionBowls, nuevo: SeccionNuevo }
-const TABS_POLLO  = SECCIONES
 
 /* ── Calcula si la sucursal está abierta ahora ── */
 const DIAS_ES = ['domingo','lunes','martes','miercoles','jueves','viernes','sabado']
@@ -165,6 +165,20 @@ export default function MenuPrincipal() {
   const estaAbierto = calcEstaAbierto(schedule)
   const [mostrarAtajos, setMostrarAtajos] = useState(true)
   const [tabActiva, setTabActiva]         = useState(null)
+
+  // Tabs y cats visibles según disponibilidad de la sucursal activa
+  const extrasActivo = diseno?.extras_enabled !== false
+  const bowlsActivo  = diseno?.bowls_enabled  !== false
+  const TABS_POLLO = SECCIONES.filter(s => {
+    if (s.id === 'complementos') return extrasActivo
+    if (s.id === 'bowls')        return bowlsActivo
+    return true
+  })
+  const CATS = CATS_ALL.filter(c => {
+    if (c.tab === 'complementos') return extrasActivo
+    if (c.tab === 'bowls')        return bowlsActivo
+    return true
+  })
   const [heroIdx, setHeroIdx]             = useState(0)
   const [bannerActivo, setBannerActivo]   = useState(0)
 

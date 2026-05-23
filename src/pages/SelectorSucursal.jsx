@@ -172,8 +172,15 @@ export default function SelectorSucursal() {
           {fase === 'banners' && bannerHero?.titulo
             ? <div className="selector-hero-titulo">{bannerHero.titulo}</div>
             : <>
-                <div className="selector-hero-titulo">Marinados artesanales,<br />listos para recoger</div>
-                <div className="selector-hero-sub">Preparados · Milanesas · Bowls · Fresco</div>
+                <div className="selector-hero-titulo">
+                  {diseno?.selector_titulo
+                    ? diseno.selector_titulo.split('\n').map((line, i, arr) => i < arr.length - 1 ? <span key={i}>{line}<br /></span> : <span key={i}>{line}</span>)
+                    : <>Marinados artesanales,<br />listos para recoger</>
+                  }
+                </div>
+                <div className="selector-hero-sub">
+                  {diseno?.selector_subtitulo || 'Preparados · Milanesas · Bowls · Fresco'}
+                </div>
               </>
           }
         </div>
