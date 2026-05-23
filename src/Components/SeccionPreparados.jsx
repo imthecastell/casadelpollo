@@ -23,6 +23,7 @@ const esEmpanizada = (p) => {
 }
 const esNugget = (p) =>
   ['nugget', 'tender', 'trozo'].some(k => p.name.toLowerCase().includes(k))
+const esEmpanada = (p) => p.name.toLowerCase().includes('empanada')
 const esAlbondiga = (nombre) =>
   nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').includes('albondiga')
 
@@ -156,8 +157,8 @@ function CardProducto({ producto, seleccion, cantidad, recogida, onSeleccionar, 
   )
 }
 
-/* ── Fila expandible de grupo (Nuggets / Empanizadas / Empapeladas) ── */
-function GrupoExpandible({ titulo, precio, imagen, emoji, conteo, open, onToggle, children }) {
+/* ── Fila expandible de grupo (Nuggets / Empanizadas / Empapeladas / Empanadas) ── */
+function GrupoExpandible({ titulo, precio, unidad = '/kg', imagen, emoji, conteo, open, onToggle, children }) {
   return (
     <div>
       <button
@@ -170,7 +171,7 @@ function GrupoExpandible({ titulo, precio, imagen, emoji, conteo, open, onToggle
         }
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="producto-nombre">{titulo}</div>
-          <div className="producto-precio">${precio}/kg</div>
+          <div className="producto-precio">${precio}{unidad}</div>
           <div style={{ fontSize: 11, color: 'var(--texto-suave)', marginTop: 2 }}>
             {conteo} variantes {open ? '· ocultar ▴' : ''}
           </div>
@@ -230,14 +231,17 @@ export default function SeccionPreparados() {
   const [cantEmpapeladas, setCantEmpapeladas]   = useState({})
   const [cantEmpanizadas, setCantEmpanizadas]   = useState({})
   const [cantNuggets, setCantNuggets]           = useState({})
+  const [cantEmpanadas, setCantEmpanadas]       = useState({})
   const [empapOpen, setEmpapOpen]               = useState(false)
   const [empanizadasOpen, setEmpanizadasOpen]   = useState(false)
   const [nuggetsOpen, setNuggetsOpen]           = useState(false)
+  const [empanadasOpen, setEmpanadasOpen]       = useState(false)
 
   // Filtros de productos
   const todoPreparado = productos.filter(p => p.category_name === 'Preparados' && p.available !== false)
-  const productosNormales = todoPreparado.filter(p => !esNugget(p))
-  const nuggets = todoPreparado.filter(esNugget)
+  const productosNormales = todoPreparado.filter(p => !esNugget(p) && !esEmpanada(p))
+  const nuggets   = todoPreparado.filter(esNugget)
+  const empanadas = todoPreparado.filter(esEmpanada)
   const precioNuggets = nuggets[0]?.price ?? 205
 
   const milanesas = productos.filter(p => p.category_name === 'Milanesas' && p.available !== false)
@@ -328,6 +332,30 @@ export default function SeccionPreparados() {
     marcarAgregado(`nug-${p.id}`)
   }
 
+  const cambiarEmpanada = (id, delta) =>
+    setCantEmpanadas(prev => {
+      const actual = prev[id] || 0
+      if (delta < 0 && actual <= 1) return { ...prev, [id]: 0 }
+      return { ...prev, [id]: actual === 0 ? 1 : Math.max(0, actual + delta) }
+    })
+
+  const agregarEmpanada = (p) => {
+    const c = cantEmpanadas[p.id] || 0
+    if (!c) return
+    agregarAlCarrito({
+      tipo: 'preparado',
+      nombre: p.name,
+      cantidad: c,
+      precio: p.price,
+      precioKg: p.price,
+      necesitaHora: true,
+      imagen_url: rawCrop(p.image_url || p.image_cooked_url),
+      resumen: `${p.name} × ${c} pz · $${p.price}/pz`,
+    })
+    setCantEmpanadas(prev => ({ ...prev, [p.id]: 0 }))
+    marcarAgregado(`empa-${p.id}`)
+  }
+
   const cambiarEmpap = (id, delta) =>
     setCantEmpapeladas(prev => {
       const actual = prev[id] || 0
@@ -408,6 +436,32 @@ export default function SeccionPreparados() {
                 cantidad={cantNuggets[p.id] || 0}
                 onCambiar={d => cambiarNugget(p.id, d)}
                 onAgregar={() => agregarNugget(p)}
+                agregado={agregado}
+              />
+            ))}
+          </GrupoExpandible>
+        </div>
+      )}
+
+      {/* ── Empanadas ── */}
+      {empanadas.length > 0 && (
+        <div className="subseccion-menu">
+          <GrupoExpandible
+            titulo="Empanadas"
+            precio={empanadas[0]?.price ?? 0}
+            unidad="/pz"
+            emoji="🥟"
+            conteo={empanadas.length}
+            open={empanadasOpen}
+            onToggle={() => setEmpanadasOpen(v => !v)}
+          >
+            {empanadas.map(p => (
+              <FilaVariante
+                key={p.id} idKey={`empa-${p.id}`}
+                nombre={p.name.replace(/^empanada\s+de\s+/i, '')}
+                cantidad={cantEmpanadas[p.id] || 0}
+                onCambiar={d => cambiarEmpanada(p.id, d)}
+                onAgregar={() => agregarEmpanada(p)}
                 agregado={agregado}
               />
             ))}
