@@ -181,13 +181,15 @@ export function AppProvider({ children }) {
     if (horaEntrega) {
       setSlots(prev => reservarSlot(prev, horaEntrega))
     }
+    // Capturar carrito antes de limpiar
+    const carritoSnapshot = [...carrito]
     try {
-      const items = carrito.map(item => ({
+      const items = carritoSnapshot.map(item => ({
         product_name: item.resumen || item.nombre || 'Producto',
         quantity: item.cantidad || 1,
         price: parseFloat(item.precioTotal || item.precio || item.price || 0)
       }))
-      const total = carrito.reduce((sum, item) => {
+      const total = carritoSnapshot.reduce((sum, item) => {
         if (item.tipo === 'pieza' || item.tipo === 'preparado' || item.tipo === 'milanesa') return sum
         if (item.precioTotal !== undefined) return sum + parseFloat(item.precioTotal || 0)
         const precio = parseFloat(item.precioTotal || item.precio || item.price || 0)
@@ -205,6 +207,50 @@ export function AppProvider({ children }) {
       })
       setUltimoNumeroOrden(orden.order_number)
       setUltimaHora(horaEntrega)
+
+      // ── Intentar imprimir ticket (silencioso si el agente no está disponible) ──
+      const ticketProductos = carritoSnapshot.flatMap(item => {
+        if (item.tipo === 'bowl') {
+          return [
+            { nombre: `BOWL - Base: ${item.base} ${item.gramosBase}g`, precio: item.precioTotal || 0, tipo: 'bowl_header' },
+            { nombre: `Marinado: ${item.marinado} ${item.gramosMarinado}g`, precio: 0, tipo: 'bowl_detail' },
+          ]
+        }
+        if (item.tipo === 'complemento') {
+          const filas = []
+          for (let i = 0; i < (item.cantidad || 1); i++) filas.push({ nombre: item.nombre || item.name || 'Extra', precio: item.precio || 0, tipo: 'crudo' })
+          return filas
+        }
+        if (item.tipo === 'pieza') {
+          const filas = []
+          for (let i = 0; i < (item.cantidad || 1); i++) filas.push({ nombre: item.nombre || item.name || 'Pieza', precio: item.precio || 0, tipo: 'crudo' })
+          return filas
+        }
+        return [{ nombre: item.nombre || item.name || 'Producto', precio: item.precio || 0, tipo: item.recogida || 'crudo' }]
+      })
+
+      const hNum = parseInt((horaEntrega || '00:00').split(':')[0])
+      const hMin = (horaEntrega || '00:00').split(':')[1] || '00'
+      const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
+      const DIAS  = ['Dom','Lun','Mar','Mie','Jue','Vie','Sab']
+      const hoy   = new Date()
+
+      fetch('http://localhost:3001/imprimir', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: AbortSignal.timeout(5000),
+        body: JSON.stringify({
+          orden:    orden.order_number,
+          sucursal: sucursalActiva?.name || '',
+          cliente:  datosCliente?.nombre || 'Cliente',
+          tel:      datosCliente?.telefono || '',
+          notas:    datosCliente?.notas || '',
+          fecha:    `${DIAS[hoy.getDay()]} ${hoy.getDate()} ${MESES[hoy.getMonth()]}`,
+          hora:     `${hNum > 12 ? hNum - 12 : hNum || 12}:${hMin}`,
+          ampm:     hNum >= 12 ? 'PM' : 'AM',
+          productos: ticketProductos,
+        }),
+      }).catch(() => {}) // agente local no disponible — no bloquear el flujo
     } catch (e) {
       console.error('Error al crear pedido:', e)
     }
