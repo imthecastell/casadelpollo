@@ -173,10 +173,13 @@ export default function SelectorSucursal() {
             ? <div className="selector-hero-titulo">{bannerHero.titulo}</div>
             : <>
                 <div className="selector-hero-titulo">
-                  {diseno?.selector_titulo
-                    ? diseno.selector_titulo.split('\n').map((line, i, arr) => i < arr.length - 1 ? <span key={i}>{line}<br /></span> : <span key={i}>{line}</span>)
-                    : <>Marinados artesanales,<br />listos para recoger</>
-                  }
+                  {(() => {
+                    const lines = (diseno?.selector_titulo || '').split('\n').filter(l => l.trim());
+                    if (!lines.length) return <>Marinados artesanales,<br />listos para recoger</>;
+                    return lines.map((line, i, arr) =>
+                      i < arr.length - 1 ? <span key={i}>{line}<br /></span> : <span key={i}>{line}</span>
+                    );
+                  })()}
                 </div>
                 <div className="selector-hero-sub">
                   {diseno?.selector_subtitulo || 'Preparados · Milanesas · Bowls · Fresco'}
