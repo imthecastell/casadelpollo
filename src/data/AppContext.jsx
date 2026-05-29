@@ -94,7 +94,7 @@ export function AppProvider({ children }) {
   useEffect(() => {
     if (sucursalActiva) {
       getProductsByBranch(sucursalActiva.id)
-        .then(data => setProductos(data))
+        .then(data => setProductos(Array.isArray(data) ? data : []))
         .catch(() => setProductos([]))
 
       getDesign(sucursalActiva.id)
@@ -210,11 +210,12 @@ export function AppProvider({ children }) {
 
       // La impresión se dispara desde el admin (Orders.jsx) para funcionar
       // tanto con pedidos de celular como de PC.
+      limpiarCarrito()
+      setVista('confirmado')
     } catch (e) {
       console.error('Error al crear pedido:', e)
+      alert('Hubo un problema al registrar tu pedido. Por favor intenta de nuevo.')
     }
-    limpiarCarrito()
-    setVista('confirmado')
   }
 
   const totalItems = carrito.reduce((sum, item) => {

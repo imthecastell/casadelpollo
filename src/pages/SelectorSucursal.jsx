@@ -26,7 +26,17 @@ export default function SelectorSucursal() {
   const [heroIdx, setHeroIdx]         = useState(0)
   const [nombreVisible, setNombreVisible] = useState(true)
   const iniciadoRef = useRef(false)
-  const timerRef    = useRef(null)
+  const timersRef   = useRef([])  // todos los timeouts activos
+
+  const addTimer = (fn, ms) => {
+    const id = setTimeout(fn, ms)
+    timersRef.current.push(id)
+    return id
+  }
+  const clearAllTimers = () => {
+    timersRef.current.forEach(clearTimeout)
+    timersRef.current = []
+  }
 
   /* ── Cuando los banners cargan, arrancar la secuencia ── */
   useEffect(() => {
@@ -42,26 +52,24 @@ export default function SelectorSucursal() {
     const avanzar = (idx) => {
       const siguiente = idx + 1
       if (siguiente < banners.length) {
-        // Fade-out del banner actual, luego mostrar el siguiente
-        timerRef.current = setTimeout(() => {
+        addTimer(() => {
           setBannerOpacity(0)
-          setTimeout(() => {
+          addTimer(() => {
             setBannerActivo(siguiente)
             setBannerOpacity(1)
             avanzar(siguiente)
           }, 500)
         }, DURACION)
       } else {
-        // Último banner mostrado → fade-out y pasar al carrusel
-        timerRef.current = setTimeout(() => {
+        addTimer(() => {
           setBannerOpacity(0)
-          setTimeout(() => setFase('carrusel'), 600)
+          addTimer(() => setFase('carrusel'), 600)
         }, DURACION)
       }
     }
 
     avanzar(0)
-    return () => clearTimeout(timerRef.current)
+    return () => clearAllTimers()
   }, [banners]) // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── Rotación del carrusel de productos (sólo cuando fase === 'carrusel') ── */
