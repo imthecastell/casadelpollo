@@ -417,7 +417,7 @@ export default function SeccionPreparados() {
   const agregarEmpanada = mkAgregar(
     cantEmpanadas, setCantEmpanadas, 'empa', 'preparado',
     p => p.name,
-    (p, c, r) => `${p.name} × ${c} pz · $${p.price}/pz${r === 'cocinado' ? ' · Cocinado ~20 min' : ''}`,
+    (p, c, r) => `${p.name} × ${c} pz · $${p.price}/kg${r === 'cocinado' ? ' · Cocinado ~20 min' : ''}`,
   )
   const agregarPechuga = mkAgregar(
     cantPechugas, setCantPechugas, 'pech', 'preparado',
@@ -494,7 +494,7 @@ export default function SeccionPreparados() {
           <GrupoExpandible
             titulo="Empanadas"
             precio={empanadas[0]?.price ?? 0}
-            unidad="/pz"
+            unidad="/kg"
             imagen={empanadas[0]?.image_url || undefined}
             emoji="🥟"
             conteo={empanadas.length}
