@@ -4,6 +4,7 @@ import MenuPrincipal from './pages/MenuPrincipal.jsx'
 import Carrito from './pages/Carrito.jsx'
 import Confirmado from './pages/Confirmado.jsx'
 import Feedback from './pages/Feedback.jsx'
+import LinksPage from './pages/LinksPage.jsx'
 import './styles/global.css'
 
 function Contenido() {
@@ -18,6 +19,8 @@ function Contenido() {
 }
 
 export default function App() {
+  if (window.location.pathname === '/links') return <LinksPage />
+
   return (
     <AppProvider>
       <Contenido />
