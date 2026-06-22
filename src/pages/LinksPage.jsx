@@ -4,24 +4,14 @@ const API_URL = 'https://casadelpollo-backend.onrender.com'
 
 export default function LinksPage() {
   const [config,  setConfig]  = useState(null)
-  const [diseno,  setDiseno]  = useState({})
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    Promise.all([
-      fetch(`${API_URL}/api/links`).then(r => r.json()).catch(() => ({})),
-      fetch(`${API_URL}/api/branches`).then(r => r.json())
-        .then(branches => {
-          const first = Array.isArray(branches) ? branches.find(b => b.active) : null
-          return first
-            ? fetch(`${API_URL}/api/design/${first.id}`).then(r => r.json()).catch(() => ({}))
-            : {}
-        })
-        .catch(() => ({})),
-    ]).then(([links, design]) => {
-      setConfig(links)
-      setDiseno(design || {})
-    }).finally(() => setLoading(false))
+    fetch(`${API_URL}/api/links`)
+      .then(r => r.json())
+      .catch(() => ({}))
+      .then(links => setConfig(links))
+      .finally(() => setLoading(false))
   }, [])
 
   if (loading) {
@@ -34,8 +24,7 @@ export default function LinksPage() {
 
   const { title = 'Casa del Pollo', subtitle = '', branches = [] } = config || {}
   const activas  = branches.filter(b => b.active !== false)
-  const primary  = diseno.primary_color || diseno.navbar_color || '#c1121f'
-  const logo     = diseno.logo_original_url || diseno.logo_url
+  const primary  = '#c1121f'
   const bg1      = primary + '18'
 
   return (
@@ -58,9 +47,7 @@ export default function LinksPage() {
           {/* Cabecera */}
           <div style={s.header}>
             <div style={s.avatarBox}>
-              {logo
-                ? <img src={logo} alt={title} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                : <span style={{ fontSize: 36 }}>🐔</span>}
+              <img src="/logo.png" alt={title} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </div>
             <h1 style={{ ...s.h1, color: '#1a1a1a' }}>{title}</h1>
             {subtitle && <p style={s.subtitle}>{subtitle}</p>}
