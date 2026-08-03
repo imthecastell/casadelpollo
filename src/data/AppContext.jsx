@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import { generarSlots, reservarSlot } from './slots.js'
 import { getBranches, getProductsByBranch, createOrder, getDesign, getPromotions, getBanners, getSchedule } from './api.js'
 
 const AppContext = createContext()
@@ -9,7 +8,6 @@ export function AppProvider({ children }) {
   const [carrito, setCarrito] = useState([])
   const [vista, setVista] = useState('sucursales')
   const [schedule, setSchedule] = useState(null)
-  const [slots, setSlots] = useState(() => generarSlots(new Date()))
   const [cocInicio, setCocInicio] = useState(null)
   const [cocFin, setCocFin] = useState(null)
   const [sucursales, setSucursales] = useState([])
@@ -85,7 +83,6 @@ export function AppProvider({ children }) {
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
           setSchedule(data)
-          setSlots(generarSlots(new Date(), data))
         }
       })
       .catch(() => {})
@@ -114,7 +111,6 @@ export function AppProvider({ children }) {
           const cf = data?.cocinados_fin
           if (Array.isArray(horarios) && horarios.length > 0) {
             setSchedule(horarios)
-            setSlots(generarSlots(new Date(), horarios))
           }
           setCocInicio(ci || null)
           setCocFin(cf || null)
@@ -177,10 +173,7 @@ export function AppProvider({ children }) {
 
   const limpiarCarrito = () => setCarrito([])
 
-  const confirmarPedido = async (horaEntrega, datosCliente) => {
-    if (horaEntrega) {
-      setSlots(prev => reservarSlot(prev, horaEntrega))
-    }
+  const confirmarPedido = async (horaEntrega, datosCliente, asap = false) => {
     // Capturar carrito antes de limpiar
     const carritoSnapshot = [...carrito]
     try {
@@ -201,12 +194,13 @@ export function AppProvider({ children }) {
         customer_name: datosCliente?.nombre || 'Cliente',
         customer_phone: datosCliente?.telefono || '',
         customer_notes: datosCliente?.notas || '',
-        pickup_time: horaEntrega,
+        pickup_time: asap ? null : horaEntrega,
+        asap,
         items,
         total
       })
       setUltimoNumeroOrden(orden.order_number)
-      setUltimaHora(horaEntrega)
+      setUltimaHora(asap ? 'Lo antes posible' : horaEntrega)
 
       // La impresión se dispara desde el admin (Orders.jsx) para funcionar
       // tanto con pedidos de celular como de PC.
@@ -230,7 +224,7 @@ export function AppProvider({ children }) {
   sucursalActiva, setSucursalActiva,
   carrito, agregarAlCarrito, eliminarDelCarrito, limpiarCarrito, confirmarPedido,
   vista, setVista,
-  slots, totalItems,
+  totalItems,
   ultimoNumeroOrden, ultimaHora,
   sucursales,
   productos,

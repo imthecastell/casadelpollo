@@ -1,12 +1,7 @@
 import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
-import SemaforoCupo from '../Components/SemaforoCupo.jsx'
 import LogoSlot from '../Components/LogoSlot.jsx'
-
-function calcularLugaresBowls(carrito) {
-  const numBowls = carrito.filter(i => i.tipo === 'bowl').length
-  return Math.ceil(numBowls / 2)
-}
+import { generarHorariosDisponibles, ventanaPreparacion } from '../data/slots.js'
 
 function soloDigitos(valor) {
   return valor.replace(/\D/g, '').slice(0, 10)
@@ -21,11 +16,6 @@ function formatearTelefono(valor) {
   ].filter(Boolean).join(' ')
 }
 
-function minutosDeHora(hora) {
-  const [h, m] = hora.split(':').map(Number)
-  return h * 60 + m
-}
-
 function precioItem(item) {
   const tipo = item.precio_tipo || item.tipo
   if (tipo === 'pieza' || tipo === 'al_pesar') return 'Al pesar'
@@ -37,40 +27,24 @@ function precioItem(item) {
 }
 
 export default function Carrito() {
-  const { carrito, eliminarDelCarrito, confirmarPedido, setVista, slots, totalItems, diseno, cocInicio, cocFin } = useApp()
+  const { carrito, eliminarDelCarrito, confirmarPedido, setVista, totalItems, diseno, schedule, cocInicio, cocFin } = useApp()
   const [horaSeleccionada, setHoraSeleccionada] = useState(null)
+  const [asapSeleccionado, setAsapSeleccionado] = useState(false)
   const [nombre, setNombre] = useState('')
   const [telefono, setTelefono] = useState('')
   const [notas, setNotas] = useState('')
   const [confirmando, setConfirmando] = useState(false)
 
-  const lugaresBowls = calcularLugaresBowls(carrito)
   const telefonoDigitos = soloDigitos(telefono)
-  const tiempoPreparacionPedido = Math.max(30, ...carrito.map(item => parseInt(item.tiempoEstimado || 0)))
-  const ahora = new Date()
-  const minutosActuales = ahora.getHours() * 60 + ahora.getMinutes()
 
-  // ¿El pedido incluye productos que se cocinan?
-  const tieneCocinados = carrito.some(i =>
-    i.se_puede_cocinar ||
-    i.tipo === 'marinado' ||
-    i.tipo === 'preparado' ||
-    i.tipo === 'milanesa'
-  )
+  // ¿El pedido incluye productos que se cocinan? (define la ventana de 20 vs 40 min)
+  const tieneCocinados = ventanaPreparacion(carrito) === 40
+  const horariosDisponibles = generarHorariosDisponibles(carrito, schedule, cocInicio, cocFin)
 
-  const slotsDisponibles = slots.filter(s => {
-    const lugaresLibres = s.capacidadTotal - s.ordenesReservadas
-    if (lugaresLibres < Math.max(lugaresBowls, 1)) return false
-    if (minutosDeHora(s.hora) < minutosActuales + tiempoPreparacionPedido) return false
-    // Si hay cocinados, restringir al rango configurado para esa sucursal
-    if (tieneCocinados && cocInicio && cocFin) {
-      const min = minutosDeHora(s.hora)
-      if (min < minutosDeHora(cocInicio) || min > minutosDeHora(cocFin)) return false
-    }
-    return true
-  })
+  const elegirHora = (hora) => { setHoraSeleccionada(hora); setAsapSeleccionado(false) }
+  const elegirAsap = () => { setAsapSeleccionado(true); setHoraSeleccionada(null) }
 
-  const puedeConfirmar = nombre.trim().length > 0 && telefonoDigitos.length === 10 && horaSeleccionada
+  const puedeConfirmar = nombre.trim().length > 0 && telefonoDigitos.length === 10 && (horaSeleccionada || asapSeleccionado)
 
   const totalEstimado = carrito.reduce((sum, item) => {
     if (item.tipo === 'pieza' || item.tipo === 'preparado' || item.tipo === 'milanesa') return sum
@@ -83,7 +57,7 @@ export default function Carrito() {
     if (!puedeConfirmar) return
     setConfirmando(true)
     setTimeout(() => {
-      confirmarPedido(horaSeleccionada, { nombre, telefono: telefonoDigitos, notas })
+      confirmarPedido(horaSeleccionada, { nombre, telefono: telefonoDigitos, notas }, asapSeleccionado)
     }, 800)
   }
 
@@ -200,39 +174,51 @@ export default function Carrito() {
               </div>
             </div>
 
-            <SemaforoCupo />
-
             <div style={{ background: 'var(--card-bg)', borderRadius: 'var(--radio-lg)', padding: '18px', boxShadow: 'var(--sombra)', marginBottom: 16 }}>
               <label className="config-label">Hora de recogida</label>
               {tieneCocinados && cocInicio && cocFin && (
                 <div style={{ fontSize: 12, color: '#92400E', background: '#FFFBEB', border: '1px solid #F59E0B44', borderRadius: 8, padding: '7px 12px', marginBottom: 10 }}>
-                  🍗 Tu pedido incluye productos cocinados · slots disponibles entre <b>{cocInicio}</b> y <b>{cocFin}</b>
+                  🍗 Tu pedido incluye productos cocinados · disponible entre <b>{cocInicio}</b> y <b>{cocFin}</b>
                 </div>
               )}
-              {slotsDisponibles.length === 0 ? (
+
+              <button
+                onClick={elegirAsap}
+                style={{
+                  width: '100%', padding: '12px 14px', marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 2, textAlign: 'left',
+                  border: `2px solid ${asapSeleccionado ? 'var(--rojo)' : 'var(--gris)'}`, borderRadius: 'var(--radio)',
+                  background: asapSeleccionado ? '#fff5f5' : 'var(--crema)', cursor: 'pointer', transition: 'all 0.15s',
+                }}
+              >
+                <span style={{ fontFamily: 'var(--font-title), sans-serif', fontWeight: 800, fontSize: 15, color: asapSeleccionado ? 'var(--rojo)' : 'var(--texto)' }}>
+                  ⚡ Lo antes posible
+                </span>
+                <span style={{ fontSize: 11, color: 'var(--texto-suave)' }}>Te avisamos en cuanto esté listo</span>
+              </button>
+
+              {horariosDisponibles.length === 0 ? (
                 <p style={{ fontSize: 13, color: 'var(--rojo)' }}>No hay horarios disponibles con el tiempo de preparacion requerido.</p>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-                  {slotsDisponibles.map(s => (
+                  {horariosDisponibles.map(hora => (
                     <button
-                      key={s.hora}
-                      onClick={() => setHoraSeleccionada(s.hora)}
-                      style={{ padding: '10px 6px', border: `2px solid ${horaSeleccionada === s.hora ? 'var(--rojo)' : 'var(--gris)'}`, borderRadius: 'var(--radio)', background: horaSeleccionada === s.hora ? '#fff5f5' : 'var(--crema)', color: horaSeleccionada === s.hora ? 'var(--rojo)' : 'var(--texto)', fontFamily: 'var(--font-title), sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', transition: 'all 0.15s' }}
+                      key={hora}
+                      onClick={() => elegirHora(hora)}
+                      style={{ padding: '10px 6px', border: `2px solid ${horaSeleccionada === hora ? 'var(--rojo)' : 'var(--gris)'}`, borderRadius: 'var(--radio)', background: horaSeleccionada === hora ? '#fff5f5' : 'var(--crema)', color: horaSeleccionada === hora ? 'var(--rojo)' : 'var(--texto)', fontFamily: 'var(--font-title), sans-serif', fontWeight: 700, fontSize: 14, cursor: 'pointer', transition: 'all 0.15s' }}
                     >
-                      {s.hora}
-                      <div style={{ fontSize: 10, fontWeight: 400, color: 'var(--texto-suave)', marginTop: 2 }}>
-                        {s.capacidadTotal - s.ordenesReservadas} lugar{s.capacidadTotal - s.ordenesReservadas !== 1 ? 'es' : ''}
-                      </div>
+                      {hora}
                     </button>
                   ))}
                 </div>
               )}
             </div>
 
-            {horaSeleccionada && (
+            {(horaSeleccionada || asapSeleccionado) && (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff5eb', border: '1.5px solid #e85d0433', borderRadius: 'var(--radio)', padding: '12px 16px', marginBottom: 16 }}>
                 <span style={{ fontSize: 14, color: 'var(--cafe-medio)' }}>Hora de recogida</span>
-                <span style={{ fontFamily: 'var(--font-title), sans-serif', fontWeight: 800, fontSize: 20, color: 'var(--rojo)' }}>{horaSeleccionada}</span>
+                <span style={{ fontFamily: 'var(--font-title), sans-serif', fontWeight: 800, fontSize: 20, color: 'var(--rojo)' }}>
+                  {asapSeleccionado ? '⚡ Lo antes posible' : horaSeleccionada}
+                </span>
               </div>
             )}
 
@@ -262,7 +248,7 @@ export default function Carrito() {
               <div style={{ fontSize: 12, color: 'var(--texto-suave)', textAlign: 'center', marginBottom: 10 }}>
                 {!nombre.trim() ? 'Escribe tu nombre · ' : ''}
                 {telefonoDigitos.length !== 10 ? 'Escribe tu telefono a 10 digitos · ' : ''}
-                {!horaSeleccionada ? 'Elige una hora de recogida' : ''}
+                {!horaSeleccionada && !asapSeleccionado ? 'Elige una hora de recogida' : ''}
               </div>
             )}
 
