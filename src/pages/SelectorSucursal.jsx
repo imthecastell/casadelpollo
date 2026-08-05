@@ -7,18 +7,20 @@ import '../styles/selector.css'
 const CDN  = 'https://res.cloudinary.com/do4juvxio/image/upload'
 const COOK = (f) => `${CDN}/c_crop,fl_relative,x_0.50,y_0.00,w_0.50,h_1.00/ar_4:3,c_fill,w_960/${f}`
 const ALL_HERO_ITEMS = [
-  { img: COOK('marinados/teriyaki.png'),         nombre: 'Marinado Teriyaki' },
-  { img: COOK('marinados/agridulce.png'),        nombre: 'Marinado Agridulce' },
-  { img: COOK('preparados/pechuga_rellena.png'), nombre: 'Pechuga Rellena' },
-  { img: COOK('marinados/barbacoa.png'),         nombre: 'Marinado Barbacoa' },
-  { img: COOK('marinados/hoisin.png'),           nombre: 'Marinado Hoisin' },
-  { img: COOK('marinados/mostaza%20miel.png'),   nombre: 'Mostaza con Miel' },
-  { img: COOK('marinados/chipotle.png'),         nombre: 'Marinado Chipotle' },
-  { img: COOK('marinados/italiano.png'),         nombre: 'Marinado Italiano' },
-  { img: COOK('marinados/naranja.png'),          nombre: 'Marinado Naranja' },
-  { img: COOK('preparados/milanesa.png'),        nombre: 'Milanesa' },
-  { img: COOK('preparados/entero.png'),          nombre: 'Pollo Entero' },
-  { img: COOK('preparados/bowl.png'),            nombre: 'Bowl de Pollo' },
+  { img: COOK('marinados/teriyaki.png'),                     nombre: 'Teriyaki' },
+  { img: COOK('marinados/adobado.png'),                      nombre: 'Adobado' },
+  { img: COOK('marinados/pollo%20al%20pastor.png'),          nombre: 'Al Pastor' },
+  { img: COOK('marinados/almendrado.png'),                   nombre: 'Almendrado' },
+  { img: COOK('marinados/hoisin.png'),                       nombre: 'Hoisin' },
+  { img: COOK('marinados/mostaza%20miel.png'),               nombre: 'Mostaza Miel' },
+  { img: COOK('marinados/pollo%20al%20parmesano.png'),       nombre: 'Parmesano con Cilantro' },
+  { img: COOK('marinados/tailndes.png'),                     nombre: 'Tailandés' },
+  { img: COOK('marinados/fajitas%20a%20la%20mexicana.png'),  nombre: 'A la Mexicana' },
+  { img: COOK('preparados/pechuga_rellena.png'),             nombre: 'Pechuga Rellena' },
+  { img: COOK('preparados/chiles_rellenos.png'),             nombre: 'Chiles Rellenos' },
+  { img: COOK('preparados/hamburguesa.png'),                 nombre: 'Hamburguesa' },
+  { img: COOK('preparados/medalones.png'),                   nombre: 'Medallón con Tocino' },
+  { img: COOK('preparados/nuggets.png'),                     nombre: 'Nuggets Caseros' },
 ]
 
 function pickRandom(arr, n) {
