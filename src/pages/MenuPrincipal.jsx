@@ -53,28 +53,42 @@ const CATS_ALL = [
 /* ─── Cards de entrada ─── */
 const ENTRADAS = [
   {
-    id: 'pollo', tab: 'fresco',
-    titulo: 'Pollo fresco y marinados',
-    desc: 'Marinados artesanales · preparados · milanesas · piezas frescas',
-    color: '#1a0408',
-    invertido: false,
-    imgs: [
-      COOK('marinados/adobado.png',           '4:3', 480),
-      COOK('marinados/teriyaki.png',          '4:3', 480),
-      COOK('marinados/hoisin.png',            '4:3', 480),
-      COOK('marinados/barbacoa.png',          '4:3', 480),
-      COOK('preparados/hamburguesa.png',      '4:3', 480),
-    ],
-  },
-  {
     id: 'bowls', tab: 'bowls',
     titulo: 'Bowls',
     desc: 'Base + marinado cocinado · personaliza a tu gusto',
     color: '#0a2016',
-    invertido: true,
+    invertido: false,
     imgs: [
       COOK('marinados/agridulce.png',  '4:3', 480),
       COOK('marinados/almendrado.png', '4:3', 480),
+      COOK('marinados/teriyaki.png',   '4:3', 480),
+    ],
+  },
+  {
+    id: 'marinados', tab: 'marinados',
+    titulo: 'Marinados',
+    desc: 'Artesanales · listos para llevar o ya cocinados',
+    color: '#1a0408',
+    invertido: true,
+    imgs: [
+      COOK('marinados/teriyaki.png',                    '4:3', 480),
+      COOK('marinados/adobado.png',                     '4:3', 480),
+      COOK('marinados/hoisin.png',                      '4:3', 480),
+      COOK('marinados/almendrado.png',                  '4:3', 480),
+      COOK('marinados/fajitas%20a%20la%20mexicana.png', '4:3', 480),
+    ],
+  },
+  {
+    id: 'fresco', tab: 'fresco',
+    titulo: 'Pollo Fresco',
+    desc: 'Piezas frescas sin marinar · para cocinar a tu gusto',
+    color: '#0d1a24',
+    invertido: false,
+    imgs: [
+      RAW('fresco/piernita.png',          '4:3', 480),
+      RAW('fresco/muslos.png',            '4:3', 480),
+      RAW('fresco/pechuga_con_hueso.png', '4:3', 480),
+      RAW('fresco/pierna_completa.png',   '4:3', 480),
     ],
   },
 ]
@@ -173,7 +187,7 @@ function calcEstaAbierto(schedule) {
 }
 
 export default function MenuPrincipal() {
-  const { sucursalActiva, setVista, totalItems, bannersMenu = [], schedule, diseno } = useApp()
+  const { sucursalActiva, setVista, totalItems, schedule, diseno } = useApp()
   const estaAbierto = calcEstaAbierto(schedule)
   const [mostrarAtajos, setMostrarAtajos] = useState(true)
   const [tabActiva, setTabActiva]         = useState(null)
@@ -192,24 +206,15 @@ export default function MenuPrincipal() {
     return true
   })
   const [heroIdx, setHeroIdx]             = useState(0)
-  const [bannerActivo, setBannerActivo]   = useState(0)
   const heroImgs = useMemo(() => shuffle(HERO_IMGS), [])
 
   const SeccionActiva = COMPONENTES[tabActiva]
-  const bannerMenuActual = bannersMenu[bannerActivo]
 
   /* rotación hero */
   useEffect(() => {
     const t = setInterval(() => setHeroIdx(p => (p + 1) % heroImgs.length), 4000)
     return () => clearInterval(t)
   }, [])
-
-  /* rotación banner */
-  useEffect(() => {
-    if (bannersMenu.length <= 1) return
-    const t = setInterval(() => setBannerActivo(p => (p + 1) % bannersMenu.length), 4000)
-    return () => clearInterval(t)
-  }, [bannersMenu.length])
 
   const irA = (tab) => {
     setTabActiva(tab)
@@ -364,23 +369,6 @@ export default function MenuPrincipal() {
               ))}
             </div>
           </div>
-
-          {/* ── Banner promo (si existe) ── */}
-          {bannerMenuActual?.titulo && (
-            <div style={{ margin: '0 20px 16px' }}>
-              <section className="menu-promo">
-                <strong>{bannerMenuActual.titulo}</strong>
-                {bannersMenu.length > 1 && (
-                  <div style={{ display: 'flex', gap: 4, marginTop: 6 }}>
-                    {bannersMenu.map((_, i) => (
-                      <button key={i} onClick={() => setBannerActivo(i)}
-                        style={{ width: i === bannerActivo ? 16 : 6, height: 6, borderRadius: 3, border: 'none', background: i === bannerActivo ? 'var(--rojo)' : '#ccc', cursor: 'pointer', padding: 0, transition: 'all 0.3s' }} />
-                    ))}
-                  </div>
-                )}
-              </section>
-            </div>
-          )}
 
           {/* ── Cards de entrada ── */}
           <div style={{ padding: '0 20px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
