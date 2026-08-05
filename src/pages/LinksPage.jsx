@@ -62,6 +62,10 @@ export default function LinksPage() {
             ))
           )}
 
+          <a href="/" style={s.orderBtn}>
+            🛒 Hacer un pedido
+          </a>
+
           <div style={s.footer}>
             <span style={{ color: primary, fontWeight: 700 }}>{title}</span>
           </div>
@@ -285,6 +289,19 @@ const s = {
     transition: 'opacity .15s',
   },
   footer: { fontSize: 12, color: '#ccc', marginTop: 8 },
+  orderBtn: {
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+    width: '100%',
+    padding: '16px 24px',
+    borderRadius: 16,
+    background: '#c1121f',
+    color: 'white',
+    fontSize: 15, fontWeight: 800,
+    textDecoration: 'none',
+    boxShadow: '0 4px 18px rgba(193,18,31,0.28)',
+    transition: 'opacity .15s',
+    marginTop: 8,
+  },
 }
 
 /* ─── Íconos ─── */

@@ -5,21 +5,33 @@ import '../styles/selector.css'
 
 /* Carrusel de productos cocinados */
 const CDN  = 'https://res.cloudinary.com/do4juvxio/image/upload'
-const COOK = (f) => `${CDN}/c_crop,fl_relative,x_0.50,y_0.00,w_0.50,h_1.00/ar_16:9,c_fill,w_960/${f}`
-const HERO_ITEMS = [
+const COOK = (f) => `${CDN}/c_crop,fl_relative,x_0.50,y_0.00,w_0.50,h_1.00/ar_4:3,c_fill,w_960/${f}`
+const ALL_HERO_ITEMS = [
   { img: COOK('marinados/teriyaki.png'),         nombre: 'Marinado Teriyaki' },
   { img: COOK('marinados/agridulce.png'),        nombre: 'Marinado Agridulce' },
   { img: COOK('preparados/pechuga_rellena.png'), nombre: 'Pechuga Rellena' },
   { img: COOK('marinados/barbacoa.png'),         nombre: 'Marinado Barbacoa' },
   { img: COOK('marinados/hoisin.png'),           nombre: 'Marinado Hoisin' },
   { img: COOK('marinados/mostaza%20miel.png'),   nombre: 'Mostaza con Miel' },
+  { img: COOK('marinados/chipotle.png'),         nombre: 'Marinado Chipotle' },
+  { img: COOK('marinados/italiano.png'),         nombre: 'Marinado Italiano' },
+  { img: COOK('marinados/naranja.png'),          nombre: 'Marinado Naranja' },
+  { img: COOK('preparados/milanesa.png'),        nombre: 'Milanesa' },
+  { img: COOK('preparados/entero.png'),          nombre: 'Pollo Entero' },
+  { img: COOK('preparados/bowl.png'),            nombre: 'Bowl de Pollo' },
 ]
+
+function pickRandom(arr, n) {
+  const shuffled = [...arr].sort(() => Math.random() - 0.5)
+  return shuffled.slice(0, n)
+}
 
 export default function SelectorSucursal() {
   const { setSucursalActiva, setVista, sucursales, cargando, promociones, banners, diseno } = useApp()
 
   // fase: 'banners' → muestra avisos del admin uno a uno
   //       'carrusel' → productos rotando indefinidamente
+  const [heroItems]                    = useState(() => pickRandom(ALL_HERO_ITEMS, 6))
   const [fase, setFase]               = useState('carrusel')
   const [bannerActivo, setBannerActivo] = useState(0)
   const [bannerOpacity, setBannerOpacity] = useState(1) // para fade-out suave
@@ -78,7 +90,7 @@ export default function SelectorSucursal() {
     const t = setInterval(() => {
       setNombreVisible(false)
       setTimeout(() => {
-        setHeroIdx(p => (p + 1) % HERO_ITEMS.length)
+        setHeroIdx(p => (p + 1) % heroItems.length)
         setNombreVisible(true)
       }, 350)
     }, 3800)
@@ -121,7 +133,7 @@ export default function SelectorSucursal() {
       <div className="selector-hero">
 
         {/* ── Carrusel de productos (siempre detrás) ── */}
-        {HERO_ITEMS.map((item, i) => (
+        {heroItems.map((item, i) => (
           <div key={i} style={{
             position: 'absolute', inset: 0,
             backgroundImage: `url(${item.img})`,
@@ -155,7 +167,7 @@ export default function SelectorSucursal() {
             transition: 'opacity 0.35s ease',
             pointerEvents: 'none',
           }}>
-            {HERO_ITEMS[heroIdx].nombre}
+            {heroItems[heroIdx].nombre}
           </div>
         )}
 
@@ -199,7 +211,7 @@ export default function SelectorSucursal() {
         {/* ── Dots (carrusel de productos) ── */}
         {fase === 'carrusel' && (
           <div style={{ position: 'absolute', bottom: 12, right: 14, display: 'flex', gap: 5, zIndex: 2 }}>
-            {HERO_ITEMS.map((_, i) => (
+            {heroItems.map((_, i) => (
               <button key={i} onClick={() => { setHeroIdx(i); setNombreVisible(true) }} style={{
                 width: i === heroIdx ? 20 : 7, height: 7,
                 borderRadius: 4, border: 'none', padding: 0, cursor: 'pointer',
@@ -238,7 +250,7 @@ export default function SelectorSucursal() {
         <p className="selector-pregunta">¿Dónde recoges tu pedido?</p>
 
         <div className="selector-lista">
-          {sucursales.map(s => (
+          {[...sucursales].sort((a, b) => (b.active ? 1 : 0) - (a.active ? 1 : 0)).map(s => (
             <button
               key={s.id}
               className={`sucursal-card ${!s.active ? 'sucursal-inactiva' : ''}`}
@@ -253,6 +265,10 @@ export default function SelectorSucursal() {
             </button>
           ))}
         </div>
+
+        <a href="/links" className="selector-contacto-btn">
+          📍 Ver sucursales y contacto
+        </a>
       </div>
 
       {/* Footer */}
