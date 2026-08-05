@@ -159,7 +159,7 @@ function EntradaCard({ entrada, onClic }) {
         <strong style={{ fontFamily: 'var(--font-title),sans-serif', fontWeight: 800, fontSize: 18, lineHeight: 1.15, color: '#fff', letterSpacing: '-0.2px' }}>
           {entrada.titulo}
         </strong>
-        <span style={{ color: 'rgba(255,255,255,0.72)', fontSize: 12, lineHeight: 1.4 }}>
+        <span style={{ color: 'rgba(255,255,255,0.72)', fontSize: 12, lineHeight: 1.4, textWrap: 'balance' }}>
           {entrada.desc}
         </span>
         <em style={{ color: '#fff', fontStyle: 'normal', fontWeight: 700, fontSize: 11, letterSpacing: 1.2, textTransform: 'uppercase', opacity: 0.9, marginTop: 2 }}>
