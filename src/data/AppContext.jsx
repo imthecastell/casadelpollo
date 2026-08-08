@@ -180,7 +180,8 @@ export function AppProvider({ children }) {
       const items = carritoSnapshot.map(item => ({
         product_name: item.resumen || item.nombre || 'Producto',
         quantity: item.cantidad || 1,
-        price: parseFloat(item.precioTotal || item.precio || item.price || 0)
+        price: parseFloat(item.precioTotal || item.precio || item.price || 0),
+        tipo: item.tipo || null
       }))
       const total = carritoSnapshot.reduce((sum, item) => {
         if (item.tipo === 'pieza' || item.tipo === 'preparado' || item.tipo === 'milanesa') return sum
