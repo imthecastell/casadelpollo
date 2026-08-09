@@ -10,11 +10,19 @@ export function ventanaPreparacion(carrito) {
   return tieneCocinados ? 40 : 20
 }
 
+/* Algunas sucursales cierran la cocina más temprano los sábados. Si la
+   sucursal configuró ese horario especial (cocFinSabado) y hoy es sábado,
+   se usa ese en vez del cierre de cocinados de siempre. */
+export function obtenerCocFinEfectivo(cocFin, cocFinSabado) {
+  const esSabado = new Date().getDay() === 6
+  return (esSabado && cocFinSabado) ? cocFinSabado : cocFin
+}
+
 /* Horarios de recogida disponibles hoy: intervalos de 10 minutos a partir
    de ahora + la ventana de preparación del carrito, acotados al horario
    de apertura de la sucursal y, si el pedido lleva cocinados, al rango de
    cocción configurado para esa sucursal. */
-export function generarHorariosDisponibles(carrito, schedule = null, cocInicio = null, cocFin = null) {
+export function generarHorariosDisponibles(carrito, schedule = null, cocInicio = null, cocFin = null, cocFinSabado = null) {
   const ahora = new Date()
   const nombreDia = DIAS_ES[ahora.getDay()]
   const horarioDia = schedule?.find(h => h.dia === nombreDia)
@@ -37,10 +45,12 @@ export function generarHorariosDisponibles(carrito, schedule = null, cocInicio =
   let minutosInicio = Math.ceil((minutosActuales + ventana) / 10) * 10
   if (minutosInicio < minutosApertura) minutosInicio = minutosApertura
 
+  const cocFinEfectivo = obtenerCocFinEfectivo(cocFin, cocFinSabado)
+
   let minutosCocFin = null
-  if (tieneCocinados && cocInicio && cocFin) {
+  if (tieneCocinados && cocInicio && cocFinEfectivo) {
     const [hCoI, mCoI] = cocInicio.split(':').map(Number)
-    const [hCoF, mCoF] = cocFin.split(':').map(Number)
+    const [hCoF, mCoF] = cocFinEfectivo.split(':').map(Number)
     const minutosCocIni = hCoI * 60 + mCoI
     minutosCocFin = hCoF * 60 + mCoF
     if (minutosInicio < minutosCocIni) minutosInicio = minutosCocIni
