@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import LogoSlot from '../Components/LogoSlot.jsx'
-import { generarHorariosDisponibles, ventanaPreparacion } from '../data/slots.js'
+import { generarHorariosDisponibles, ventanaPreparacion, obtenerCocFinEfectivo } from '../data/slots.js'
 
 function soloDigitos(valor) {
   return valor.replace(/\D/g, '').slice(0, 10)
@@ -27,7 +27,7 @@ function precioItem(item) {
 }
 
 export default function Carrito() {
-  const { carrito, eliminarDelCarrito, confirmarPedido, setVista, totalItems, diseno, schedule, cocInicio, cocFin } = useApp()
+  const { carrito, eliminarDelCarrito, confirmarPedido, setVista, totalItems, diseno, schedule, cocInicio, cocFin, cocFinSabado } = useApp()
   const [horaSeleccionada, setHoraSeleccionada] = useState(null)
   const [asapSeleccionado, setAsapSeleccionado] = useState(false)
   const [nombre, setNombre] = useState('')
@@ -39,7 +39,8 @@ export default function Carrito() {
 
   // ¿El pedido incluye productos que se cocinan? (define la ventana de 20 vs 40 min)
   const tieneCocinados = ventanaPreparacion(carrito) === 40
-  const horariosDisponibles = generarHorariosDisponibles(carrito, schedule, cocInicio, cocFin)
+  const horariosDisponibles = generarHorariosDisponibles(carrito, schedule, cocInicio, cocFin, cocFinSabado)
+  const cocFinMostrado = obtenerCocFinEfectivo(cocFin, cocFinSabado)
 
   const elegirHora = (hora) => { setHoraSeleccionada(hora); setAsapSeleccionado(false) }
   const elegirAsap = () => { setAsapSeleccionado(true); setHoraSeleccionada(null) }
@@ -176,9 +177,9 @@ export default function Carrito() {
 
             <div style={{ background: 'var(--card-bg)', borderRadius: 'var(--radio-lg)', padding: '18px', boxShadow: 'var(--sombra)', marginBottom: 16 }}>
               <label className="config-label">Hora de recogida</label>
-              {tieneCocinados && cocInicio && cocFin && (
+              {tieneCocinados && cocInicio && cocFinMostrado && (
                 <div style={{ fontSize: 12, color: '#92400E', background: '#FFFBEB', border: '1px solid #F59E0B44', borderRadius: 8, padding: '7px 12px', marginBottom: 10 }}>
-                  🍗 Tu pedido incluye productos cocinados · disponible entre <b>{cocInicio}</b> y <b>{cocFin}</b>
+                  🍗 Tu pedido incluye productos cocinados · disponible entre <b>{cocInicio}</b> y <b>{cocFinMostrado}</b>
                 </div>
               )}
 

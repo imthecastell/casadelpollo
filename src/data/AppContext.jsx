@@ -10,6 +10,7 @@ export function AppProvider({ children }) {
   const [schedule, setSchedule] = useState(null)
   const [cocInicio, setCocInicio] = useState(null)
   const [cocFin, setCocFin] = useState(null)
+  const [cocFinSabado, setCocFinSabado] = useState(null)
   const [sucursales, setSucursales] = useState([])
   const [productos, setProductos] = useState([])
   const [promociones, setPromociones] = useState([])
@@ -105,15 +106,17 @@ export function AppProvider({ children }) {
       // Horario específico de la sucursal
       getSchedule(sucursalActiva.id)
         .then(data => {
-          // El endpoint por sucursal devuelve { horarios, cocinados_inicio, cocinados_fin }
+          // El endpoint por sucursal devuelve { horarios, cocinados_inicio, cocinados_fin, cocinados_fin_sabado }
           const horarios = data?.horarios
           const ci = data?.cocinados_inicio
           const cf = data?.cocinados_fin
+          const cfs = data?.cocinados_fin_sabado
           if (Array.isArray(horarios) && horarios.length > 0) {
             setSchedule(horarios)
           }
           setCocInicio(ci || null)
           setCocFin(cf || null)
+          setCocFinSabado(cfs || null)
         })
         .catch(() => {})
     }
@@ -230,7 +233,7 @@ export function AppProvider({ children }) {
   sucursales,
   productos,
   schedule,
-  cocInicio, cocFin,
+  cocInicio, cocFin, cocFinSabado,
   promociones,
   banners,
   bannersMenu,
