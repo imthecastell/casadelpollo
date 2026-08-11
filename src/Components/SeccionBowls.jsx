@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 
 const TIEMPO_BOWL = 20
+// Respaldo si la sucursal aún no tiene bowl_price configurado (columna nueva).
 const PRECIO_BASE_BOWL = 110
 const GRAMOS_BASE = 200
 const PASO_EXTRA = 50
@@ -127,6 +128,8 @@ function BowlHero({ marinado, base, defaultImg }) {
 }
 
 function BowlBuilder({ numero, onAgregar, productos, defaultImg }) {
+  const { sucursalActiva } = useApp()
+  const precioBaseBowl = parseFloat(sucursalActiva?.bowl_price) || PRECIO_BASE_BOWL
   const [baseId, setBaseId] = useState('')
   const [marinadoId, setMarinadoId] = useState('')
   const [marinadoCat, setMarinadoCat] = useState('')
@@ -160,7 +163,7 @@ function BowlBuilder({ numero, onAgregar, productos, defaultImg }) {
   const gramosBaseTotal = GRAMOS_BASE + extraBase
   const gramosMarinadoTotal = GRAMOS_BASE + extraMarinado
   const extrasTotal = precioExtra(base, extraBase) + precioExtra(marinado, extraMarinado)
-  const precioTotal = PRECIO_BASE_BOWL + extrasTotal
+  const precioTotal = precioBaseBowl + extrasTotal
 
   const cambiarExtra = (tipo, delta) => {
     const setter = tipo === 'base' ? setExtraBase : setExtraMarinado
@@ -214,7 +217,7 @@ function BowlBuilder({ numero, onAgregar, productos, defaultImg }) {
         <div className="bowl-card-head">
           <div>
             <div className="bowl-numero">Bowl #{numero}</div>
-            <div className="bowl-precio-base">$110 base</div>
+            <div className="bowl-precio-base">${precioBaseBowl.toFixed(0)} base</div>
           </div>
           <div className="bowl-total">${precioTotal.toFixed(2)}</div>
         </div>
