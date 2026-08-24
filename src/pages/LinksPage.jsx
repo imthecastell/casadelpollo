@@ -37,6 +37,7 @@ export default function LinksPage() {
         @keyframes spin{to{transform:rotate(360deg)}}
         .lp-action:hover{opacity:.75}
         .lp-action:active{opacity:.55}
+        .lp-collapse{display:grid; transition: grid-template-rows .28s ease}
       `}</style>
 
       <div style={{ ...s.root, background: `linear-gradient(160deg, ${bg1} 0%, #f2ede8 55%)` }}>
@@ -127,6 +128,7 @@ function AvisoIA({ tel, href, onClose }) {
 }
 
 function SucursalCard({ suc, primary, idx }) {
+  const [abierto, setAbierto]   = useState(false)
   const [avisoTel, setAvisoTel] = useState(null)
   const esVinedos = suc.name?.toLowerCase().includes('viñed') || suc.name?.toLowerCase().includes('vinyed')
 
@@ -143,8 +145,8 @@ function SucursalCard({ suc, primary, idx }) {
   return (
     <div style={{ ...s.card, animationDelay: `${idx * 0.08}s` }}>
 
-      {/* Header de la tarjeta */}
-      <div style={s.cardHead}>
+      {/* Header — toca para expandir/contraer */}
+      <div style={s.cardHead} className="lp-action" onClick={() => setAbierto(a => !a)}>
         <div>
           <div style={s.cardName}>{suc.name}</div>
           {tipo && (
@@ -153,117 +155,119 @@ function SucursalCard({ suc, primary, idx }) {
             </div>
           )}
         </div>
-        {/* Redes sociales en el header */}
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           {suc.instagram && (
             <a href={suc.instagram} target="_blank" rel="noopener noreferrer"
               className="lp-action"
+              onClick={e => e.stopPropagation()}
               style={{ ...s.socialIcon, background: '#E1306C' }}>
               <InstagramIcon />
             </a>
           )}
+          <div style={{ ...s.chevronBox, transform: abierto ? 'rotate(180deg)' : 'none' }}>
+            <ChevronIcon color={primary} />
+          </div>
         </div>
       </div>
 
-      <div style={s.divider} />
+      {/* Detalles colapsables */}
+      <div className="lp-collapse" style={{ gridTemplateRows: abierto ? '1fr' : '0fr' }}>
+        <div style={{ overflow: 'hidden' }}>
+          <div style={s.divider} />
 
-      {/* Dirección */}
-      {suc.direccion && (
-        <div style={s.row}>
-          <div style={s.rowIcon}><PinIcon color={primary} /></div>
-          <div style={{ flex: 1 }}>
-            <div style={s.rowLabel}>Dirección</div>
-            <div style={s.rowVal}>{suc.direccion}</div>
-          </div>
-        </div>
-      )}
-
-      {/* Cómo llegar */}
-      {(suc.googleMaps || suc.appleMaps) && (
-        <div style={s.row}>
-          <div style={s.rowIcon}><MapIcon color={primary} /></div>
-          <div style={{ flex: 1 }}>
-            <div style={s.rowLabel}>Cómo llegar</div>
-            <div style={{ display: 'flex', gap: 8, marginTop: 5, flexWrap: 'wrap' }}>
-              {suc.googleMaps && (
-                <a href={suc.googleMaps} target="_blank" rel="noopener noreferrer"
-                  className="lp-action"
-                  style={{ ...s.mapBtn, borderColor: '#4285F4', color: '#4285F4' }}>
-                  <GoogleMapsIcon size={14} /> Google Maps
-                </a>
-              )}
-              {suc.appleMaps && (
-                <a href={suc.appleMaps} target="_blank" rel="noopener noreferrer"
-                  className="lp-action"
-                  style={{ ...s.mapBtn, borderColor: '#555', color: '#555' }}>
-                  <AppleMapsIcon size={14} /> Apple Maps
-                </a>
-              )}
+          {suc.direccion && (
+            <div style={s.row}>
+              <div style={s.rowIcon}><PinIcon color={primary} /></div>
+              <div style={{ flex: 1 }}>
+                <div style={s.rowLabel}>Dirección</div>
+                <div style={s.rowVal}>{suc.direccion}</div>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          )}
 
-      {/* Google Business */}
-      {suc.googleBusiness && (
-        <div style={s.row}>
-          <div style={s.rowIcon}><GoogleIcon color="#4285F4" /></div>
-          <div style={{ flex: 1 }}>
-            <div style={s.rowLabel}>Google Business</div>
-            <a href={suc.googleBusiness} target="_blank" rel="noopener noreferrer"
-              className="lp-action"
-              style={{ fontSize: 13, color: '#4285F4', textDecoration: 'none', fontWeight: 600 }}>
-              Ver en Google →
-            </a>
-          </div>
-        </div>
-      )}
-
-      {/* Teléfonos + WhatsApp */}
-      {telefonos.length > 0 && (
-        <div style={s.row}>
-          <div style={s.rowIcon}><PhoneIcon color={primary} /></div>
-          <div style={{ flex: 1 }}>
-            <div style={s.rowLabel}>Contacto</div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
-              {telefonos.map((tel, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {esVinedos ? (
-                    <button onClick={() => setAvisoTel(tel)}
+          {(suc.googleMaps || suc.appleMaps) && (
+            <div style={s.row}>
+              <div style={s.rowIcon}><MapIcon color={primary} /></div>
+              <div style={{ flex: 1 }}>
+                <div style={s.rowLabel}>Cómo llegar</div>
+                <div style={{ display: 'flex', gap: 8, marginTop: 5, flexWrap: 'wrap' }}>
+                  {suc.googleMaps && (
+                    <a href={suc.googleMaps} target="_blank" rel="noopener noreferrer"
                       className="lp-action"
-                      style={{ fontSize: 14, color: '#1a1a1a', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}>
-                      {tel}
-                    </button>
-                  ) : (
-                    <a href={`tel:${tel.replace(/\s/g,'')}`}
-                      className="lp-action"
-                      style={{ fontSize: 14, color: '#1a1a1a', textDecoration: 'none', fontWeight: 600 }}>
-                      {tel}
+                      style={{ ...s.mapBtn, borderColor: '#4285F4', color: '#4285F4' }}>
+                      <GoogleMapsIcon size={14} /> Google Maps
                     </a>
                   )}
-                  {suc.whatsapp && i === 0 && (
-                    esVinedos ? (
-                      <button onClick={() => setAvisoTel('whatsapp')}
-                        className="lp-action"
-                        style={{ ...s.waBtn, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-                        <WhatsAppIcon size={13} />
-                        WhatsApp
-                      </button>
-                    ) : (
-                      <a href={suc.whatsapp} target="_blank" rel="noopener noreferrer"
-                        className="lp-action"
-                        style={{ ...s.waBtn }}>
-                        <WhatsAppIcon size={13} />
-                        WhatsApp
-                      </a>
-                    )
+                  {suc.appleMaps && (
+                    <a href={suc.appleMaps} target="_blank" rel="noopener noreferrer"
+                      className="lp-action"
+                      style={{ ...s.mapBtn, borderColor: '#555', color: '#555' }}>
+                      <AppleMapsIcon size={14} /> Apple Maps
+                    </a>
                   )}
                 </div>
-              ))}
+              </div>
             </div>
-          </div>
+          )}
+
+          {suc.googleBusiness && (
+            <div style={s.row}>
+              <div style={s.rowIcon}><GoogleIcon color="#4285F4" /></div>
+              <div style={{ flex: 1 }}>
+                <div style={s.rowLabel}>Google Business</div>
+                <a href={suc.googleBusiness} target="_blank" rel="noopener noreferrer"
+                  className="lp-action"
+                  style={{ fontSize: 13, color: '#4285F4', textDecoration: 'none', fontWeight: 600 }}>
+                  Ver en Google →
+                </a>
+              </div>
+            </div>
+          )}
+
+          {telefonos.length > 0 && (
+            <div style={s.row}>
+              <div style={s.rowIcon}><PhoneIcon color={primary} /></div>
+              <div style={{ flex: 1 }}>
+                <div style={s.rowLabel}>Contacto</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
+                  {telefonos.map((tel, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {esVinedos ? (
+                        <button onClick={() => setAvisoTel(tel)}
+                          className="lp-action"
+                          style={{ fontSize: 14, color: '#1a1a1a', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}>
+                          {tel}
+                        </button>
+                      ) : (
+                        <a href={`tel:${tel.replace(/\s/g,'')}`}
+                          className="lp-action"
+                          style={{ fontSize: 14, color: '#1a1a1a', textDecoration: 'none', fontWeight: 600 }}>
+                          {tel}
+                        </a>
+                      )}
+                      {suc.whatsapp && i === 0 && (
+                        esVinedos ? (
+                          <button onClick={() => setAvisoTel('whatsapp')}
+                            className="lp-action"
+                            style={{ ...s.waBtn, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+                            <WhatsAppIcon size={13} /> WhatsApp
+                          </button>
+                        ) : (
+                          <a href={suc.whatsapp} target="_blank" rel="noopener noreferrer"
+                            className="lp-action"
+                            style={{ ...s.waBtn }}>
+                            <WhatsAppIcon size={13} /> WhatsApp
+                          </a>
+                        )
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {avisoTel && (
         <AvisoIA
@@ -325,7 +329,11 @@ const s = {
   },
   cardHead: {
     display: 'flex', justifyContent: 'space-between',
-    alignItems: 'flex-start', gap: 8, marginBottom: 12,
+    alignItems: 'flex-start', gap: 8, cursor: 'pointer',
+  },
+  chevronBox: {
+    width: 36, height: 36, display: 'flex', alignItems: 'center',
+    justifyContent: 'center', flexShrink: 0, transition: 'transform .25s ease',
   },
   cardName: { fontSize: 18, fontWeight: 800, color: '#1a1a1a', lineHeight: 1.2 },
   tipoBadge: {
@@ -339,7 +347,7 @@ const s = {
     justifyContent: 'center', textDecoration: 'none',
     transition: 'opacity .15s',
   },
-  divider: { height: 1, background: '#f0ebe5', margin: '0 0 12px' },
+  divider: { height: 1, background: '#f0ebe5', margin: '12px 0' },
   row: {
     display: 'flex', gap: 12, alignItems: 'flex-start',
     padding: '9px 0', borderBottom: '1px solid #f5f0ea',
@@ -383,6 +391,9 @@ const s = {
 }
 
 /* ─── Íconos ─── */
+function ChevronIcon({ color }) {
+  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+}
 function PinIcon({ color }) {
   return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
 }
