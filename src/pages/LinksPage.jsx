@@ -114,6 +114,14 @@ function AvisoIA({ tel, href, onClose }) {
             }} onClick={onClose}>
             {btnLabel}
           </a>
+          <a href="/" style={{
+            display: 'block', textAlign: 'center',
+            background: 'rgba(193,18,31,0.08)', color: '#c1121f', fontWeight: 800,
+            fontSize: 14, padding: '13px', borderRadius: 14,
+            textDecoration: 'none',
+          }} onClick={onClose}>
+            🛒 Continuar a la webapp
+          </a>
           <button onClick={onClose} style={{
             background: 'rgba(0,0,0,0.06)', border: 'none', cursor: 'pointer',
             fontFamily: 'inherit', fontWeight: 700, fontSize: 13,
