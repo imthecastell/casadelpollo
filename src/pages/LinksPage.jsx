@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 const API_URL = 'https://casadelpollo-backend.onrender.com'
 
@@ -76,7 +76,60 @@ export default function LinksPage() {
   )
 }
 
+function AvisoIA({ tel, href, onClose }) {
+  const isWA  = !tel && !!href
+  const destHref = isWA ? href : `tel:${(tel || '').replace(/\s/g, '')}`
+  const btnLabel = isWA ? '🟢 Entendido · Abrir WhatsApp' : '📞 Entendido · Llamar'
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 999,
+      background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)',
+      display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+      padding: '0 16px 28px',
+      animation: 'fadeUp .22s ease both',
+    }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: '#fff', borderRadius: 24, padding: '24px 22px 20px',
+        maxWidth: 400, width: '100%', boxShadow: '0 8px 40px rgba(0,0,0,0.18)',
+        fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
+      }}>
+        <div style={{ fontSize: 32, textAlign: 'center', marginBottom: 12 }}>🤖</div>
+        <h2 style={{ fontSize: 16, fontWeight: 800, color: '#1a1a1a', marginBottom: 10, textAlign: 'center', lineHeight: 1.3 }}>
+          Aviso importante
+        </h2>
+        <p style={{ fontSize: 13, color: '#555', lineHeight: 1.6, marginBottom: 6 }}>
+          Este medio de contacto es <strong>meramente informativo</strong> y está asistido por inteligencia artificial.
+        </p>
+        <p style={{ fontSize: 13, color: '#555', lineHeight: 1.6, marginBottom: 20 }}>
+          Realizar un pedido por este canal <strong>no garantiza que sea notificado en la tienda.</strong> Para pedidos confirmados, usa la app.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <a href={destHref} target={isWA ? '_blank' : undefined} rel={isWA ? 'noopener noreferrer' : undefined}
+            style={{
+              display: 'block', textAlign: 'center',
+              background: '#c1121f', color: '#fff', fontWeight: 800,
+              fontSize: 14, padding: '13px', borderRadius: 14,
+              textDecoration: 'none',
+            }} onClick={onClose}>
+            {btnLabel}
+          </a>
+          <button onClick={onClose} style={{
+            background: 'rgba(0,0,0,0.06)', border: 'none', cursor: 'pointer',
+            fontFamily: 'inherit', fontWeight: 700, fontSize: 13,
+            color: '#777', padding: '11px', borderRadius: 14,
+          }}>
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function SucursalCard({ suc, primary, idx }) {
+  const [avisoTel, setAvisoTel] = useState(null)
+  const esVinedos = suc.name?.toLowerCase().includes('viñed') || suc.name?.toLowerCase().includes('vinyed')
+
   const tipo = {
     mayoreo:          'Mayoreo',
     menudeo:          'Menudeo',
@@ -175,24 +228,49 @@ function SucursalCard({ suc, primary, idx }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4 }}>
               {telefonos.map((tel, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <a href={`tel:${tel.replace(/\s/g,'')}`}
-                    className="lp-action"
-                    style={{ fontSize: 14, color: '#1a1a1a', textDecoration: 'none', fontWeight: 600 }}>
-                    {tel}
-                  </a>
-                  {suc.whatsapp && i === 0 && (
-                    <a href={suc.whatsapp} target="_blank" rel="noopener noreferrer"
+                  {esVinedos ? (
+                    <button onClick={() => setAvisoTel(tel)}
                       className="lp-action"
-                      style={{ ...s.waBtn }}>
-                      <WhatsAppIcon size={13} />
-                      WhatsApp
+                      style={{ fontSize: 14, color: '#1a1a1a', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}>
+                      {tel}
+                    </button>
+                  ) : (
+                    <a href={`tel:${tel.replace(/\s/g,'')}`}
+                      className="lp-action"
+                      style={{ fontSize: 14, color: '#1a1a1a', textDecoration: 'none', fontWeight: 600 }}>
+                      {tel}
                     </a>
+                  )}
+                  {suc.whatsapp && i === 0 && (
+                    esVinedos ? (
+                      <button onClick={() => setAvisoTel('whatsapp')}
+                        className="lp-action"
+                        style={{ ...s.waBtn, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+                        <WhatsAppIcon size={13} />
+                        WhatsApp
+                      </button>
+                    ) : (
+                      <a href={suc.whatsapp} target="_blank" rel="noopener noreferrer"
+                        className="lp-action"
+                        style={{ ...s.waBtn }}>
+                        <WhatsAppIcon size={13} />
+                        WhatsApp
+                      </a>
+                    )
                   )}
                 </div>
               ))}
             </div>
           </div>
         </div>
+      )}
+
+      {avisoTel && (
+        <AvisoIA
+          tel={avisoTel === 'whatsapp' ? null : avisoTel}
+          href={avisoTel === 'whatsapp' ? suc.whatsapp : null}
+          onClose={() => setAvisoTel(null)}
+        />
       )}
 
     </div>
