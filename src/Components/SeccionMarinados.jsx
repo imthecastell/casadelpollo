@@ -171,7 +171,7 @@ export default function SeccionMarinados() {
                 </div>
               </div>
 
-              {seleccion?.se_puede_cocinar && (
+              {seleccion?.se_puede_cocinar && sucursalActiva?.servicio_cocinado !== false && (
                 <div>
                   <label className="config-label">¿Cómo lo quieres?</label>
                   <div className="recogida-opts">

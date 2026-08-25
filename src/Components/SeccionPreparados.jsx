@@ -274,7 +274,16 @@ function FilaVariante({ nombre, cantidad, sePuedeCocinar = false, onCambiar, onA
 
 /* ════════════════════════════════════════════════ */
 export default function SeccionPreparados() {
-  const { agregarAlCarrito, productos } = useApp()
+  const { agregarAlCarrito, productos: productosBase, sucursalActiva } = useApp()
+  // Si la sucursal no tiene equipo para cocinar (branches.servicio_cocinado),
+  // la opción crudo/cocinado no se ofrece — todo sale crudo. Se apaga
+  // se_puede_cocinar acá, una sola vez, para que CardProducto/FilaVariante
+  // (que ya revisan ese campo por producto) lo respeten sin tener que
+  // pasarles la bandera de sucursal por separado.
+  const servicioCocinado = sucursalActiva?.servicio_cocinado !== false
+  const productos = servicioCocinado
+    ? productosBase
+    : productosBase.map(p => p.se_puede_cocinar ? { ...p, se_puede_cocinar: false } : p)
 
   const [seleccion, setSeleccion]   = useState(null)
   const [cantidad, setCantidad]     = useState(1)
