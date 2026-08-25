@@ -29,7 +29,7 @@ function pickRandom(arr, n) {
 }
 
 export default function SelectorSucursal() {
-  const { setSucursalActiva, setVista, sucursales, cargando, promociones, banners, diseno } = useApp()
+  const { setSucursalActiva, setVista, sucursales, cargando, banners, diseno } = useApp()
 
   // fase: 'banners' → muestra avisos del admin uno a uno
   //       'carrusel' → productos rotando indefinidamente
@@ -106,10 +106,6 @@ export default function SelectorSucursal() {
     setSucursalActiva(sucursal)
     setVista('menu')
   }
-
-  const promoLegacy = !banners.length
-    ? (promociones.find(p => p.type === 'banner') || promociones[0])
-    : null
 
   if (cargando) return (
     <div className="selector-wrap" style={{ alignItems: 'center', justifyContent: 'center' }}>
@@ -241,14 +237,6 @@ export default function SelectorSucursal() {
 
       {/* Cuerpo */}
       <div className="selector-body">
-        {promoLegacy && (
-          <section className="promo-bienvenida">
-            <span className="promo-etiqueta">Promoción activa</span>
-            <h1>{promoLegacy.title}</h1>
-            {promoLegacy.description && <p>{promoLegacy.description}</p>}
-          </section>
-        )}
-
         <p className="selector-pregunta">¿Dónde recoges tu pedido?</p>
 
         <div className="selector-lista">

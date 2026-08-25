@@ -26,11 +26,6 @@ export function getDesign(branchId) {
   return apiFetch(`${API_URL}/api/design/${branchId}`);
 }
 
-export function getPromotions(branchId) {
-  const query = branchId ? `?branch_id=${branchId}` : '';
-  return apiFetch(`${API_URL}/api/promotions${query}`);
-}
-
 export function getBanners(tipo) {
   return apiFetch(`${API_URL}/api/banners?tipo=${tipo}`);
 }
