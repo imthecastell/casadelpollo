@@ -27,7 +27,10 @@ function precioItem(item) {
 }
 
 export default function Carrito() {
-  const { carrito, eliminarDelCarrito, confirmarPedido, setVista, totalItems, diseno, schedule, cocInicio, cocFin, cocFinSabado } = useApp()
+  const { carrito, eliminarDelCarrito, confirmarPedido, enviarPedidoPorWhatsapp, setVista, totalItems, diseno, schedule, cocInicio, cocFin, cocFinSabado, sucursalActiva } = useApp()
+  // Sucursales sin infraestructura de pedidos en línea todavía: el pedido
+  // se manda como mensaje de WhatsApp en vez de registrarse en el sistema.
+  const pedidosPorWhatsapp = sucursalActiva?.pedidos_en_linea === false
   const [horaSeleccionada, setHoraSeleccionada] = useState(null)
   const [asapSeleccionado, setAsapSeleccionado] = useState(false)
   const [nombre, setNombre] = useState('')
@@ -56,6 +59,12 @@ export default function Carrito() {
 
   const handleConfirmar = () => {
     if (!puedeConfirmar) return
+    // Sin setTimeout acá: window.open() necesita dispararse dentro del
+    // mismo gesto de clic para que el navegador no lo bloquee como popup.
+    if (pedidosPorWhatsapp) {
+      enviarPedidoPorWhatsapp(horaSeleccionada, { nombre, telefono: telefonoDigitos, notas }, asapSeleccionado)
+      return
+    }
     setConfirmando(true)
     setTimeout(() => {
       confirmarPedido(horaSeleccionada, { nombre, telefono: telefonoDigitos, notas }, asapSeleccionado)
@@ -258,7 +267,9 @@ export default function Carrito() {
               onClick={handleConfirmar}
               disabled={!puedeConfirmar || confirmando}
             >
-              {confirmando ? 'Enviando pedido...' : 'Confirmar pedido →'}
+              {pedidosPorWhatsapp
+                ? 'Enviar pedido por WhatsApp 📲'
+                : (confirmando ? 'Enviando pedido...' : 'Confirmar pedido →')}
             </button>
           </>
         )}
