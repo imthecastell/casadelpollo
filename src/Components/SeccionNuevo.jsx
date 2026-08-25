@@ -398,18 +398,22 @@ function NvCardExpandida({ p, recogida, gramos, precioTotal, agregado, onClose, 
 
 /* ── Sección principal ── */
 export default function SeccionNuevo() {
-  const { agregarAlCarrito, productos } = useApp()
+  const { agregarAlCarrito, productos, sucursalActiva } = useApp()
   const [seleccion, setSeleccion] = useState(null)
   const [cantidad, setCantidad]   = useState(300)   // gramos o piezas según producto
   const [recogida, setRecogida]   = useState('cocinado')  // cocinado por defecto — más atractivo
   const [agregado, setAgregado]   = useState(false)
+
+  // Si la sucursal no tiene equipo para cocinar (branches.servicio_cocinado),
+  // la opción crudo/cocinado no se ofrece — todo sale crudo.
+  const servicioCocinado = sucursalActiva?.servicio_cocinado !== false
 
   // Productos marcados is_nuevo, disponibles en esta sucursal
   const nuevos = productos.filter(p => p.is_nuevo && p.available !== false)
 
   const seleccionar = (p) => {
     // Defecto cocinado si el producto puede pedirse así, crudo si no aplica
-    const defRecogida = p.se_puede_cocinar ? 'cocinado' : 'crudo'
+    const defRecogida = (p.se_puede_cocinar && servicioCocinado) ? 'cocinado' : 'crudo'
     if (seleccion?.id === p.id) {
       setSeleccion(null); setCantidad(esPorGramos(p) ? 300 : 1); setRecogida(defRecogida)
     } else {
@@ -476,8 +480,10 @@ export default function SeccionNuevo() {
         <div className="nv-grid">
           {nuevos.map(p => {
             const isSelected = seleccion?.id === p.id
-            // adaptar campos DB al formato que espera NvCard
-            const card = { ...p, unidad: unidadDe(p), emoji: '✨' }
+            // adaptar campos DB al formato que espera NvCard — se_puede_cocinar
+            // se apaga si la sucursal no ofrece servicio cocinado, aunque el
+            // producto en sí sí admita esa opción en otras sucursales
+            const card = { ...p, unidad: unidadDe(p), emoji: '✨', se_puede_cocinar: p.se_puede_cocinar && servicioCocinado }
 
             if (isSelected) {
               return (

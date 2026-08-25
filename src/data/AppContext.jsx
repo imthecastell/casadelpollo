@@ -243,7 +243,10 @@ export function AppProvider({ children }) {
       `Total estimado: $${total.toFixed(2)}`,
     ].filter(Boolean).join('\n')
 
-    const telefonoSucursal = (sucursalActiva?.phone || '').replace(/\D/g, '')
+    // El WhatsApp real de la sucursal puede ser distinto al teléfono local
+    // (ej. El Parque) — se prefiere branches.whatsapp y solo se cae a
+    // branches.phone si esa sucursal no tiene un número de WhatsApp propio.
+    const telefonoSucursal = (sucursalActiva?.whatsapp || sucursalActiva?.phone || '').replace(/\D/g, '')
     const url = `https://wa.me/${telefonoSucursal ? `52${telefonoSucursal}` : ''}?text=${encodeURIComponent(mensaje)}`
     window.open(url, '_blank')
 
