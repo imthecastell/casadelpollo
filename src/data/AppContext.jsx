@@ -19,6 +19,7 @@ export function AppProvider({ children }) {
   const [cargando, setCargando] = useState(true)
   const [ultimoNumeroOrden, setUltimoNumeroOrden] = useState(null)
   const [ultimaHora, setUltimaHora] = useState(null)
+  const [modoWhatsapp, setModoWhatsapp] = useState(false)
   const [bannersMenu, setBannersMenu] = useState([])
   const [bannersPopup, setBannersPopup] = useState([])
   const [bannersAviso, setBannersAviso] = useState([])
@@ -205,6 +206,7 @@ export function AppProvider({ children }) {
       })
       setUltimoNumeroOrden(orden.order_number)
       setUltimaHora(asap ? 'Lo antes posible' : horaEntrega)
+      setModoWhatsapp(false)
 
       // La impresión se dispara desde el admin (Orders.jsx) para funcionar
       // tanto con pedidos de celular como de PC.
@@ -214,6 +216,51 @@ export function AppProvider({ children }) {
       console.error('Error al crear pedido:', e)
       alert('Hubo un problema al registrar tu pedido. Por favor intenta de nuevo.')
     }
+  }
+
+  // Sucursales sin infraestructura de pedidos en línea todavía
+  // (branches.pedidos_en_linea = false): en vez de registrar el pedido en
+  // el sistema, se arma como mensaje de WhatsApp pre-redactado al teléfono
+  // de la sucursal — el cliente solo tiene que darle "Enviar" en WhatsApp.
+  const enviarPedidoPorWhatsapp = (horaEntrega, datosCliente, asap = false) => {
+    const carritoSnapshot = [...carrito]
+    const esAlPesar = (item) => item.tipo === 'pieza' || item.tipo === 'preparado' || item.tipo === 'milanesa'
+
+    // `resumen` ya trae el precio/kg o "(se pesa al entregar)" incluido en
+    // el texto (mismo campo que usa confirmarPedido como product_name) —
+    // agregar el precio aparte lo duplicaría.
+    const lineas = carritoSnapshot.map(item => {
+      const cantidad = item.cantidad || 1
+      return `- ${cantidad}x ${item.resumen || item.nombre || 'Producto'}`
+    })
+    const total = carritoSnapshot.reduce((sum, item) => {
+      if (esAlPesar(item)) return sum
+      return sum + parseFloat(item.precioTotal || item.precio || item.price || 0)
+    }, 0)
+
+    const mensaje = [
+      '🐔 *Nuevo pedido - Casa del Pollo*',
+      `📍 Sucursal: ${sucursalActiva?.name || ''}`,
+      `👤 Cliente: ${datosCliente?.nombre || ''}`,
+      `📱 Tel: ${datosCliente?.telefono || ''}`,
+      `🕐 ${asap ? 'Lo antes posible' : `Recoger a las ${horaEntrega}`}`,
+      '',
+      '*Pedido:*',
+      ...lineas,
+      '',
+      datosCliente?.notas ? `📝 Notas: ${datosCliente.notas}` : null,
+      `Total estimado: $${total.toFixed(2)}`,
+    ].filter(Boolean).join('\n')
+
+    const telefonoSucursal = (sucursalActiva?.phone || '').replace(/\D/g, '')
+    const url = `https://wa.me/${telefonoSucursal ? `52${telefonoSucursal}` : ''}?text=${encodeURIComponent(mensaje)}`
+    window.open(url, '_blank')
+
+    setUltimoNumeroOrden(null)
+    setUltimaHora(asap ? 'Lo antes posible' : horaEntrega)
+    setModoWhatsapp(true)
+    limpiarCarrito()
+    setVista('confirmado')
   }
 
   const totalItems = carrito.reduce((sum, item) => {
@@ -227,9 +274,10 @@ export function AppProvider({ children }) {
     <AppContext.Provider value={{
   sucursalActiva, setSucursalActiva,
   carrito, agregarAlCarrito, eliminarDelCarrito, limpiarCarrito, confirmarPedido,
+  enviarPedidoPorWhatsapp,
   vista, setVista,
   totalItems,
-  ultimoNumeroOrden, ultimaHora,
+  ultimoNumeroOrden, ultimaHora, modoWhatsapp,
   sucursales,
   productos,
   schedule,

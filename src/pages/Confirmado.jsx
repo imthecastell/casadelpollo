@@ -4,7 +4,7 @@ import BannerPopup from '../Components/BannerPopup.jsx'
 import LogoSlot from '../Components/LogoSlot.jsx'
 
 export default function Confirmado() {
-  const { setVista, sucursalActiva, ultimoNumeroOrden, ultimaHora, diseno } = useApp()
+  const { setVista, sucursalActiva, ultimoNumeroOrden, ultimaHora, modoWhatsapp, diseno } = useApp()
   const reciboRef = useRef(null)
   const [cuenta, setCuenta] = useState(12)
 
@@ -56,16 +56,21 @@ export default function Confirmado() {
 
       {/* ── Confirmación ── */}
       <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: 40 }}>🎉</div>
+        <div style={{ fontSize: 40 }}>{modoWhatsapp ? '📲' : '🎉'}</div>
         <div style={{
           fontFamily: 'var(--font-title), sans-serif', fontWeight: 800,
           fontSize: 22, color: '#1a1a1a', letterSpacing: '-0.5px', marginTop: 2,
         }}>
-          ¡Pedido recibido!
+          {modoWhatsapp ? '¡Ya casi! Envía tu pedido' : '¡Pedido recibido!'}
         </div>
         <p style={{ fontSize: 13, color: '#888', margin: '2px 0 0' }}>
           {sucursalActiva?.name || sucursalActiva?.nombre}
         </p>
+        {modoWhatsapp && (
+          <p style={{ fontSize: 12, color: '#888', margin: '6px 0 0', maxWidth: 280, marginLeft: 'auto', marginRight: 'auto' }}>
+            Se abrió WhatsApp con tu pedido ya redactado — solo dale <strong>Enviar</strong> para que la sucursal lo reciba.
+          </p>
+        )}
       </div>
 
       {/* ── BETA BANNER ── justo debajo de la confirmación ── */}
