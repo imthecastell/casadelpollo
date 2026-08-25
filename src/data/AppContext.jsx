@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import { getBranches, getProductsByBranch, createOrder, getDesign, getPromotions, getBanners, getSchedule } from './api.js'
+import { getBranches, getProductsByBranch, createOrder, getDesign, getBanners, getSchedule } from './api.js'
 
 const AppContext = createContext()
 
@@ -13,7 +13,6 @@ export function AppProvider({ children }) {
   const [cocFinSabado, setCocFinSabado] = useState(null)
   const [sucursales, setSucursales] = useState([])
   const [productos, setProductos] = useState([])
-  const [promociones, setPromociones] = useState([])
   const [banners, setBanners] = useState([])
   const [diseno, setDiseno] = useState({})
   const [cargando, setCargando] = useState(true)
@@ -60,10 +59,6 @@ export function AppProvider({ children }) {
       .catch(() => setSucursales([]))
       .finally(() => setCargando(false))
 
-    getPromotions()
-      .then(data => setPromociones(Array.isArray(data) ? data : []))
-      .catch(() => setPromociones([]))
-
     getBanners('bienvenida')
       .then(data => setBanners(Array.isArray(data) ? data : []))
       .catch(() => setBanners([]))
@@ -99,10 +94,6 @@ export function AppProvider({ children }) {
       getDesign(sucursalActiva.id)
         .then(data => setDiseno(data || {}))
         .catch(() => setDiseno({}))
-
-      getPromotions(sucursalActiva.id)
-        .then(data => setPromociones(Array.isArray(data) ? data : []))
-        .catch(() => setPromociones([]))
 
       // Horario específico de la sucursal
       getSchedule(sucursalActiva.id)
@@ -282,7 +273,6 @@ export function AppProvider({ children }) {
   productos,
   schedule,
   cocInicio, cocFin, cocFinSabado,
-  promociones,
   banners,
   bannersMenu,
   bannersPopup,
