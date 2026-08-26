@@ -205,6 +205,11 @@ export default function MenuPrincipal() {
     if (c.tab === 'bowls')        return bowlsActivo
     return true
   })
+  const ENTRADAS_VISIBLES = ENTRADAS.filter(e => {
+    if (e.tab === 'complementos') return extrasActivo
+    if (e.tab === 'bowls')        return bowlsActivo
+    return true
+  })
   const [heroIdx, setHeroIdx]             = useState(0)
   const heroImgs = useMemo(() => shuffle(HERO_IMGS), [])
 
@@ -372,7 +377,7 @@ export default function MenuPrincipal() {
 
           {/* ── Cards de entrada ── */}
           <div style={{ padding: '0 20px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {ENTRADAS.map(e => (
+            {ENTRADAS_VISIBLES.map(e => (
               <EntradaCard key={e.id} entrada={e} onClic={() => irA(e.tab)} />
             ))}
           </div>
