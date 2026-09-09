@@ -1,13 +1,16 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import '../styles/homeV2.css'
 
 /* Preview oculto de la navegación V2 (Home + tab bar). Ruta secreta
    /preview-v2, fuera del flujo de `vista` normal — no afecta nada de
-   producción. Usa datos reales (sucursales, catálogo, WhatsApp) para que
-   el comportamiento en el celular real sea representativo; los botones de
-   agregar/contacto son decorativos (toast) para no tocar el carrito real
-   ni mandar mensajes de WhatsApp reales por accidente durante la revisión. */
+   producción. Usa datos reales (sucursales, catálogo, WhatsApp, /api/links)
+   para que el comportamiento en el celular real sea representativo; los
+   botones de agregar/pedido siguen siendo decorativos (toast) para no
+   tocar el carrito real, pero Cómo-llegar/WhatsApp/Instagram en Sucursales
+   ya usan los hipervínculos reales de /api/links. */
+
+const API_URL = 'https://casadelpollo-backend.onrender.com'
 
 const CATEGORIAS = [
   { key: 'preparados', label: 'Preparados', match: 'Preparados' },
@@ -30,8 +33,20 @@ const FICHA_POR_CATEGORIA = {
   },
 }
 
-function cropUrl(url) {
-  return url || ''
+const img = (p) => p?.image_cooked_url || p?.image_url || ''
+
+// Normaliza a 10 dígitos locales (México) sin importar si venía con "+52",
+// espacios o el "52" ya pegado — para que tel:/wa.me siempre reciban un
+// número completo y bien formado, nunca un local de 10 dígitos a medias.
+function digitosLocales(raw) {
+  const digitos = (raw || '').replace(/\D/g, '')
+  if (digitos.length === 12 && digitos.startsWith('52')) return digitos.slice(2)
+  if (digitos.length === 10) return digitos
+  return digitos.slice(-10)
+}
+function formatearTelefono(raw) {
+  const d = digitosLocales(raw)
+  return d.length === 10 ? `${d.slice(0, 3)} ${d.slice(3, 6)} ${d.slice(6)}` : (raw || '')
 }
 
 export default function HomeV2Preview() {
@@ -42,7 +57,10 @@ export default function HomeV2Preview() {
   const [varianteSel, setVarianteSel] = useState(0)
   const [extrasSel, setExtrasSel] = useState([])
   const [toast, setToast] = useState('')
-  const [sheet, setSheet] = useState(null) // { nombre, whatsapp }
+  const [waPopover, setWaPopover] = useState(null) // { branchName, telefono, whatsappHref }
+  const [links, setLinks] = useState(null)
+  const [heroIdx, setHeroIdx] = useState(0)
+  const timerRef = useRef(null)
 
   useEffect(() => {
     if (!sucursalActiva && sucursales.length) {
@@ -52,12 +70,27 @@ export default function HomeV2Preview() {
   }, [sucursales, sucursalActiva, setSucursalActiva])
 
   useEffect(() => {
+    fetch(`${API_URL}/api/links`)
+      .then(r => r.json())
+      .then(data => setLinks(data))
+      .catch(() => setLinks({ branches: [] }))
+  }, [])
+
+  useEffect(() => {
     if (!toast) return
     const t = setTimeout(() => setToast(''), 2200)
     return () => clearTimeout(t)
   }, [toast])
 
   const mostrarToast = (msg) => setToast(msg)
+
+  const carrusel = productos.filter(p => ['Marinados', 'Preparados'].includes(p.category_name) && img(p)).slice(0, 6)
+  useEffect(() => {
+    clearInterval(timerRef.current)
+    if (carrusel.length < 2) return
+    timerRef.current = setInterval(() => setHeroIdx(i => (i + 1) % carrusel.length), 3800)
+    return () => clearInterval(timerRef.current)
+  }, [carrusel.length])
 
   const abrirCategoria = (key) => {
     setCategoria(key)
@@ -70,6 +103,8 @@ export default function HomeV2Preview() {
     setExtrasSel(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i])
   }
 
+  const linkDe = (nombre) => links?.branches?.find(b => b.name === nombre)
+
   if (cargando || !sucursalActiva) {
     return <div className="v2-cargando">Cargando catálogo real de Viñedos…</div>
   }
@@ -81,6 +116,8 @@ export default function HomeV2Preview() {
   const productosSimples = productoFicha
     ? productosCategoria.filter(p => p.id !== productoFicha.id)
     : productosCategoria
+
+  const destacados = productos.filter(p => ['Marinados', 'Preparados'].includes(p.category_name) && img(p)).slice(2, 8)
 
   return (
     <div className="v2-shell">
@@ -100,6 +137,53 @@ export default function HomeV2Preview() {
             <div className="v2-saludo">Hola 👋</div>
             <div className="v2-saludo-sub">Pidiendo en {sucursalActiva.name} hoy</div>
 
+            {carrusel.length > 0 && (
+              <div className="v2-carrusel">
+                {carrusel.map((p, i) => (
+                  <div key={p.id} className={`v2-carrusel-slide${i === heroIdx ? ' on' : ''}`}>
+                    <img src={img(p)} alt={p.name} />
+                  </div>
+                ))}
+                <div className="v2-carrusel-scrim" />
+                <div className="v2-carrusel-chip">{carrusel[heroIdx]?.name}</div>
+                <div className="v2-carrusel-dots">
+                  {carrusel.map((_, i) => <div key={i} className={`v2-cdot${i === heroIdx ? ' on' : ''}`} />)}
+                </div>
+              </div>
+            )}
+
+            <div className="v2-bowls-cta" onClick={() => mostrarToast('Esto abriría el flujo de Bowls: base → marinado → carrito')}>
+              <div className="v2-bowls-emoji">🥗</div>
+              <div className="v2-bowls-txt">
+                <strong>Arma tu Bowl</strong>
+                <span>Base + marinado + tu toque, listo en minutos</span>
+              </div>
+              <div className="v2-bowls-precio">Desde ${Number(sucursalActiva.bowl_price || 120)}</div>
+            </div>
+
+            <div className="v2-seccion-titulo">Destacados</div>
+            <div className="v2-suc-strip">
+              {destacados.map(p => (
+                <div key={p.id} className="v2-tarjeta-destacada">
+                  <img src={img(p)} alt={p.name} />
+                  <div className="v2-ts-scrim" />
+                  <div className="v2-ts-overlay">
+                    <div className="v2-ts-nombre">{p.name}</div>
+                    <div className="v2-ts-precio-pill">${Number(p.price)}</div>
+                  </div>
+                  <button className="v2-ts-add" onClick={(e) => { e.stopPropagation(); mostrarToast(`${p.name} agregado al carrito`) }}>+</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {tab === 'productos' && (
+          <div className="v2-pantalla">
+            <div className="v2-saludo">Catálogo completo</div>
+            <div className="v2-saludo-sub">{productos.length} productos en {sucursalActiva.name}</div>
+            <div className="v2-buscador">🔍 <input placeholder="Buscar producto..." /></div>
+
             <div className="v2-pills">
               <div className="v2-pill-fondo" style={{ transform: `translateX(${CATEGORIAS.findIndex(c => c.key === categoria) * 100}%)` }} />
               {CATEGORIAS.map(c => (
@@ -112,13 +196,14 @@ export default function HomeV2Preview() {
             {productoFicha && (
               <div className={`v2-ficha${fichaAbierta ? ' abierta' : ''}`}>
                 <div className="v2-ficha-top" onClick={() => setFichaAbierta(v => !v)}>
-                  <img src={cropUrl(productoFicha.image_url)} alt={productoFicha.name} />
-                  <div className="v2-ficha-info">
+                  <img src={img(productoFicha)} alt={productoFicha.name} />
+                  <div className="v2-ts-scrim" />
+                  <div className="v2-ficha-chevron">▾</div>
+                  <div className="v2-ficha-overlay">
                     <div className="v2-ficha-nombre">{productoFicha.name}</div>
                     <div className="v2-ficha-desc">{ficha.desc}</div>
-                    <div className="v2-ficha-precio">${Number(productoFicha.price)}</div>
+                    <div className="v2-ts-precio-pill">${Number(productoFicha.price)}</div>
                   </div>
-                  <div className="v2-ficha-chevron">▾</div>
                 </div>
                 <div className="v2-ficha-detalle">
                   <div className="v2-ficha-detalle-inner">
@@ -146,14 +231,13 @@ export default function HomeV2Preview() {
             <div className="v2-grid-simple">
               {productosSimples.map(p => (
                 <div key={p.id} className="v2-tarjeta-simple">
-                  <img src={cropUrl(p.image_url)} alt={p.name} />
-                  <div className="v2-ts-body">
+                  <img src={img(p)} alt={p.name} />
+                  <div className="v2-ts-scrim" />
+                  <div className="v2-ts-overlay">
                     <div className="v2-ts-nombre">{p.name}</div>
-                    <div className="v2-ts-fila">
-                      <div className="v2-ts-precio">${Number(p.price)}</div>
-                      <button className="v2-ts-add" onClick={() => mostrarToast(`${p.name} agregado al carrito`)}>+</button>
-                    </div>
+                    <div className="v2-ts-precio-pill">${Number(p.price)}</div>
                   </div>
+                  <button className="v2-ts-add" onClick={() => mostrarToast(`${p.name} agregado al carrito`)}>+</button>
                 </div>
               ))}
             </div>
@@ -165,35 +249,6 @@ export default function HomeV2Preview() {
                 <div className="v2-badge-pronto">PRÓXIMAMENTE</div>
               </div>
             )}
-
-            <div className="v2-seccion-titulo">Nuestras sucursales</div>
-            <div className="v2-suc-strip">
-              {sucursales.map(s => (
-                <div key={s.id} className="v2-suc-card">
-                  <div className="v2-sc-nombre">{s.name}</div>
-                  <div className="v2-sc-dir">{s.address}</div>
-                  <div className="v2-sc-btns">
-                    <button className="v2-sc-pedido" onClick={() => s.id === sucursalActiva.id ? mostrarToast(`Ya estás pidiendo en ${s.name}`) : mostrarToast(`Esto llevaría al catálogo de ${s.name}`)}>🛒 Pedido</button>
-                    <button className="v2-sc-wa" onClick={() => setSheet({ nombre: s.name, whatsapp: s.whatsapp || s.phone })}>💬</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {tab === 'productos' && (
-          <div className="v2-pantalla">
-            <div className="v2-saludo">Catálogo completo</div>
-            <div className="v2-saludo-sub">{productos.length} productos en {sucursalActiva.name}</div>
-            <div className="v2-buscador">🔍 <input placeholder="Buscar producto..." /></div>
-            {productos.map(p => (
-              <div key={p.id} className="v2-lista-producto">
-                <img src={cropUrl(p.image_url)} alt={p.name} />
-                <div><div className="v2-lp-nombre">{p.name}</div><div className="v2-lp-cat">{p.category_name}</div></div>
-                <div className="v2-lp-precio">${Number(p.price)}</div>
-              </div>
-            ))}
           </div>
         )}
 
@@ -201,16 +256,39 @@ export default function HomeV2Preview() {
           <div className="v2-pantalla">
             <div className="v2-saludo">Sucursales</div>
             <div className="v2-saludo-sub">Las {sucursales.length}, sin recortar</div>
-            {sucursales.map(s => (
-              <div key={s.id} className="v2-suc-full">
-                <div className="v2-sc-nombre">{s.name}</div>
-                <div className="v2-sc-dir">{s.address}</div>
-                <div className="v2-sc-btns">
-                  <button className="v2-sc-pedido" onClick={() => s.id === sucursalActiva.id ? mostrarToast(`Ya estás pidiendo en ${s.name}`) : mostrarToast(`Esto llevaría al catálogo de ${s.name}`)}>🛒 Pedido</button>
-                  <button className="v2-sc-wa" onClick={() => setSheet({ nombre: s.name, whatsapp: s.whatsapp || s.phone })}>💬</button>
-                </div>
+
+            <a className="v2-ig-cta" href={links?.branches?.[0]?.instagram || 'https://www.instagram.com/casadelpollolm/'} target="_blank" rel="noopener noreferrer">
+              <div className="v2-ig-icono">📷</div>
+              <div>
+                <div className="v2-sc-nombre" style={{ fontSize: 13 }}>Síguenos en Instagram</div>
+                <div className="v2-so-detalle">@casadelpollolm · la misma cuenta en las 4 sucursales</div>
               </div>
-            ))}
+              <div className="v2-ig-flecha">→</div>
+            </a>
+
+            {sucursales.map(s => {
+              const l = linkDe(s.name)
+              const telefono = digitosLocales(l?.telefonos?.[0] || s.phone)
+              const whatsappHref = l?.whatsapp || (s.whatsapp ? `https://wa.me/52${s.whatsapp}` : null)
+              const mapaHref = l?.googleMaps || l?.appleMaps
+              return (
+                <div key={s.id} className="v2-suc-full">
+                  <div className="v2-sc-nombre">{s.name}</div>
+                  <div className="v2-sc-dir">{s.address}</div>
+                  <div className="v2-sc-btns3">
+                    <button className="v2-sc-btn v2-sc-btn-pedido" onClick={() => s.id === sucursalActiva.id ? mostrarToast(`Ya estás pidiendo en ${s.name}`) : mostrarToast(`Esto llevaría al catálogo de ${s.name}`)}>
+                      <span>🛒</span>Pedido
+                    </button>
+                    {mapaHref
+                      ? <a className="v2-sc-btn v2-sc-btn-mapa" href={mapaHref} target="_blank" rel="noopener noreferrer"><span>📍</span>Cómo llegar</a>
+                      : <button className="v2-sc-btn v2-sc-btn-mapa" disabled><span>📍</span>Cómo llegar</button>}
+                    <button className="v2-sc-btn v2-sc-btn-wa" onClick={() => setWaPopover({ nombre: s.name, telefono, whatsappHref })}>
+                      <span>💬</span>WhatsApp
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         )}
 
@@ -218,24 +296,20 @@ export default function HomeV2Preview() {
 
       {toast && <div className="v2-toast on">{toast}</div>}
 
-      {sheet && (
-        <div className="v2-sheet-overlay on" onClick={(e) => { if (e.target === e.currentTarget) setSheet(null) }}>
+      {waPopover && (
+        <div className="v2-sheet-overlay on" onClick={(e) => { if (e.target === e.currentTarget) setWaPopover(null) }}>
           <div className="v2-sheet">
             <div className="v2-sheet-handle" />
-            <div className="v2-sheet-titulo">{sheet.nombre}</div>
-            <div className="v2-sheet-sub">Elige cómo comunicarte con esta sucursal</div>
-            <div className="v2-sheet-opcion">
-              <div className="v2-so-icono wa">💬</div>
-              <div><div className="v2-so-nombre">WhatsApp</div><div className="v2-so-detalle">{sheet.whatsapp || 'No disponible'}</div></div>
-            </div>
-            <div className="v2-sheet-opcion">
+            <div className="v2-sheet-titulo">{waPopover.nombre}</div>
+            <div className="v2-sheet-sub">¿Cómo prefieres comunicarte?</div>
+            <a className="v2-sheet-opcion" href={waPopover.telefono ? `tel:+52${waPopover.telefono}` : undefined} onClick={e => !waPopover.telefono && e.preventDefault()}>
               <div className="v2-so-icono tel">📞</div>
-              <div><div className="v2-so-nombre">Llamar</div><div className="v2-so-detalle">Línea directa a la sucursal</div></div>
-            </div>
-            <div className="v2-sheet-opcion">
-              <div className="v2-so-icono ig">📷</div>
-              <div><div className="v2-so-nombre">Instagram</div><div className="v2-so-detalle">@casadelpollolm</div></div>
-            </div>
+              <div><div className="v2-so-nombre">Llamar</div><div className="v2-so-detalle">{waPopover.telefono ? formatearTelefono(waPopover.telefono) : 'No disponible'}</div></div>
+            </a>
+            <a className="v2-sheet-opcion" href={waPopover.whatsappHref || undefined} target="_blank" rel="noopener noreferrer" onClick={e => !waPopover.whatsappHref && e.preventDefault()}>
+              <div className="v2-so-icono wa">💬</div>
+              <div><div className="v2-so-nombre">Mensaje (WhatsApp)</div><div className="v2-so-detalle">Abre un chat prellenado</div></div>
+            </a>
           </div>
         </div>
       )}
@@ -248,7 +322,6 @@ export default function HomeV2Preview() {
           <div className="v2-tab-central-label">Crear pedido</div>
         </div>
         <button className={`v2-tab${tab === 'sucursales' ? ' on' : ''}`} onClick={() => setTab('sucursales')}><span className="v2-ticono">📍</span><span className="v2-tlabel">Sucursales</span></button>
-        <button className="v2-tab" onClick={() => setSheet({ nombre: sucursalActiva.name, whatsapp: sucursalActiva.whatsapp || sucursalActiva.phone })}><span className="v2-ticono">☎️</span><span className="v2-tlabel">Contacto</span></button>
       </div>
     </div>
   )
