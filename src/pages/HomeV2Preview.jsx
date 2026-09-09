@@ -19,7 +19,10 @@ const CATEGORIAS = [
   { key: 'fresco', label: 'Pollo fresco', match: 'Pollo Fresco' },
 ]
 
-const img = (p) => p?.image_cooked_url || p?.image_url || ''
+// image_cooked_url solo es una foto real cuando el producto se puede cocinar
+// (se_puede_cocinar) — en productos que no, el campo trae un recorte basura
+// (ej. Ensalada/Arroz: un 10% sobrante de la imagen) que no debe usarse.
+const img = (p) => (p?.se_puede_cocinar && p?.image_cooked_url) || p?.image_url || ''
 
 // Normaliza a 10 dígitos locales (México) sin importar si venía con "+52",
 // espacios o el "52" ya pegado — para que tel:/wa.me siempre reciban un
@@ -106,17 +109,17 @@ export default function HomeV2Preview() {
 
   const promos = [
     nuevoProducto && {
-      badge: 'NUEVO', titulo: nuevoProducto.name, desc: 'Recién agregado al menú — pruébalo hoy.',
+      badge: 'NUEVO', color: 'rojo', titulo: nuevoProducto.name, desc: 'Recién agregado al menú — pruébalo hoy.',
       cta: 'Ver marinados', imagen: img(nuevoProducto),
       accion: () => { setTab('productos'); setCategoria('marinados') },
     },
     {
-      badge: 'BOWLS', titulo: 'Arma tu Bowl', desc: 'Base + marinado + tu toque, listo en minutos.',
+      badge: 'BOWLS', color: 'verde', titulo: 'Arma tu Bowl', desc: 'Base + marinado + tu toque, listo en minutos.',
       cta: 'Empezar', imagen: bowlImg, precio: `Desde $${Number(sucursalActiva?.bowl_price || 120)}`,
       accion: () => mostrarToast('Esto abriría el flujo de Bowls: base → marinado → carrito'),
     },
     marinadosImg[2] && {
-      badge: 'TEMPORADA', titulo: 'Marinados listos para la sartén', desc: 'Sazonados en casa, cocina en minutos.',
+      badge: 'TEMPORADA', color: 'dorado', titulo: 'Marinados listos para la sartén', desc: 'Sazonados en casa, cocina en minutos.',
       cta: 'Ver todos', imagen: img(marinadosImg[2]),
       accion: () => { setTab('productos'); setCategoria('marinados') },
     },
@@ -163,17 +166,18 @@ export default function HomeV2Preview() {
               <div className="v2-carrusel v2-carrusel-promo">
                 {promos.map((p, i) => (
                   <div key={p.titulo} className={`v2-promo-slide${i === heroIdx ? ' on' : ''}`} onClick={p.accion}>
-                    <img src={p.imagen} alt={p.titulo} />
-                    <div className="v2-carrusel-scrim" />
-                    <div className="v2-promo-badge">{p.badge}</div>
-                    <div className="v2-promo-content">
-                      <h3>{p.titulo}</h3>
-                      <p>{p.desc}</p>
-                      <div className="v2-promo-fila">
-                        <button className="v2-promo-cta" onClick={(e) => { e.stopPropagation(); p.accion() }}>{p.cta}</button>
-                        {p.precio && <span className="v2-ts-precio-pill">{p.precio}</span>}
+                    <div className={`v2-promo-panel v2-banda-${p.color}`}>
+                      <div className="v2-promo-badge">{p.badge}</div>
+                      <div className="v2-promo-content">
+                        <h3>{p.titulo}</h3>
+                        <p>{p.desc}</p>
+                        <div className="v2-promo-fila">
+                          <button className="v2-promo-cta" onClick={(e) => { e.stopPropagation(); p.accion() }}>{p.cta}</button>
+                          {p.precio && <span className="v2-ts-precio-pill">{p.precio}</span>}
+                        </div>
                       </div>
                     </div>
+                    <div className="v2-promo-foto"><img src={p.imagen} alt={p.titulo} /></div>
                   </div>
                 ))}
                 <div className="v2-carrusel-dots">
