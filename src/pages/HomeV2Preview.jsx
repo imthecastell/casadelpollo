@@ -13,8 +13,8 @@ import '../styles/homeV2.css'
 const API_URL = 'https://casadelpollo-backend.onrender.com'
 
 const CATEGORIAS = [
-  { key: 'preparados', label: 'Preparados', match: 'Preparados' },
   { key: 'marinados', label: 'Marinados', match: 'Marinados' },
+  { key: 'preparados', label: 'Preparados', match: 'Preparados' },
   { key: 'fresco', label: 'Pollo fresco', match: 'Pollo Fresco' },
 ]
 
@@ -52,7 +52,7 @@ function formatearTelefono(raw) {
 export default function HomeV2Preview() {
   const { sucursales, sucursalActiva, setSucursalActiva, productos, carrito, cargando } = useApp()
   const [tab, setTab] = useState('home')
-  const [categoria, setCategoria] = useState('preparados')
+  const [categoria, setCategoria] = useState('marinados')
   const [fichaAbierta, setFichaAbierta] = useState(false)
   const [varianteSel, setVarianteSel] = useState(0)
   const [extrasSel, setExtrasSel] = useState([])
