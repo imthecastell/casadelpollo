@@ -147,9 +147,12 @@ export default function HomeV2Preview() {
         <div className="v2-tb-logo-wrap">
           <LogoSlot type="logotipo" src={diseno?.logo_original_url || diseno?.logo_url} mode="original" height={28} alt="Casa del Pollo" />
         </div>
-        <button className="v2-tb-btn" onClick={() => mostrarToast(`${carrito.length} producto${carrito.length === 1 ? '' : 's'} en tu carrito`)}>
-          🛒{carrito.length > 0 && <span className="v2-tb-badge">{carrito.length}</span>}
-        </button>
+        <div className="v2-tb-derecha">
+          <button className="v2-tb-btn" onClick={() => { setTab('productos'); mostrarToast('Buscador enfocado') }}>🔍</button>
+          <button className="v2-tb-btn" onClick={() => mostrarToast(`${carrito.length} producto${carrito.length === 1 ? '' : 's'} en tu carrito`)}>
+            🛒{carrito.length > 0 && <span className="v2-tb-badge">{carrito.length}</span>}
+          </button>
+        </div>
       </div>
 
       <div className="v2-contenido" ref={contenidoRef} onScroll={tab === 'home' ? actualizarColorTopbar : undefined}>
@@ -329,11 +332,6 @@ export default function HomeV2Preview() {
         )}
 
       </div>
-
-      <button className="v2-search-flotante" onClick={() => { setTab('productos'); mostrarToast('Buscador enfocado') }}>
-        <span className="v2-search-icono">🔍</span>
-        <span className="v2-search-placeholder">Buscar en el menú...</span>
-      </button>
 
       {toast && <div className="v2-toast on">{toast}</div>}
 

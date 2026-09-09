@@ -39,6 +39,7 @@
   max-width: 90px; overflow: hidden; text-overflow: ellipsis; border: none; background: none; padding: 0; cursor: pointer;
 }
 .v2-tb-logo-wrap { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; }
+.v2-tb-derecha { display: flex; align-items: center; gap: 8px; }
 .v2-tb-badge {
   position: absolute; top: -3px; right: -3px; background: var(--rojo); color: #fff;
   font-size: 9px; font-weight: 800; width: 16px; height: 16px; border-radius: 50%;
@@ -61,7 +62,7 @@
 :root {
   --v2-grano: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' stitchTiles='stitch' result='ruido'/%3E%3CfeColorMatrix in='ruido' type='matrix' values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
-.v2-banda { margin: 0 -18px; padding: 24px 18px; }
+.v2-banda { margin: 0 -18px; padding: 14px 18px 24px; }
 /* "Gradient mesh" — dos manchas suaves (una clara arriba-izq, una oscura
    abajo-der) detrás del grano, en vez de un solo color plano — mismos
    tokens de marca, sin inventar ningún color nuevo. */
@@ -95,7 +96,7 @@
    sea lo primero y más protagonista que se ve al entrar al Home. */
 .v2-carrusel { position: relative; height: 280px; border-radius: 20px; overflow: hidden; margin-bottom: 20px; background: var(--gris-claro); }
 .v2-carrusel-promo {
-  height: auto; aspect-ratio: 4 / 5; margin: 0 -18px 20px; border-radius: 0;
+  height: auto; aspect-ratio: 4 / 5; margin: 0 -18px 10px; border-radius: 0;
   border: 3px solid var(--cafe); box-shadow: 6px 6px 0 var(--cafe);
 }
 .v2-carrusel-scrim { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.72) 0%, rgba(0,0,0,0) 55%); }
@@ -135,7 +136,7 @@
 .v2-pill.on { color: #fff; }
 .v2-pill-fondo { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(33.333% - 5.333px); background: var(--rojo); border-radius: 11px; transition: transform .28s cubic-bezier(.4,0,.2,1); z-index: 0; }
 
-.v2-seccion-titulo { font-family: var(--font-title); font-weight: 800; font-size: 15px; color: var(--texto); margin: 4px 0 12px; }
+.v2-seccion-titulo { font-family: var(--font-title); font-weight: 800; font-size: 15px; color: var(--texto); margin: 0 0 12px; }
 
 /* ---- Tarjetas de producto image-forward (grid Productos + strip Destacados) ---- */
 .v2-grid-simple { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; margin-bottom: 6px; }
@@ -240,15 +241,6 @@
 .v2-sc-btn-mapa { background: var(--gris-claro); color: var(--texto); }
 .v2-sc-btn-wa { background: #e4f2e9; color: var(--verde); }
 .v2-sc-btn:disabled { opacity: .5; cursor: default; }
-
-/* ---- buscador flotante, fijo justo arriba de la tab bar ---- */
-.v2-search-flotante {
-  flex: 0 0 auto; display: flex; align-items: center; gap: 10px; width: calc(100% - 32px);
-  margin: 10px auto; background: var(--gris-claro); border: none; border-radius: 14px;
-  padding: 12px 16px; cursor: pointer; box-shadow: var(--sombra); z-index: 20;
-}
-.v2-search-icono { font-size: 14px; }
-.v2-search-placeholder { font-family: var(--font-body); font-size: 12.5px; color: var(--texto-suave); }
 
 /* ---- barra inferior ---- */
 .v2-tabbar {
