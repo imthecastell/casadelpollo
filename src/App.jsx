@@ -5,6 +5,7 @@ import Carrito from './pages/Carrito.jsx'
 import Confirmado from './pages/Confirmado.jsx'
 import Feedback from './pages/Feedback.jsx'
 import LinksPage from './pages/LinksPage.jsx'
+import HomeV2Preview from './pages/HomeV2Preview.jsx'
 import './styles/global.css'
 
 function Contenido() {
@@ -20,6 +21,17 @@ function Contenido() {
 
 export default function App() {
   if (window.location.pathname === '/links') return <LinksPage />
+
+  // Preview oculto de la navegación V2 — no es parte del flujo real,
+  // solo para ver el diseño en un celular de verdad. Nadie llega aquí
+  // navegando la app normal.
+  if (window.location.pathname === '/preview-v2') {
+    return (
+      <AppProvider>
+        <HomeV2Preview />
+      </AppProvider>
+    )
+  }
 
   return (
     <AppProvider>
