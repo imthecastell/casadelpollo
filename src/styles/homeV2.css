@@ -84,33 +84,6 @@
 
 .v2-seccion-titulo { font-family: var(--font-title); font-weight: 800; font-size: 15px; color: var(--texto); margin: 4px 0 12px; }
 
-/* ---- Ficha expandible (imagen protagonista) ---- */
-.v2-ficha { position: relative; border-radius: 18px; overflow: hidden; box-shadow: var(--sombra); margin-bottom: 14px; background: var(--card-bg, #fff); }
-.v2-ficha-top { position: relative; height: 176px; cursor: pointer; background: var(--gris-claro); }
-.v2-ficha-top img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.v2-ficha-chevron {
-  position: absolute; top: 10px; right: 10px; width: 28px; height: 28px; border-radius: 50%;
-  background: rgba(255,255,255,.85); display: flex; align-items: center; justify-content: center;
-  font-size: 13px; color: var(--texto); transition: transform .25s; z-index: 2;
-}
-.v2-ficha.abierta .v2-ficha-chevron { transform: rotate(180deg); }
-.v2-ficha-overlay { position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 14px; z-index: 1; }
-.v2-ficha-nombre { color: #fff; font-family: var(--font-title); font-weight: 800; font-size: 16px; text-shadow: 0 1px 6px rgba(0,0,0,.4); }
-.v2-ficha-desc { color: rgba(255,255,255,.88); font-size: 11px; line-height: 1.4; margin: 3px 0 8px; text-shadow: 0 1px 4px rgba(0,0,0,.35); max-width: 88%; }
-.v2-ficha-detalle { max-height: 0; overflow: hidden; transition: max-height .3s ease; }
-.v2-ficha.abierta .v2-ficha-detalle { max-height: 320px; }
-.v2-ficha-detalle-inner { padding: 14px 15px 16px; border-top: 1px solid var(--crema-oscura); }
-.v2-fd-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--texto-suave); margin: 14px 0 7px; }
-.v2-fd-label:first-child { margin-top: 0; }
-.v2-fd-chips { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 4px; }
-.v2-fd-chip { padding: 6px 12px; border-radius: 16px; border: 1.5px solid var(--crema-oscura); font-size: 11px; font-weight: 600; color: var(--texto-suave); cursor: pointer; }
-.v2-fd-chip.on { background: var(--cafe); border-color: var(--cafe); color: #fff; }
-.v2-fd-chip.extra.on { background: var(--dorado); border-color: var(--dorado); color: #fff; }
-.v2-fd-cta { display: flex; gap: 8px; margin-top: 14px; }
-.v2-fd-cta button { flex: 1; border: none; border-radius: 12px; padding: 11px; font-family: var(--font-title); font-weight: 700; font-size: 12.5px; cursor: pointer; }
-.v2-primario { background: var(--rojo); color: #fff; }
-.v2-secundario { background: var(--gris-claro); color: var(--texto); }
-
 /* ---- Tarjetas de producto image-forward (grid Productos + strip Destacados) ---- */
 .v2-grid-simple { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; margin-bottom: 6px; }
 .v2-tarjeta-simple, .v2-tarjeta-destacada {

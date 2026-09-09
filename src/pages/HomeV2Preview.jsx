@@ -19,21 +19,6 @@ const CATEGORIAS = [
   { key: 'fresco', label: 'Pollo fresco', match: 'Pollo Fresco' },
 ]
 
-const FICHA_POR_CATEGORIA = {
-  preparados: {
-    nombre: 'Medallón con tocino',
-    desc: 'Medallón de pechuga envuelto en tocino, dorado hasta quedar crujiente.',
-    variantes: ['Clásico', 'Saludable (sin tocino)'],
-    extras: ['Arroz basmati jardinera +$35', 'Ensalada +$75'],
-  },
-  marinados: {
-    nombre: 'A la mexicana',
-    desc: 'Fajitas marinadas con especias y toque cítrico, listas para la sartén.',
-    variantes: ['250 g por persona', '350 g por persona'],
-    extras: ['Arroz basmati jardinera +$35', 'Ensalada +$75'],
-  },
-}
-
 const img = (p) => p?.image_cooked_url || p?.image_url || ''
 
 // Normaliza a 10 dígitos locales (México) sin importar si venía con "+52",
@@ -54,9 +39,6 @@ export default function HomeV2Preview() {
   const { sucursales, sucursalActiva, setSucursalActiva, productos, carrito, cargando, diseno } = useApp()
   const [tab, setTab] = useState('home')
   const [categoria, setCategoria] = useState('marinados')
-  const [fichaAbierta, setFichaAbierta] = useState(false)
-  const [varianteSel, setVarianteSel] = useState(0)
-  const [extrasSel, setExtrasSel] = useState([])
   const [toast, setToast] = useState('')
   const [waPopover, setWaPopover] = useState(null) // { branchName, telefono, whatsappHref }
   const [links, setLinks] = useState(null)
@@ -93,17 +75,6 @@ export default function HomeV2Preview() {
     return () => clearInterval(timerRef.current)
   }, [carrusel.length])
 
-  const abrirCategoria = (key) => {
-    setCategoria(key)
-    setFichaAbierta(false)
-    setVarianteSel(0)
-    setExtrasSel([])
-  }
-
-  const toggleExtra = (i) => {
-    setExtrasSel(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i])
-  }
-
   const linkDe = (nombre) => links?.branches?.find(b => b.name === nombre)
 
   if (cargando || !sucursalActiva) {
@@ -112,11 +83,6 @@ export default function HomeV2Preview() {
 
   const catDef = CATEGORIAS.find(c => c.key === categoria)
   const productosCategoria = productos.filter(p => p.category_name === catDef.match && p.active !== false)
-  const ficha = FICHA_POR_CATEGORIA[categoria]
-  const productoFicha = ficha ? productosCategoria.find(p => p.name === ficha.nombre) : null
-  const productosSimples = productoFicha
-    ? productosCategoria.filter(p => p.id !== productoFicha.id)
-    : productosCategoria
 
   const destacados = productos.filter(p => ['Marinados', 'Preparados'].includes(p.category_name) && img(p)).slice(2, 8)
 
@@ -183,56 +149,28 @@ export default function HomeV2Preview() {
 
         {tab === 'productos' && (
           <div className="v2-pantalla">
-            <div className="v2-saludo">Catálogo completo</div>
-            <div className="v2-saludo-sub">{productos.length} productos en {sucursalActiva.name}</div>
             <div className="v2-buscador">🔍 <input placeholder="Buscar producto..." /></div>
 
             <div className="v2-pills">
               <div className="v2-pill-fondo" style={{ transform: `translateX(${CATEGORIAS.findIndex(c => c.key === categoria) * 100}%)` }} />
               {CATEGORIAS.map(c => (
-                <div key={c.key} className={`v2-pill${categoria === c.key ? ' on' : ''}`} onClick={() => abrirCategoria(c.key)}>
+                <div key={c.key} className={`v2-pill${categoria === c.key ? ' on' : ''}`} onClick={() => setCategoria(c.key)}>
                   {c.label}
                 </div>
               ))}
             </div>
 
-            {productoFicha && (
-              <div className={`v2-ficha${fichaAbierta ? ' abierta' : ''}`}>
-                <div className="v2-ficha-top" onClick={() => setFichaAbierta(v => !v)}>
-                  <img src={img(productoFicha)} alt={productoFicha.name} />
-                  <div className="v2-ts-scrim" />
-                  <div className="v2-ficha-chevron">▾</div>
-                  <div className="v2-ficha-overlay">
-                    <div className="v2-ficha-nombre">{productoFicha.name}</div>
-                    <div className="v2-ficha-desc">{ficha.desc}</div>
-                    <div className="v2-ts-precio-pill">${Number(productoFicha.price)}</div>
-                  </div>
-                </div>
-                <div className="v2-ficha-detalle">
-                  <div className="v2-ficha-detalle-inner">
-                    <div className="v2-fd-label">{categoria === 'marinados' ? 'Cantidad' : 'Variante'}</div>
-                    <div className="v2-fd-chips">
-                      {ficha.variantes.map((v, i) => (
-                        <div key={i} className={`v2-fd-chip${varianteSel === i ? ' on' : ''}`} onClick={() => setVarianteSel(i)}>{v}</div>
-                      ))}
-                    </div>
-                    <div className="v2-fd-label">Guarnición sugerida</div>
-                    <div className="v2-fd-chips">
-                      {ficha.extras.map((e, i) => (
-                        <div key={i} className={`v2-fd-chip extra${extrasSel.includes(i) ? ' on' : ''}`} onClick={() => toggleExtra(i)}>{e}</div>
-                      ))}
-                    </div>
-                    <div className="v2-fd-cta">
-                      <button className="v2-secundario" onClick={() => mostrarToast('Esto abriría el Asistente para personalizar más')}>Personalizar</button>
-                      <button className="v2-primario" onClick={() => mostrarToast(`${productoFicha.name} agregado al carrito`)}>Agregar ${Number(productoFicha.price)}</button>
-                    </div>
-                  </div>
-                </div>
+            <div className="v2-bowls-cta" onClick={() => mostrarToast('Esto abriría el flujo de Bowls: base → marinado → carrito')}>
+              <div className="v2-bowls-emoji">🥗</div>
+              <div className="v2-bowls-txt">
+                <strong>¿Poco tiempo? Pide un Bowl</strong>
+                <span>Base + marinado + tu toque, listo en minutos</span>
               </div>
-            )}
+              <div className="v2-bowls-precio">Desde ${Number(sucursalActiva.bowl_price || 120)}</div>
+            </div>
 
             <div className="v2-grid-simple">
-              {productosSimples.map(p => (
+              {productosCategoria.map(p => (
                 <div key={p.id} className="v2-tarjeta-simple">
                   <img src={img(p)} alt={p.name} />
                   <div className="v2-ts-scrim" />
