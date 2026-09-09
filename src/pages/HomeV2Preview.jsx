@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useApp } from '../data/AppContext.jsx'
+import LogoSlot from '../Components/LogoSlot.jsx'
 import '../styles/homeV2.css'
 
 /* Preview oculto de la navegación V2 (Home + tab bar). Ruta secreta
@@ -50,7 +51,7 @@ function formatearTelefono(raw) {
 }
 
 export default function HomeV2Preview() {
-  const { sucursales, sucursalActiva, setSucursalActiva, productos, carrito, cargando } = useApp()
+  const { sucursales, sucursalActiva, setSucursalActiva, productos, carrito, cargando, diseno } = useApp()
   const [tab, setTab] = useState('home')
   const [categoria, setCategoria] = useState('marinados')
   const [fichaAbierta, setFichaAbierta] = useState(false)
@@ -123,8 +124,13 @@ export default function HomeV2Preview() {
     <div className="v2-shell">
 
       <div className="v2-topbar">
-        <button className="v2-tb-btn" onClick={() => mostrarToast('Menú con Ayuda, Recetas (próximamente) y Ajustes')}>☰</button>
-        <div className="v2-tb-logo">Casa del Pollo</div>
+        <button className="v2-tb-pill" onClick={() => mostrarToast('Menú con Ayuda, Recetas (próximamente) y Ajustes')}>
+          <span className="v2-tb-pill-icono">☰</span>
+          <span className="v2-tb-pill-nombre">{sucursalActiva.name}</span>
+        </button>
+        <div className="v2-tb-logo-wrap">
+          <LogoSlot type="logotipo" src={diseno?.logo_original_url || diseno?.logo_url} mode="original" height={28} alt="Casa del Pollo" />
+        </div>
         <button className="v2-tb-btn" onClick={() => mostrarToast(`${carrito.length} producto${carrito.length === 1 ? '' : 's'} en tu carrito`)}>
           🛒{carrito.length > 0 && <span className="v2-tb-badge">{carrito.length}</span>}
         </button>
@@ -133,10 +139,7 @@ export default function HomeV2Preview() {
       <div className="v2-contenido">
 
         {tab === 'home' && (
-          <div className="v2-pantalla">
-            <div className="v2-saludo">Hola 👋</div>
-            <div className="v2-saludo-sub">Pidiendo en {sucursalActiva.name} hoy</div>
-
+          <div className="v2-pantalla v2-pantalla-home">
             {carrusel.length > 0 && (
               <div className="v2-carrusel">
                 {carrusel.map((p, i) => (
