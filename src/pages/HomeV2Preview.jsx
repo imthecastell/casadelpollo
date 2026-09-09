@@ -217,11 +217,10 @@ export default function HomeV2Preview() {
                   </div>
                   <div className="v2-tile-mini-col">
                     {[arrozJardinera, ensalada].filter(Boolean).map(p => (
-                      <div key={p.id} className="v2-tile-mini" onClick={() => mostrarToast(`${p.name} agregado al carrito`)}>
+                      <div key={p.id} className="v2-tile-mini" onClick={() => mostrarToast('Esto abriría el flujo de Bowls: base → marinado → carrito')}>
                         <div className="v2-card-foto"><img src={img(p)} alt={p.name} /></div>
                         <div className="v2-card-barra">
                           <div className="v2-card-barra-nombre">{p.name}</div>
-                          <div className="v2-ts-precio-pill">${Number(p.price)}</div>
                         </div>
                       </div>
                     ))}
