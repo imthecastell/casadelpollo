@@ -114,7 +114,7 @@ export default function HomeV2Preview() {
     },
     {
       badge: 'BOWLS', titulo: 'Arma tu Bowl', desc: 'Base + marinado + tu toque, listo en minutos.',
-      cta: 'Empezar', imagen: bowlImg, precio: `Desde $${Number(sucursalActiva?.bowl_price || 120)}`,
+      cta: 'Empezar', imagen: bowlImg,
       accion: () => mostrarToast('Esto abriría el flujo de Bowls: base → marinado → carrito'),
     },
     marinadosImg[2] && {
@@ -167,13 +167,12 @@ export default function HomeV2Preview() {
                   <div key={p.titulo} className={`v2-promo-slide${i === heroIdx ? ' on' : ''}`} onClick={p.accion}>
                     <img className="v2-promo-foto-completa" src={p.imagen} alt={p.titulo} />
                     <div className="v2-promo-tarjeta">
-                      <div className="v2-promo-badge">{p.badge}</div>
-                      <h3>{p.titulo}</h3>
-                      <p>{p.desc}</p>
-                      <div className="v2-promo-fila">
-                        <button className="v2-promo-cta" onClick={(e) => { e.stopPropagation(); p.accion() }}>{p.cta}</button>
-                        {p.precio && <span className="v2-ts-precio-pill">{p.precio}</span>}
+                      <div className="v2-promo-texto">
+                        <div className="v2-promo-badge">{p.badge}</div>
+                        <h3>{p.titulo}</h3>
+                        <p>{p.desc}</p>
                       </div>
+                      <button className="v2-promo-cta" onClick={(e) => { e.stopPropagation(); p.accion() }}>{p.cta}</button>
                     </div>
                   </div>
                 ))}

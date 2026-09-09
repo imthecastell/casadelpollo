@@ -97,7 +97,6 @@
 .v2-carrusel { position: relative; height: 280px; border-radius: 20px; overflow: hidden; margin-bottom: 20px; background: var(--gris-claro); }
 .v2-carrusel-promo {
   height: auto; aspect-ratio: 4 / 5; margin: 0 -18px 10px; border-radius: 0;
-  border: 3px solid var(--cafe); box-shadow: 6px 6px 0 var(--cafe);
 }
 .v2-carrusel-dots { position: absolute; top: 14px; right: 14px; display: flex; gap: 5px; z-index: 2; }
 .v2-cdot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.5); }
@@ -115,17 +114,22 @@
 .v2-promo-badge {
   display: inline-block; background: #fff; color: var(--rojo);
   font-family: var(--font-title); font-weight: 800; font-size: 10.5px; letter-spacing: .04em;
-  padding: 5px 11px; border-radius: 8px; margin-bottom: 10px;
+  padding: 5px 11px; border-radius: 8px; margin-bottom: 6px;
 }
+/* Tarjeta horizontal: texto a la izquierda, CTA a la derecha, sin precio
+   — mucho más compacta que el layout apilado de antes, así deja ver más
+   foto en vez de desperdiciar alto en la tarjeta. */
 .v2-promo-tarjeta {
   position: absolute; left: 14px; right: 14px; bottom: 14px; z-index: 2;
-  background: var(--crema); border-radius: 18px; padding: 16px 16px 15px;
+  background: var(--crema); border-radius: 18px; padding: 14px 14px 14px 16px;
   box-shadow: 0 10px 26px rgba(0,0,0,.28);
+  display: flex; align-items: center; gap: 12px;
 }
-.v2-promo-tarjeta h3 { font-family: var(--font-title); font-weight: 800; font-size: 18px; line-height: 1.15; margin: 0 0 5px; color: var(--cafe); text-wrap: balance; }
-.v2-promo-tarjeta p { font-size: 11.5px; color: var(--texto-suave); margin: 0 0 12px; line-height: 1.4; }
+.v2-promo-texto { flex: 1 1 auto; min-width: 0; }
+.v2-promo-tarjeta h3 { font-family: var(--font-title); font-weight: 800; font-size: 16px; line-height: 1.15; margin: 0 0 3px; color: var(--cafe); text-wrap: balance; }
+.v2-promo-tarjeta p { font-size: 11px; color: var(--texto-suave); margin: 0; line-height: 1.35; }
 .v2-promo-fila { display: flex; align-items: center; gap: 10px; }
-.v2-promo-cta { border: none; border-radius: 12px; padding: 10px 18px; font-family: var(--font-title); font-weight: 800; font-size: 12.5px; cursor: pointer; }
+.v2-promo-cta { flex: 0 0 auto; border: none; border-radius: 12px; padding: 10px 16px; font-family: var(--font-title); font-weight: 800; font-size: 12px; cursor: pointer; white-space: nowrap; }
 .v2-promo-tarjeta .v2-promo-cta { background: var(--rojo); color: #fff; }
 
 /* ---- CTA de Bowls (Home) ---- */
@@ -198,8 +202,8 @@
   border: 3px solid var(--cafe); box-shadow: 6px 6px 0 var(--cafe);
   display: flex; flex-direction: column;
 }
-.v2-bowl-hibrido-foto { height: 170px; background: var(--gris-claro); }
-.v2-bowl-hibrido-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.v2-bowl-hibrido-foto { flex: none; width: 100%; aspect-ratio: 16 / 9; background: var(--gris-claro); position: relative; overflow: hidden; }
+.v2-bowl-hibrido-foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .v2-bowl-hibrido-panel { flex: 1; padding: 18px 18px 20px; display: flex; flex-direction: column; }
 .v2-bowl-hibrido-panel .v2-promo-badge { align-self: flex-start; }
 .v2-bowl-hibrido-panel h3 { font-family: var(--font-title); font-weight: 800; font-size: 21px; color: #fff; margin: 0; line-height: 1.1; text-shadow: 0 1px 3px rgba(0,0,0,.15); }
@@ -220,6 +224,12 @@
   border: 3px solid var(--cafe); box-shadow: 3px 3px 0 var(--cafe);
 }
 .v2-tile-mini2 .v2-card-foto { flex: none; aspect-ratio: 1 / 1; }
+/* Barra de altura fija (2 líneas) para que las 6 tarjetas siempre midan
+   lo mismo sin importar si el nombre es corto o largo — antes un nombre
+   de 3 líneas (ej. "Agridulce (a la naranja)") hacía esa sola tarjeta
+   más alta que sus vecinas y rompía la alineación de la fila. */
+.v2-tile-mini2 .v2-card-barra { height: 44px; align-items: flex-end; }
+.v2-tile-mini2 .v2-card-barra-nombre { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 
 /* ---- tira de solo imágenes grandes ---- */
 .v2-strip-grandes { display: flex; gap: 12px; overflow-x: auto; padding: 0 18px 4px; margin: 0 -18px; }
