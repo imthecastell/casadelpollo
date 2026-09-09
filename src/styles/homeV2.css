@@ -68,9 +68,15 @@
 .v2-banda .v2-seccion-titulo { margin-top: 0; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.15); }
 .v2-banda .v2-suc-strip, .v2-banda .v2-grid-destacado, .v2-banda .v2-grid-2filas, .v2-banda .v2-strip-grandes { margin-bottom: 0; }
 
-/* ---- Carrusel hero promocional (Home) ---- */
+/* ---- Carrusel hero promocional (Home) ----
+   A todo el ancho de la pantalla (rompe el padding de .v2-pantalla-home)
+   y en formato vertical alto, igual que el resto de las fotos — para que
+   sea lo primero y más protagonista que se ve al entrar al Home. */
 .v2-carrusel { position: relative; height: 280px; border-radius: 20px; overflow: hidden; margin-bottom: 20px; background: var(--gris-claro); }
-.v2-carrusel-promo { height: 320px; border: 3px solid var(--cafe); box-shadow: 6px 6px 0 var(--cafe); }
+.v2-carrusel-promo {
+  height: auto; aspect-ratio: 4 / 5; margin: 0 -18px 20px; border-radius: 0;
+  border: 3px solid var(--cafe); box-shadow: 6px 6px 0 var(--cafe);
+}
 .v2-carrusel-scrim { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.72) 0%, rgba(0,0,0,0) 55%); }
 .v2-carrusel-dots { position: absolute; top: 14px; right: 14px; display: flex; gap: 5px; z-index: 2; }
 .v2-cdot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.5); }
