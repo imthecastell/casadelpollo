@@ -185,10 +185,9 @@ export default function HomeV2Preview() {
                 <div className="v2-grid-2filas">
                   {marinadosImg.slice(0, 6).map(p => (
                     <div key={p.id} className="v2-tile-mini2" onClick={() => mostrarToast(`${p.name} agregado al carrito`)}>
-                      <img src={img(p)} alt={p.name} />
-                      <div className="v2-ts-scrim" />
-                      <div className="v2-ts-overlay">
-                        <div className="v2-ts-nombre">{p.name}</div>
+                      <div className="v2-card-foto"><img src={img(p)} alt={p.name} /></div>
+                      <div className="v2-card-barra">
+                        <div className="v2-card-barra-nombre">{p.name}</div>
                         <div className="v2-ts-precio-pill">${Number(p.price)}</div>
                       </div>
                     </div>
@@ -216,10 +215,9 @@ export default function HomeV2Preview() {
                   <div className="v2-tile-mini-col">
                     {[arrozJardinera, ensalada].filter(Boolean).map(p => (
                       <div key={p.id} className="v2-tile-mini" onClick={() => mostrarToast(`${p.name} agregado al carrito`)}>
-                        <img src={img(p)} alt={p.name} />
-                        <div className="v2-ts-scrim" />
-                        <div className="v2-ts-overlay">
-                          <div className="v2-ts-nombre">{p.name}</div>
+                        <div className="v2-card-foto"><img src={img(p)} alt={p.name} /></div>
+                        <div className="v2-card-barra">
+                          <div className="v2-card-barra-nombre">{p.name}</div>
                           <div className="v2-ts-precio-pill">${Number(p.price)}</div>
                         </div>
                       </div>
@@ -235,10 +233,9 @@ export default function HomeV2Preview() {
                 <div className="v2-strip-grandes">
                   {preparadosImg.slice(0, 6).map(p => (
                     <div key={p.id} className="v2-tarjeta-grande-strip">
-                      <img src={img(p)} alt={p.name} />
-                      <div className="v2-ts-scrim" />
-                      <div className="v2-ts-overlay">
-                        <div className="v2-ts-nombre">{p.name}</div>
+                      <div className="v2-card-foto"><img src={img(p)} alt={p.name} /></div>
+                      <div className="v2-card-barra">
+                        <div className="v2-card-barra-nombre">{p.name}</div>
                         <div className="v2-ts-precio-pill">${Number(p.price)}</div>
                       </div>
                       <button className="v2-ts-add" onClick={(e) => { e.stopPropagation(); mostrarToast(`${p.name} agregado al carrito`) }}>+</button>
