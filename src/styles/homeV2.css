@@ -58,14 +58,34 @@
    directo de una a otra en vez de cortar con un espacio crema — y llevan
    una textura de grano/airbrush sutil encima del color sólido para que
    no se vean como bloques planos. */
-.v2-banda {
-  margin: 0 -18px; padding: 24px 18px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' stitchTiles='stitch' result='ruido'/%3E%3CfeColorMatrix in='ruido' type='matrix' values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-blend-mode: overlay;
+:root {
+  --v2-grano: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' stitchTiles='stitch' result='ruido'/%3E%3CfeColorMatrix in='ruido' type='matrix' values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
-.v2-banda-dorado { background-color: var(--dorado); }
-.v2-banda-verde { background-color: var(--verde); }
-.v2-banda-rojo { background-color: var(--rojo); }
+.v2-banda { margin: 0 -18px; padding: 24px 18px; }
+/* "Gradient mesh" — dos manchas suaves (una clara arriba-izq, una oscura
+   abajo-der) detrás del grano, en vez de un solo color plano — mismos
+   tokens de marca, sin inventar ningún color nuevo. */
+.v2-banda-dorado {
+  background-color: var(--dorado);
+  background-image: var(--v2-grano),
+    radial-gradient(ellipse 90% 70% at 12% -10%, var(--dorado-claro) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 70% at 105% 110%, var(--cafe) 0%, transparent 62%);
+  background-blend-mode: overlay, normal, normal;
+}
+.v2-banda-verde {
+  background-color: var(--verde);
+  background-image: var(--v2-grano),
+    radial-gradient(ellipse 90% 70% at 12% -10%, var(--dorado-claro) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 70% at 105% 110%, var(--cafe) 0%, transparent 62%);
+  background-blend-mode: overlay, normal, normal;
+}
+.v2-banda-rojo {
+  background-color: var(--rojo);
+  background-image: var(--v2-grano),
+    radial-gradient(ellipse 90% 70% at 12% -10%, var(--rojo-claro) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 70% at 105% 110%, var(--cafe) 0%, transparent 62%);
+  background-blend-mode: overlay, normal, normal;
+}
 .v2-banda .v2-seccion-titulo { margin-top: 0; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.15); }
 .v2-banda .v2-suc-strip, .v2-banda .v2-grid-destacado, .v2-banda .v2-grid-2filas, .v2-banda .v2-strip-grandes { margin-bottom: 0; }
 
