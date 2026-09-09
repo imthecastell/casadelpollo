@@ -44,7 +44,10 @@ export default function HomeV2Preview() {
   const [selectorSucursalAbierto, setSelectorSucursalAbierto] = useState(false)
   const [links, setLinks] = useState(null)
   const [heroIdx, setHeroIdx] = useState(0)
+  const [colorTopbar, setColorTopbar] = useState(null)
   const timerRef = useRef(null)
+  const topbarRef = useRef(null)
+  const contenidoRef = useRef(null)
 
   useEffect(() => {
     if (!sucursalActiva && sucursales.length) {
@@ -67,6 +70,29 @@ export default function HomeV2Preview() {
   }, [toast])
 
   const mostrarToast = (msg) => setToast(msg)
+
+  // La barra superior "absorbe" el color de la banda que queda justo
+  // detrás de ella al hacer scroll, como si fuera transparente sobre
+  // el contenido — solo aplica en Home, que es lo único con bandas.
+  const actualizarColorTopbar = () => {
+    if (tab !== 'home' || !contenidoRef.current || !topbarRef.current) {
+      setColorTopbar(null)
+      return
+    }
+    const limite = topbarRef.current.getBoundingClientRect().bottom
+    const bandas = contenidoRef.current.querySelectorAll('.v2-banda')
+    let color = null
+    bandas.forEach(b => {
+      const r = b.getBoundingClientRect()
+      if (r.top <= limite && r.bottom > limite) color = b.dataset.color
+    })
+    setColorTopbar(color)
+  }
+
+  useEffect(() => {
+    actualizarColorTopbar()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab])
 
   const linkDe = (nombre) => links?.branches?.find(b => b.name === nombre)
 
@@ -113,7 +139,7 @@ export default function HomeV2Preview() {
   return (
     <div className="v2-shell">
 
-      <div className="v2-topbar">
+      <div className="v2-topbar" ref={topbarRef} style={colorTopbar ? { background: colorTopbar } : undefined}>
         <div className="v2-tb-pill">
           <button className="v2-tb-pill-icono" onClick={() => mostrarToast('Menú con Ayuda, Recetas (próximamente) y Ajustes')}>☰</button>
           <button className="v2-tb-pill-nombre" onClick={() => setSelectorSucursalAbierto(true)}>{sucursalActiva.name}</button>
@@ -126,7 +152,7 @@ export default function HomeV2Preview() {
         </button>
       </div>
 
-      <div className="v2-contenido">
+      <div className="v2-contenido" ref={contenidoRef} onScroll={tab === 'home' ? actualizarColorTopbar : undefined}>
 
         {tab === 'home' && (
           <div className="v2-pantalla v2-pantalla-home">
@@ -154,18 +180,17 @@ export default function HomeV2Preview() {
             )}
 
             {marinadosImg.length > 0 && (
-              <div className="v2-banda v2-banda-dorado">
+              <div className="v2-banda v2-banda-dorado" data-color="#C8841A">
                 <div className="v2-seccion-titulo">Marinados más pedidos</div>
-                <div className="v2-suc-strip">
+                <div className="v2-grid-2filas">
                   {marinadosImg.slice(0, 6).map(p => (
-                    <div key={p.id} className="v2-tarjeta-destacada">
+                    <div key={p.id} className="v2-tile-mini2" onClick={() => mostrarToast(`${p.name} agregado al carrito`)}>
                       <img src={img(p)} alt={p.name} />
                       <div className="v2-ts-scrim" />
                       <div className="v2-ts-overlay">
                         <div className="v2-ts-nombre">{p.name}</div>
                         <div className="v2-ts-precio-pill">${Number(p.price)}</div>
                       </div>
-                      <button className="v2-ts-add" onClick={(e) => { e.stopPropagation(); mostrarToast(`${p.name} agregado al carrito`) }}>+</button>
                     </div>
                   ))}
                 </div>
@@ -173,7 +198,7 @@ export default function HomeV2Preview() {
             )}
 
             {bowlGrande && (
-              <div className="v2-banda v2-banda-verde">
+              <div className="v2-banda v2-banda-verde" data-color="#2a7a4b">
                 <div className="v2-seccion-titulo">Arma tu Bowl</div>
                 <div className="v2-grid-destacado">
                   <div className="v2-tile-grande" onClick={() => mostrarToast('Esto abriría el flujo de Bowls: base → marinado → carrito')}>
@@ -182,7 +207,10 @@ export default function HomeV2Preview() {
                     <div className="v2-promo-badge">BOWLS</div>
                     <div className="v2-tile-grande-content">
                       <h4>Elige tu marinado favorito</h4>
-                      <button className="v2-promo-cta" onClick={(e) => { e.stopPropagation(); mostrarToast('Esto abriría el flujo de Bowls: base → marinado → carrito') }}>Empezar tu Bowl</button>
+                      <div className="v2-tile-grande-fila">
+                        <button className="v2-promo-cta" onClick={(e) => { e.stopPropagation(); mostrarToast('Esto abriría el flujo de Bowls: base → marinado → carrito') }}>Empezar tu Bowl</button>
+                        <span className="v2-ts-precio-pill">Desde ${Number(sucursalActiva.bowl_price || 120)}</span>
+                      </div>
                     </div>
                   </div>
                   <div className="v2-tile-mini-col">
@@ -202,11 +230,11 @@ export default function HomeV2Preview() {
             )}
 
             {preparadosImg.length > 0 && (
-              <div className="v2-banda v2-banda-rojo">
+              <div className="v2-banda v2-banda-rojo" data-color="#922B21">
                 <div className="v2-seccion-titulo">Preparados para lucirte</div>
-                <div className="v2-suc-strip">
+                <div className="v2-strip-grandes">
                   {preparadosImg.slice(0, 6).map(p => (
-                    <div key={p.id} className="v2-tarjeta-destacada">
+                    <div key={p.id} className="v2-tarjeta-grande-strip">
                       <img src={img(p)} alt={p.name} />
                       <div className="v2-ts-scrim" />
                       <div className="v2-ts-overlay">
