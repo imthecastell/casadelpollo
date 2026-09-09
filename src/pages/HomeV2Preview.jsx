@@ -103,23 +103,22 @@ export default function HomeV2Preview() {
   const preparadosImg = productos.filter(p => p.category_name === 'Preparados' && img(p))
   const nuevoProducto = productos.find(p => p.is_nuevo && img(p))
   const ensalada = productos.find(p => p.name === 'Ensalada')
-  const arrozJardinera = productos.find(p => p.name.startsWith('Arroz basmati'))
   const bowlImg = img(ensalada) || img(marinadosImg[0])
   const bowlGrande = marinadosImg[1] || marinadosImg[0]
 
   const promos = [
     nuevoProducto && {
-      badge: 'NUEVO', color: 'rojo', titulo: nuevoProducto.name, desc: 'Recién agregado al menú — pruébalo hoy.',
+      badge: 'NUEVO', titulo: nuevoProducto.name, desc: 'Recién agregado al menú — pruébalo hoy.',
       cta: 'Ver marinados', imagen: img(nuevoProducto),
       accion: () => { setTab('productos'); setCategoria('marinados') },
     },
     {
-      badge: 'BOWLS', color: 'verde', titulo: 'Arma tu Bowl', desc: 'Base + marinado + tu toque, listo en minutos.',
+      badge: 'BOWLS', titulo: 'Arma tu Bowl', desc: 'Base + marinado + tu toque, listo en minutos.',
       cta: 'Empezar', imagen: bowlImg, precio: `Desde $${Number(sucursalActiva?.bowl_price || 120)}`,
       accion: () => mostrarToast('Esto abriría el flujo de Bowls: base → marinado → carrito'),
     },
     marinadosImg[2] && {
-      badge: 'TEMPORADA', color: 'dorado', titulo: 'Marinados listos para la sartén', desc: 'Sazonados en casa, cocina en minutos.',
+      badge: 'TEMPORADA', titulo: 'Marinados listos para la sartén', desc: 'Sazonados en casa, cocina en minutos.',
       cta: 'Ver todos', imagen: img(marinadosImg[2]),
       accion: () => { setTab('productos'); setCategoria('marinados') },
     },
@@ -166,18 +165,16 @@ export default function HomeV2Preview() {
               <div className="v2-carrusel v2-carrusel-promo">
                 {promos.map((p, i) => (
                   <div key={p.titulo} className={`v2-promo-slide${i === heroIdx ? ' on' : ''}`} onClick={p.accion}>
-                    <div className={`v2-promo-panel v2-banda-${p.color}`}>
+                    <img className="v2-promo-foto-completa" src={p.imagen} alt={p.titulo} />
+                    <div className="v2-promo-tarjeta">
                       <div className="v2-promo-badge">{p.badge}</div>
-                      <div className="v2-promo-content">
-                        <h3>{p.titulo}</h3>
-                        <p>{p.desc}</p>
-                        <div className="v2-promo-fila">
-                          <button className="v2-promo-cta" onClick={(e) => { e.stopPropagation(); p.accion() }}>{p.cta}</button>
-                          {p.precio && <span className="v2-ts-precio-pill">{p.precio}</span>}
-                        </div>
+                      <h3>{p.titulo}</h3>
+                      <p>{p.desc}</p>
+                      <div className="v2-promo-fila">
+                        <button className="v2-promo-cta" onClick={(e) => { e.stopPropagation(); p.accion() }}>{p.cta}</button>
+                        {p.precio && <span className="v2-ts-precio-pill">{p.precio}</span>}
                       </div>
                     </div>
-                    <div className="v2-promo-foto"><img src={p.imagen} alt={p.titulo} /></div>
                   </div>
                 ))}
                 <div className="v2-carrusel-dots">
@@ -208,28 +205,15 @@ export default function HomeV2Preview() {
             {bowlGrande && (
               <div className="v2-banda v2-banda-verde" data-color="#2a7a4b">
                 <div className="v2-seccion-titulo">Arma tu Bowl</div>
-                <div className="v2-grid-destacado">
-                  <div className="v2-tile-grande" onClick={() => mostrarToast('Esto abriría el flujo de Bowls: base → marinado → carrito')}>
-                    <img src={img(bowlGrande)} alt={bowlGrande.name} />
-                    <div className="v2-ts-scrim" />
+                <div className="v2-bowl-hibrido" onClick={() => mostrarToast('Esto abriría el flujo de Bowls: base → marinado → carrito')}>
+                  <div className="v2-bowl-hibrido-foto"><img src={img(bowlGrande)} alt={bowlGrande.name} /></div>
+                  <div className="v2-bowl-hibrido-panel">
                     <div className="v2-promo-badge">BOWLS</div>
-                    <div className="v2-tile-grande-content">
-                      <h4>Elige tu marinado favorito</h4>
-                      <div className="v2-tile-grande-fila">
-                        <button className="v2-promo-cta" onClick={(e) => { e.stopPropagation(); mostrarToast('Esto abriría el flujo de Bowls: base → marinado → carrito') }}>Empezar tu Bowl</button>
-                        <span className="v2-ts-precio-pill">Desde ${Number(sucursalActiva.bowl_price || 120)}</span>
-                      </div>
+                    <h3>Arma tu Bowl</h3>
+                    <div className="v2-promo-fila">
+                      <button className="v2-promo-cta" onClick={(e) => { e.stopPropagation(); mostrarToast('Esto abriría el flujo de Bowls: base → marinado → carrito') }}>Empezar</button>
+                      <span className="v2-ts-precio-pill">Desde ${Number(sucursalActiva.bowl_price || 120)}</span>
                     </div>
-                  </div>
-                  <div className="v2-tile-mini-col">
-                    {[arrozJardinera, ensalada].filter(Boolean).map(p => (
-                      <div key={p.id} className="v2-tile-mini" onClick={() => mostrarToast('Esto abriría el flujo de Bowls: base → marinado → carrito')}>
-                        <div className="v2-card-foto"><img src={img(p)} alt={p.name} /></div>
-                        <div className="v2-card-barra">
-                          <div className="v2-card-barra-nombre">{p.name}</div>
-                        </div>
-                      </div>
-                    ))}
                   </div>
                 </div>
               </div>
