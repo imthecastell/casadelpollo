@@ -52,17 +52,17 @@
 
 .v2-pantalla-home { padding-top: 14px; }
 
-/* ---- bandas de color a todo lo ancho, una por sección temática ---- */
-.v2-banda { margin: 0 -18px 20px; padding: 20px 18px; }
-.v2-banda-dorado { background: #FBEED9; }
-.v2-banda-verde { background: #E4F2E9; }
-.v2-banda-rojo { background: #F7E6E2; }
-.v2-banda .v2-seccion-titulo { margin-top: 0; }
+/* ---- bandas de color vibrante a todo lo ancho, una por sección temática ---- */
+.v2-banda { margin: 0 -18px 22px; padding: 22px 18px; }
+.v2-banda-dorado { background: var(--dorado); }
+.v2-banda-verde { background: var(--verde); }
+.v2-banda-rojo { background: var(--rojo); }
+.v2-banda .v2-seccion-titulo { margin-top: 0; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.15); }
 .v2-banda .v2-suc-strip, .v2-banda .v2-grid-destacado { margin-bottom: 0; }
 
 /* ---- Carrusel hero promocional (Home) ---- */
 .v2-carrusel { position: relative; height: 280px; border-radius: 20px; overflow: hidden; margin-bottom: 20px; background: var(--gris-claro); }
-.v2-carrusel-promo { height: 320px; }
+.v2-carrusel-promo { height: 320px; border: 3px solid var(--cafe); box-shadow: 6px 6px 0 var(--cafe); }
 .v2-carrusel-scrim { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.72) 0%, rgba(0,0,0,0) 55%); }
 .v2-carrusel-dots { position: absolute; top: 14px; right: 14px; display: flex; gap: 5px; z-index: 2; }
 .v2-cdot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.5); }
@@ -104,11 +104,14 @@
 
 /* ---- Tarjetas de producto image-forward (grid Productos + strip Destacados) ---- */
 .v2-grid-simple { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; margin-bottom: 6px; }
-.v2-tarjeta-simple, .v2-tarjeta-destacada {
+.v2-tarjeta-simple {
   position: relative; border-radius: 16px; overflow: hidden; box-shadow: var(--sombra);
   background: var(--gris-claro); aspect-ratio: 4 / 5;
 }
-.v2-tarjeta-destacada { flex: 0 0 auto; width: 132px; }
+.v2-tarjeta-destacada {
+  position: relative; border-radius: 16px; overflow: hidden; aspect-ratio: 4 / 5; flex: 0 0 auto; width: 132px;
+  background: var(--gris-claro); border: 3px solid var(--cafe); box-shadow: 5px 5px 0 var(--cafe);
+}
 .v2-tarjeta-simple img, .v2-tarjeta-destacada img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .v2-ts-scrim { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.68) 0%, rgba(0,0,0,0) 48%); }
 .v2-ts-overlay { position: absolute; left: 0; right: 0; bottom: 0; padding: 9px 10px; display: flex; align-items: flex-end; justify-content: space-between; gap: 6px; }
@@ -122,12 +125,18 @@
 
 /* ---- grid destacado: una tarjeta grande + dos mini apiladas ---- */
 .v2-grid-destacado { display: grid; grid-template-columns: 1.4fr 1fr; gap: 10px; height: 260px; }
-.v2-tile-grande { position: relative; border-radius: 18px; overflow: hidden; cursor: pointer; background: var(--gris-claro); }
+.v2-tile-grande {
+  position: relative; border-radius: 18px; overflow: hidden; cursor: pointer; background: var(--gris-claro);
+  border: 3px solid var(--cafe); box-shadow: 6px 6px 0 var(--cafe);
+}
 .v2-tile-grande img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .v2-tile-grande-content { position: absolute; left: 0; right: 0; bottom: 0; padding: 14px; z-index: 1; }
 .v2-tile-grande-content h4 { color: #fff; font-family: var(--font-title); font-weight: 800; font-size: 15px; line-height: 1.2; text-shadow: 0 1px 6px rgba(0,0,0,.4); margin-bottom: 10px; }
-.v2-tile-mini-col { display: flex; flex-direction: column; gap: 10px; }
-.v2-tile-mini { position: relative; flex: 1; border-radius: 14px; overflow: hidden; cursor: pointer; background: var(--gris-claro); }
+.v2-tile-mini-col { display: flex; flex-direction: column; gap: 12px; }
+.v2-tile-mini {
+  position: relative; flex: 1; border-radius: 14px; overflow: hidden; cursor: pointer; background: var(--gris-claro);
+  border: 3px solid var(--cafe); box-shadow: 4px 4px 0 var(--cafe);
+}
 .v2-tile-mini img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 .v2-idea-card { background: linear-gradient(135deg, #FFF3DC, #FCE6D2); border-radius: 16px; padding: 14px 15px; display: flex; gap: 11px; align-items: center; margin-top: 14px; }
