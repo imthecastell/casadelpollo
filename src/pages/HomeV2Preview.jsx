@@ -192,10 +192,12 @@ export default function HomeV2Preview() {
                 <div className="v2-grid-2filas">
                   {marinadosImg.slice(0, 6).map(p => (
                     <div key={p.id} className="v2-tile-mini2" onClick={() => mostrarToast(`${p.name} agregado al carrito`)}>
-                      <div className="v2-card-foto"><img src={img(p)} alt={p.name} /></div>
+                      <div className="v2-card-foto">
+                        <img src={img(p)} alt={p.name} />
+                        <div className="v2-card-badge-precio">Desde $230/kg</div>
+                      </div>
                       <div className="v2-card-barra">
                         <div className="v2-card-barra-nombre">{p.name}</div>
-                        <div className="v2-ts-precio-pill">${Number(p.price)}</div>
                       </div>
                     </div>
                   ))}
