@@ -26,14 +26,17 @@
   color: var(--texto); position: relative;
 }
 .v2-tb-pill {
-  display: flex; align-items: center; gap: 8px; border: none; background: var(--gris-claro);
-  border-radius: 999px; padding: 5px 14px 5px 5px; cursor: pointer;
+  display: flex; align-items: center; gap: 8px; background: var(--gris-claro);
+  border-radius: 999px; padding: 5px 14px 5px 5px;
 }
 .v2-tb-pill-icono {
-  width: 28px; height: 28px; border-radius: 50%; background: var(--card-bg, #fff);
-  display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--texto); flex: 0 0 auto;
+  width: 28px; height: 28px; border-radius: 50%; background: var(--card-bg, #fff); border: none;
+  display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--texto); flex: 0 0 auto; cursor: pointer;
 }
-.v2-tb-pill-nombre { font-family: var(--font-title); font-weight: 700; font-size: 12px; color: var(--texto); white-space: nowrap; max-width: 90px; overflow: hidden; text-overflow: ellipsis; }
+.v2-tb-pill-nombre {
+  font-family: var(--font-title); font-weight: 700; font-size: 12px; color: var(--texto); white-space: nowrap;
+  max-width: 90px; overflow: hidden; text-overflow: ellipsis; border: none; background: none; padding: 0; cursor: pointer;
+}
 .v2-tb-logo-wrap { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; }
 .v2-tb-badge {
   position: absolute; top: -3px; right: -3px; background: var(--rojo); color: #fff;
@@ -48,6 +51,14 @@
 .v2-saludo-sub { font-size: 12.5px; color: var(--texto-suave); margin-bottom: 16px; }
 
 .v2-pantalla-home { padding-top: 14px; }
+
+/* ---- bandas de color a todo lo ancho, una por sección temática ---- */
+.v2-banda { margin: 0 -18px 20px; padding: 20px 18px; }
+.v2-banda-dorado { background: #FBEED9; }
+.v2-banda-verde { background: #E4F2E9; }
+.v2-banda-rojo { background: #F7E6E2; }
+.v2-banda .v2-seccion-titulo { margin-top: 0; }
+.v2-banda .v2-suc-strip, .v2-banda .v2-grid-destacado { margin-bottom: 0; }
 
 /* ---- Carrusel hero promocional (Home) ---- */
 .v2-carrusel { position: relative; height: 280px; border-radius: 20px; overflow: hidden; margin-bottom: 20px; background: var(--gris-claro); }
@@ -108,6 +119,16 @@
   background: rgba(255,255,255,.92); color: var(--texto); font-size: 15px; display: flex;
   align-items: center; justify-content: center; cursor: pointer; z-index: 2;
 }
+
+/* ---- grid destacado: una tarjeta grande + dos mini apiladas ---- */
+.v2-grid-destacado { display: grid; grid-template-columns: 1.4fr 1fr; gap: 10px; height: 260px; }
+.v2-tile-grande { position: relative; border-radius: 18px; overflow: hidden; cursor: pointer; background: var(--gris-claro); }
+.v2-tile-grande img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.v2-tile-grande-content { position: absolute; left: 0; right: 0; bottom: 0; padding: 14px; z-index: 1; }
+.v2-tile-grande-content h4 { color: #fff; font-family: var(--font-title); font-weight: 800; font-size: 15px; line-height: 1.2; text-shadow: 0 1px 6px rgba(0,0,0,.4); margin-bottom: 10px; }
+.v2-tile-mini-col { display: flex; flex-direction: column; gap: 10px; }
+.v2-tile-mini { position: relative; flex: 1; border-radius: 14px; overflow: hidden; cursor: pointer; background: var(--gris-claro); }
+.v2-tile-mini img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 .v2-idea-card { background: linear-gradient(135deg, #FFF3DC, #FCE6D2); border-radius: 16px; padding: 14px 15px; display: flex; gap: 11px; align-items: center; margin-top: 14px; }
 .v2-idea-card .v2-emoji { font-size: 22px; }
@@ -184,6 +205,8 @@
 .v2-sheet-sub { font-size: 12px; color: var(--texto-suave); margin-bottom: 16px; }
 .v2-sheet-opcion { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--crema-oscura); text-decoration: none; color: inherit; }
 .v2-sheet-opcion:last-child { border-bottom: none; }
+.v2-sheet-opcion-btn { width: 100%; border: none; background: none; font-family: inherit; text-align: left; cursor: pointer; }
+.v2-sheet-check { margin-left: auto; color: var(--rojo); font-weight: 800; font-size: 15px; }
 .v2-so-icono { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 17px; flex: 0 0 auto; }
 .v2-so-icono.wa { background: #e4f2e9; }
 .v2-so-icono.tel { background: var(--gris-claro); }

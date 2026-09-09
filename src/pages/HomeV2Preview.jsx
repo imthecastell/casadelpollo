@@ -41,6 +41,7 @@ export default function HomeV2Preview() {
   const [categoria, setCategoria] = useState('marinados')
   const [toast, setToast] = useState('')
   const [waPopover, setWaPopover] = useState(null) // { branchName, telefono, whatsappHref }
+  const [selectorSucursalAbierto, setSelectorSucursalAbierto] = useState(false)
   const [links, setLinks] = useState(null)
   const [heroIdx, setHeroIdx] = useState(0)
   const timerRef = useRef(null)
@@ -72,7 +73,10 @@ export default function HomeV2Preview() {
   const marinadosImg = productos.filter(p => p.category_name === 'Marinados' && img(p))
   const preparadosImg = productos.filter(p => p.category_name === 'Preparados' && img(p))
   const nuevoProducto = productos.find(p => p.is_nuevo && img(p))
-  const bowlImg = img(productos.find(p => p.name === 'Ensalada')) || img(marinadosImg[0])
+  const ensalada = productos.find(p => p.name === 'Ensalada')
+  const arrozJardinera = productos.find(p => p.name.startsWith('Arroz basmati'))
+  const bowlImg = img(ensalada) || img(marinadosImg[0])
+  const bowlGrande = marinadosImg[1] || marinadosImg[0]
 
   const promos = [
     nuevoProducto && {
@@ -110,10 +114,10 @@ export default function HomeV2Preview() {
     <div className="v2-shell">
 
       <div className="v2-topbar">
-        <button className="v2-tb-pill" onClick={() => mostrarToast('Menú con Ayuda, Recetas (próximamente) y Ajustes')}>
-          <span className="v2-tb-pill-icono">☰</span>
-          <span className="v2-tb-pill-nombre">{sucursalActiva.name}</span>
-        </button>
+        <div className="v2-tb-pill">
+          <button className="v2-tb-pill-icono" onClick={() => mostrarToast('Menú con Ayuda, Recetas (próximamente) y Ajustes')}>☰</button>
+          <button className="v2-tb-pill-nombre" onClick={() => setSelectorSucursalAbierto(true)}>{sucursalActiva.name}</button>
+        </div>
         <div className="v2-tb-logo-wrap">
           <LogoSlot type="logotipo" src={diseno?.logo_original_url || diseno?.logo_url} mode="original" height={28} alt="Casa del Pollo" />
         </div>
@@ -150,7 +154,7 @@ export default function HomeV2Preview() {
             )}
 
             {marinadosImg.length > 0 && (
-              <>
+              <div className="v2-banda v2-banda-dorado">
                 <div className="v2-seccion-titulo">Marinados más pedidos</div>
                 <div className="v2-suc-strip">
                   {marinadosImg.slice(0, 6).map(p => (
@@ -165,11 +169,40 @@ export default function HomeV2Preview() {
                     </div>
                   ))}
                 </div>
-              </>
+              </div>
+            )}
+
+            {bowlGrande && (
+              <div className="v2-banda v2-banda-verde">
+                <div className="v2-seccion-titulo">Arma tu Bowl</div>
+                <div className="v2-grid-destacado">
+                  <div className="v2-tile-grande" onClick={() => mostrarToast('Esto abriría el flujo de Bowls: base → marinado → carrito')}>
+                    <img src={img(bowlGrande)} alt={bowlGrande.name} />
+                    <div className="v2-ts-scrim" />
+                    <div className="v2-promo-badge">BOWLS</div>
+                    <div className="v2-tile-grande-content">
+                      <h4>Elige tu marinado favorito</h4>
+                      <button className="v2-promo-cta" onClick={(e) => { e.stopPropagation(); mostrarToast('Esto abriría el flujo de Bowls: base → marinado → carrito') }}>Empezar tu Bowl</button>
+                    </div>
+                  </div>
+                  <div className="v2-tile-mini-col">
+                    {[arrozJardinera, ensalada].filter(Boolean).map(p => (
+                      <div key={p.id} className="v2-tile-mini" onClick={() => mostrarToast(`${p.name} agregado al carrito`)}>
+                        <img src={img(p)} alt={p.name} />
+                        <div className="v2-ts-scrim" />
+                        <div className="v2-ts-overlay">
+                          <div className="v2-ts-nombre">{p.name}</div>
+                          <div className="v2-ts-precio-pill">${Number(p.price)}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             )}
 
             {preparadosImg.length > 0 && (
-              <>
+              <div className="v2-banda v2-banda-rojo">
                 <div className="v2-seccion-titulo">Preparados para lucirte</div>
                 <div className="v2-suc-strip">
                   {preparadosImg.slice(0, 6).map(p => (
@@ -184,7 +217,7 @@ export default function HomeV2Preview() {
                     </div>
                   ))}
                 </div>
-              </>
+              </div>
             )}
           </div>
         )}
@@ -278,6 +311,23 @@ export default function HomeV2Preview() {
       </button>
 
       {toast && <div className="v2-toast on">{toast}</div>}
+
+      {selectorSucursalAbierto && (
+        <div className="v2-sheet-overlay on" onClick={(e) => { if (e.target === e.currentTarget) setSelectorSucursalAbierto(false) }}>
+          <div className="v2-sheet">
+            <div className="v2-sheet-handle" />
+            <div className="v2-sheet-titulo">Cambiar de sucursal</div>
+            <div className="v2-sheet-sub">Vas a ver el catálogo y precios de la sucursal que elijas</div>
+            {sucursales.map(s => (
+              <button key={s.id} className="v2-sheet-opcion v2-sheet-opcion-btn" onClick={() => { setSucursalActiva(s); setSelectorSucursalAbierto(false); mostrarToast(`Ahora pidiendo en ${s.name}`) }}>
+                <div className="v2-so-icono tel">📍</div>
+                <div><div className="v2-so-nombre">{s.name}</div><div className="v2-so-detalle">{s.address}</div></div>
+                {s.id === sucursalActiva.id && <span className="v2-sheet-check">✓</span>}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {waPopover && (
         <div className="v2-sheet-overlay on" onClick={(e) => { if (e.target === e.currentTarget) setWaPopover(null) }}>
