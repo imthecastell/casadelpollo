@@ -200,10 +200,7 @@ export default function HomeV2Preview() {
 
             <a className="v2-ig-cta" href={links?.branches?.[0]?.instagram || 'https://www.instagram.com/casadelpollolm/'} target="_blank" rel="noopener noreferrer">
               <div className="v2-ig-icono">📷</div>
-              <div>
-                <div className="v2-sc-nombre" style={{ fontSize: 13 }}>Síguenos en Instagram</div>
-                <div className="v2-so-detalle">@casadelpollolm · la misma cuenta en las 4 sucursales</div>
-              </div>
+              <div className="v2-sc-nombre" style={{ fontSize: 13 }}>Síguenos en Instagram</div>
               <div className="v2-ig-flecha">→</div>
             </a>
 
