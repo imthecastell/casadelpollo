@@ -67,15 +67,37 @@ export default function HomeV2Preview() {
 
   const mostrarToast = (msg) => setToast(msg)
 
-  const carrusel = productos.filter(p => ['Marinados', 'Preparados'].includes(p.category_name) && img(p)).slice(0, 6)
+  const linkDe = (nombre) => links?.branches?.find(b => b.name === nombre)
+
+  const marinadosImg = productos.filter(p => p.category_name === 'Marinados' && img(p))
+  const preparadosImg = productos.filter(p => p.category_name === 'Preparados' && img(p))
+  const nuevoProducto = productos.find(p => p.is_nuevo && img(p))
+  const bowlImg = img(productos.find(p => p.name === 'Ensalada')) || img(marinadosImg[0])
+
+  const promos = [
+    nuevoProducto && {
+      badge: 'NUEVO', titulo: nuevoProducto.name, desc: 'Recién agregado al menú — pruébalo hoy.',
+      cta: 'Ver marinados', imagen: img(nuevoProducto),
+      accion: () => { setTab('productos'); setCategoria('marinados') },
+    },
+    {
+      badge: 'BOWLS', titulo: 'Arma tu Bowl', desc: 'Base + marinado + tu toque, listo en minutos.',
+      cta: 'Empezar', imagen: bowlImg, precio: `Desde $${Number(sucursalActiva?.bowl_price || 120)}`,
+      accion: () => mostrarToast('Esto abriría el flujo de Bowls: base → marinado → carrito'),
+    },
+    marinadosImg[2] && {
+      badge: 'TEMPORADA', titulo: 'Marinados listos para la sartén', desc: 'Sazonados en casa, cocina en minutos.',
+      cta: 'Ver todos', imagen: img(marinadosImg[2]),
+      accion: () => { setTab('productos'); setCategoria('marinados') },
+    },
+  ].filter(Boolean)
+
   useEffect(() => {
     clearInterval(timerRef.current)
-    if (carrusel.length < 2) return
-    timerRef.current = setInterval(() => setHeroIdx(i => (i + 1) % carrusel.length), 3800)
+    if (promos.length < 2) return
+    timerRef.current = setInterval(() => setHeroIdx(i => (i + 1) % promos.length), 4500)
     return () => clearInterval(timerRef.current)
-  }, [carrusel.length])
-
-  const linkDe = (nombre) => links?.branches?.find(b => b.name === nombre)
+  }, [promos.length])
 
   if (cargando || !sucursalActiva) {
     return <div className="v2-cargando">Cargando catálogo real de Viñedos…</div>
@@ -83,8 +105,6 @@ export default function HomeV2Preview() {
 
   const catDef = CATEGORIAS.find(c => c.key === categoria)
   const productosCategoria = productos.filter(p => p.category_name === catDef.match && p.active !== false)
-
-  const destacados = productos.filter(p => ['Marinados', 'Preparados'].includes(p.category_name) && img(p)).slice(2, 8)
 
   return (
     <div className="v2-shell">
@@ -106,51 +126,71 @@ export default function HomeV2Preview() {
 
         {tab === 'home' && (
           <div className="v2-pantalla v2-pantalla-home">
-            {carrusel.length > 0 && (
-              <div className="v2-carrusel">
-                {carrusel.map((p, i) => (
-                  <div key={p.id} className={`v2-carrusel-slide${i === heroIdx ? ' on' : ''}`}>
-                    <img src={img(p)} alt={p.name} />
+            {promos.length > 0 && (
+              <div className="v2-carrusel v2-carrusel-promo">
+                {promos.map((p, i) => (
+                  <div key={p.titulo} className={`v2-promo-slide${i === heroIdx ? ' on' : ''}`} onClick={p.accion}>
+                    <img src={p.imagen} alt={p.titulo} />
+                    <div className="v2-carrusel-scrim" />
+                    <div className="v2-promo-badge">{p.badge}</div>
+                    <div className="v2-promo-content">
+                      <h3>{p.titulo}</h3>
+                      <p>{p.desc}</p>
+                      <div className="v2-promo-fila">
+                        <button className="v2-promo-cta" onClick={(e) => { e.stopPropagation(); p.accion() }}>{p.cta}</button>
+                        {p.precio && <span className="v2-ts-precio-pill">{p.precio}</span>}
+                      </div>
+                    </div>
                   </div>
                 ))}
-                <div className="v2-carrusel-scrim" />
-                <div className="v2-carrusel-chip">{carrusel[heroIdx]?.name}</div>
                 <div className="v2-carrusel-dots">
-                  {carrusel.map((_, i) => <div key={i} className={`v2-cdot${i === heroIdx ? ' on' : ''}`} />)}
+                  {promos.map((_, i) => <div key={i} className={`v2-cdot${i === heroIdx ? ' on' : ''}`} />)}
                 </div>
               </div>
             )}
 
-            <div className="v2-bowls-cta" onClick={() => mostrarToast('Esto abriría el flujo de Bowls: base → marinado → carrito')}>
-              <div className="v2-bowls-emoji">🥗</div>
-              <div className="v2-bowls-txt">
-                <strong>Arma tu Bowl</strong>
-                <span>Base + marinado + tu toque, listo en minutos</span>
-              </div>
-              <div className="v2-bowls-precio">Desde ${Number(sucursalActiva.bowl_price || 120)}</div>
-            </div>
-
-            <div className="v2-seccion-titulo">Destacados</div>
-            <div className="v2-suc-strip">
-              {destacados.map(p => (
-                <div key={p.id} className="v2-tarjeta-destacada">
-                  <img src={img(p)} alt={p.name} />
-                  <div className="v2-ts-scrim" />
-                  <div className="v2-ts-overlay">
-                    <div className="v2-ts-nombre">{p.name}</div>
-                    <div className="v2-ts-precio-pill">${Number(p.price)}</div>
-                  </div>
-                  <button className="v2-ts-add" onClick={(e) => { e.stopPropagation(); mostrarToast(`${p.name} agregado al carrito`) }}>+</button>
+            {marinadosImg.length > 0 && (
+              <>
+                <div className="v2-seccion-titulo">Marinados más pedidos</div>
+                <div className="v2-suc-strip">
+                  {marinadosImg.slice(0, 6).map(p => (
+                    <div key={p.id} className="v2-tarjeta-destacada">
+                      <img src={img(p)} alt={p.name} />
+                      <div className="v2-ts-scrim" />
+                      <div className="v2-ts-overlay">
+                        <div className="v2-ts-nombre">{p.name}</div>
+                        <div className="v2-ts-precio-pill">${Number(p.price)}</div>
+                      </div>
+                      <button className="v2-ts-add" onClick={(e) => { e.stopPropagation(); mostrarToast(`${p.name} agregado al carrito`) }}>+</button>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </>
+            )}
+
+            {preparadosImg.length > 0 && (
+              <>
+                <div className="v2-seccion-titulo">Preparados para lucirte</div>
+                <div className="v2-suc-strip">
+                  {preparadosImg.slice(0, 6).map(p => (
+                    <div key={p.id} className="v2-tarjeta-destacada">
+                      <img src={img(p)} alt={p.name} />
+                      <div className="v2-ts-scrim" />
+                      <div className="v2-ts-overlay">
+                        <div className="v2-ts-nombre">{p.name}</div>
+                        <div className="v2-ts-precio-pill">${Number(p.price)}</div>
+                      </div>
+                      <button className="v2-ts-add" onClick={(e) => { e.stopPropagation(); mostrarToast(`${p.name} agregado al carrito`) }}>+</button>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         )}
 
         {tab === 'productos' && (
           <div className="v2-pantalla">
-            <div className="v2-buscador">🔍 <input placeholder="Buscar producto..." /></div>
-
             <div className="v2-pills">
               <div className="v2-pill-fondo" style={{ transform: `translateX(${CATEGORIAS.findIndex(c => c.key === categoria) * 100}%)` }} />
               {CATEGORIAS.map(c => (
@@ -231,6 +271,11 @@ export default function HomeV2Preview() {
         )}
 
       </div>
+
+      <button className="v2-search-flotante" onClick={() => { setTab('productos'); mostrarToast('Buscador enfocado') }}>
+        <span className="v2-search-icono">🔍</span>
+        <span className="v2-search-placeholder">Buscar en el menú...</span>
+      </button>
 
       {toast && <div className="v2-toast on">{toast}</div>}
 
