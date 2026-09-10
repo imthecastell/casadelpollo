@@ -147,7 +147,8 @@ export default function HomeV2Preview() {
           <button className="v2-tb-pill-nombre" onClick={() => setSelectorSucursalAbierto(true)}>{sucursalActiva.name}</button>
         </div>
         <div className="v2-tb-logo-wrap">
-          <LogoSlot type="logotipo" src={diseno?.logo_original_url || diseno?.logo_url} mode="original" height={28} alt="Casa del Pollo" />
+          <LogoSlot type="icon" src={diseno?.logo_icon_url} mode="original" height={32} alt="" />
+          <span className="v2-tb-logo-texto">Casa del Pollo</span>
         </div>
         <div className="v2-tb-derecha">
           <button className="v2-tb-btn" onClick={() => { setTab('productos'); mostrarToast('Buscador enfocado') }}>🔍</button>
