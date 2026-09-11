@@ -6,6 +6,7 @@ import Confirmado from './pages/Confirmado.jsx'
 import Feedback from './pages/Feedback.jsx'
 import LinksPage from './pages/LinksPage.jsx'
 import HomeV2Preview from './pages/HomeV2Preview.jsx'
+import InstalarApp from './Components/InstalarApp.jsx'
 import './styles/global.css'
 
 function Contenido() {
@@ -36,6 +37,7 @@ export default function App() {
   return (
     <AppProvider>
       <Contenido />
+      <InstalarApp />
     </AppProvider>
   )
 }
