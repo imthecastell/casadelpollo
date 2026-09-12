@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import LogoSlot from '../Components/LogoSlot.jsx'
 import AvisoAirfryer from '../Components/AvisoAirfryer.jsx'
+import { rawCrop, cookedCrop } from '../Components/SeccionMarinados.jsx'
 import '../styles/homeV2.css'
 import '../styles/menu.css'
 
@@ -332,15 +333,38 @@ export default function HomeV2Preview() {
             {mostrarAvisoSel && <AvisoAirfryer onCerrar={() => setMostrarAvisoSel(false)} />}
 
             <div className="v2-grid-simple">
-              {productosCategoria.map(p => {
+              {productosCategoria.flatMap((p, index) => {
                 const esMarinado = categoria === 'marinados'
                 const expandido = esMarinado && seleccionProducto?.id === p.id
 
                 if (expandido) {
-                  return (
+                  // Al mutar a ancho completo, si esta tarjeta iba en la
+                  // columna derecha (índice impar), la columna derecha de
+                  // su propia fila queda vacía porque el bloque expandido
+                  // no cabe ahí y salta a la siguiente fila. Se rellena esa
+                  // columna con la foto del mismo producto y una "península"
+                  // del color del configurador para que quede conectado,
+                  // en vez de un hueco en blanco.
+                  const dejaHueco = index % 2 === 1
+                  const miniaturaSrc = (recogidaSel === 'cocinado' && p.se_puede_cocinar)
+                    ? cookedCrop(p.image_cooked_url || p.image_url)
+                    : rawCrop(p.image_url)
+
+                  const bloques = []
+                  if (dejaHueco) {
+                    bloques.push(
+                      <div key={`${p.id}-relleno`} className="v2-tarjeta-simple v2-tarjeta-relleno">
+                        <img src={img(p)} alt={p.name} />
+                        <div className="v2-ts-scrim" />
+                      </div>
+                    )
+                  }
+
+                  bloques.push(
                     <div key={p.id} style={{ gridColumn: '1 / -1' }}>
+                      {dejaHueco && <div className="v2-ts-peninsula" />}
                       <button className="card-marinado card-marinado-activo" onClick={() => setSeleccionProducto(null)}>
-                        <img src={img(p)} alt={p.name} style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'cover', flexShrink: 0 }} />
+                        <img src={miniaturaSrc} alt={p.name} style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'cover', flexShrink: 0 }} />
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div className="producto-nombre">{p.name}</div>
                           <div className="producto-precio">${p.price}/kg</div>
@@ -398,6 +422,8 @@ export default function HomeV2Preview() {
                       </div>
                     </div>
                   )
+
+                  return bloques
                 }
 
                 return (

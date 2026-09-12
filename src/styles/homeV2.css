@@ -185,6 +185,18 @@
   align-items: center; justify-content: center; cursor: pointer; z-index: 2;
 }
 
+/* Cuando una tarjeta de Marinados muta a ancho completo desde la columna
+   derecha, esa columna queda vacía en su propia fila (el bloque expandido
+   ya no cabe ahí y salta a la siguiente fila). Esta tarjeta de relleno
+   mantiene la foto del mismo producto en ese espacio, y la "península"
+   —una franja del color del configurador— la conecta visualmente con el
+   panel de abajo en vez de dejar un hueco en blanco. */
+.v2-tarjeta-relleno { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.v2-ts-peninsula {
+  width: calc(50% - 5.5px); margin-left: auto; height: 22px; margin-top: -11px;
+  background: var(--gris-claro); border-radius: 0 0 12px 12px;
+}
+
 /* ---- tarjetas con barra sólida abajo (solo Home) — foto arriba sin
    degradado, nombre y precio sobre una barra opaca para más legibilidad
    que el texto encima de la foto. No toca .v2-tarjeta-simple (Productos). */
