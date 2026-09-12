@@ -30,6 +30,7 @@ export default function App() {
     return (
       <AppProvider>
         <HomeV2Preview />
+        <InstalarApp />
       </AppProvider>
     )
   }

@@ -19,6 +19,7 @@ export default function InstalarApp() {
     try { return localStorage.getItem(CLAVE_CERRADO) === '1' } catch { return false }
   })
   const [mostrarPasosIOS, setMostrarPasosIOS] = useState(false)
+  const [huboEngagement, setHuboEngagement] = useState(false)
   const esIOS = detectarIOS()
 
   useEffect(() => {
@@ -30,7 +31,15 @@ export default function InstalarApp() {
     return () => window.removeEventListener('beforeinstallprompt', alAntesDeInstalar)
   }, [])
 
-  const puedeMostrar = !cerrado && !yaInstalada() && carrito.length > 0 && (esIOS || promptEvento)
+  // Señal de "ya está usando la app": agregó algo al carrito, o simplemente
+  // lleva un rato navegando (esto último cubre vistas como /preview-v2 donde
+  // el carrito no se llena de verdad).
+  useEffect(() => {
+    const t = setTimeout(() => setHuboEngagement(true), 15000)
+    return () => clearTimeout(t)
+  }, [])
+
+  const puedeMostrar = !cerrado && !yaInstalada() && (carrito.length > 0 || huboEngagement) && (esIOS || promptEvento)
   if (!puedeMostrar) return null
 
   function cerrar() {
