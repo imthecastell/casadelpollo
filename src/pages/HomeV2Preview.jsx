@@ -1,7 +1,19 @@
 import { useState, useEffect, useRef } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import LogoSlot from '../Components/LogoSlot.jsx'
+import AvisoAirfryer from '../Components/AvisoAirfryer.jsx'
 import '../styles/homeV2.css'
+import '../styles/menu.css'
+
+const MARINADO_MIN = 200
+const MARINADO_MAX = 2000
+const MARINADO_PASO = 50
+
+function calcularTiempoMarinado(gramos) {
+  const base = 20
+  const extra = Math.ceil((gramos - 300) / 100) * 5
+  return gramos <= 300 ? base : base + extra
+}
 
 /* Preview oculto de la navegación V2 (Home + tab bar). Ruta secreta
    /preview-v2, fuera del flujo de `vista` normal — no afecta nada de
@@ -39,9 +51,14 @@ function formatearTelefono(raw) {
 }
 
 export default function HomeV2Preview() {
-  const { sucursales, sucursalActiva, setSucursalActiva, productos, carrito, cargando, diseno } = useApp()
+  const { sucursales, sucursalActiva, setSucursalActiva, productos, carrito, agregarAlCarrito, cargando, diseno } = useApp()
   const [tab, setTab] = useState('home')
   const [categoria, setCategoria] = useState('marinados')
+  const [seleccionProducto, setSeleccionProducto] = useState(null)
+  const [gramosSel, setGramosSel] = useState(300)
+  const [recogidaSel, setRecogidaSel] = useState('crudo')
+  const [agregadoSel, setAgregadoSel] = useState(false)
+  const [mostrarAvisoSel, setMostrarAvisoSel] = useState(false)
   const [toast, setToast] = useState('')
   const [waPopover, setWaPopover] = useState(null) // { branchName, telefono, whatsappHref }
   const [selectorSucursalAbierto, setSelectorSucursalAbierto] = useState(false)
@@ -137,6 +154,50 @@ export default function HomeV2Preview() {
 
   const catDef = CATEGORIAS.find(c => c.key === categoria)
   const productosCategoria = productos.filter(p => p.category_name === catDef.match && p.active !== false)
+
+  const tiempoEstimadoSel = calcularTiempoMarinado(gramosSel)
+  const precioTotalSel = seleccionProducto ? (gramosSel / 1000) * parseFloat(seleccionProducto.price || 0) : 0
+
+  function abrirSeleccion(p) {
+    setSeleccionProducto(p)
+    setGramosSel(300)
+    setRecogidaSel('crudo')
+    setAgregadoSel(false)
+  }
+
+  function cambiarGramosSel(delta) {
+    setGramosSel(prev => Math.min(MARINADO_MAX, Math.max(MARINADO_MIN, prev + delta)))
+  }
+
+  function elegirRecogidaSel(modo) {
+    setRecogidaSel(modo)
+    if (modo === 'cocinado' && seleccionProducto?.se_puede_cocinar !== false) {
+      setMostrarAvisoSel(true)
+    }
+  }
+
+  function handleAgregarSel() {
+    if (!seleccionProducto) return
+    agregarAlCarrito({
+      tipo: 'marinado',
+      nombre: seleccionProducto.name,
+      gramos: gramosSel,
+      recogida: recogidaSel,
+      tiempoEstimado: recogidaSel === 'cocinado' ? tiempoEstimadoSel : null,
+      necesitaHora: true,
+      precio: seleccionProducto.price,
+      precioTotal: precioTotalSel,
+      imagen_url: img(seleccionProducto),
+      resumen: `${seleccionProducto.name} ${gramosSel}g · ${recogidaSel === 'crudo' ? 'Crudo' : `Cocinado ~${tiempoEstimadoSel} min`} · $${precioTotalSel.toFixed(2)}`,
+    })
+    setAgregadoSel(true)
+    setTimeout(() => {
+      setAgregadoSel(false)
+      setSeleccionProducto(null)
+      setGramosSel(300)
+      setRecogidaSel('crudo')
+    }, 1200)
+  }
 
   return (
     <div className="v2-shell">
@@ -266,18 +327,94 @@ export default function HomeV2Preview() {
               <div className="v2-bowls-precio">Desde ${Number(sucursalActiva.bowl_price || 120)}</div>
             </div>
 
+            {mostrarAvisoSel && <AvisoAirfryer onCerrar={() => setMostrarAvisoSel(false)} />}
+
             <div className="v2-grid-simple">
-              {productosCategoria.map(p => (
-                <div key={p.id} className="v2-tarjeta-simple">
-                  <img src={img(p)} alt={p.name} />
-                  <div className="v2-ts-scrim" />
-                  <div className="v2-ts-overlay">
-                    <div className="v2-ts-nombre">{p.name}</div>
-                    <div className="v2-ts-precio-pill">${Number(p.price)}</div>
+              {productosCategoria.map(p => {
+                const esMarinado = categoria === 'marinados'
+                const expandido = esMarinado && seleccionProducto?.id === p.id
+
+                if (expandido) {
+                  return (
+                    <div key={p.id} style={{ gridColumn: '1 / -1' }}>
+                      <button className="card-marinado card-marinado-activo" onClick={() => setSeleccionProducto(null)}>
+                        <img src={img(p)} alt={p.name} style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'cover', flexShrink: 0 }} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div className="producto-nombre">{p.name}</div>
+                          <div className="producto-precio">${p.price}/kg</div>
+                        </div>
+                        <div className="card-check">✓</div>
+                      </button>
+
+                      <div className="configurador-card slide-up" style={{ marginTop: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0 }}>
+                        <div>
+                          <label className="config-label">Cantidad</label>
+                          <div className="cantidad-ctrl">
+                            <button className="cantidad-btn" onClick={() => cambiarGramosSel(-MARINADO_PASO)} disabled={gramosSel <= MARINADO_MIN}>−</button>
+                            <span className="cantidad-num" style={{ fontSize: 20, minWidth: 60, textAlign: 'center' }}>{gramosSel}g</span>
+                            <button className="cantidad-btn" onClick={() => cambiarGramosSel(MARINADO_PASO)} disabled={gramosSel >= MARINADO_MAX}>+</button>
+                          </div>
+                          <div style={{ fontSize: 12, color: 'var(--texto-suave)', marginTop: 6 }}>
+                            {MARINADO_MIN}g — {MARINADO_MAX}g · intervalos de {MARINADO_PASO}g
+                          </div>
+                        </div>
+
+                        {p.se_puede_cocinar && sucursalActiva?.servicio_cocinado !== false && (
+                          <div>
+                            <label className="config-label">¿Cómo lo quieres?</label>
+                            <div className="recogida-opts">
+                              <button
+                                className={`recogida-opt ${recogidaSel === 'crudo' ? 'recogida-activo' : ''}`}
+                                onClick={() => elegirRecogidaSel('crudo')}
+                              >
+                                <span style={{ fontSize: 20 }}>📦</span>
+                                <div>
+                                  <div className="recogida-titulo">Recoger crudo</div>
+                                  <div className="recogida-sub">Listo para llevar</div>
+                                </div>
+                              </button>
+                              <button
+                                className={`recogida-opt ${recogidaSel === 'cocinado' ? 'recogida-activo' : ''}`}
+                                onClick={() => elegirRecogidaSel('cocinado')}
+                              >
+                                <span style={{ fontSize: 20 }}>🔥</span>
+                                <div>
+                                  <div className="recogida-titulo">Recoger cocinado</div>
+                                  <div className="recogida-sub">Listo en ~{tiempoEstimadoSel} min</div>
+                                </div>
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        <button
+                          className={`btn-primario ${agregadoSel ? 'btn-agregado' : ''}`}
+                          onClick={handleAgregarSel}
+                        >
+                          {agregadoSel ? '✓ Agregado' : `Agregar ${gramosSel}g de ${p.name}`}
+                        </button>
+                      </div>
+                    </div>
+                  )
+                }
+
+                return (
+                  <div key={p.id} className="v2-tarjeta-simple">
+                    <img src={img(p)} alt={p.name} />
+                    <div className="v2-ts-scrim" />
+                    <div className="v2-ts-precio-top">${Number(p.price)}{esMarinado ? '/kg' : ''}</div>
+                    <div className="v2-ts-overlay">
+                      <div className="v2-ts-nombre">{p.name}</div>
+                      <button
+                        className="v2-ts-add-inline"
+                        onClick={() => esMarinado ? abrirSeleccion(p) : mostrarToast(`${p.name} agregado al carrito`)}
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
-                  <button className="v2-ts-add" onClick={() => mostrarToast(`${p.name} agregado al carrito`)}>+</button>
-                </div>
-              ))}
+                )
+              })}
             </div>
 
             {categoria === 'fresco' && (
