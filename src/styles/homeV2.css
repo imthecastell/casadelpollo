@@ -191,14 +191,10 @@
 .v2-tile-mini2, .v2-tile-mini, .v2-tarjeta-grande-strip { display: flex; flex-direction: column; }
 .v2-card-foto { position: relative; flex: 1; min-height: 0; overflow: hidden; background: var(--gris-claro); }
 .v2-card-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
-/* Precio por peso (marinados): un solo "desde $X/kg" en la esquina de la
-   foto en vez de un precio fijo por tarjeta, ya que el costo real varía
-   según el gramaje que se pida. */
-.v2-card-badge-precio {
-  position: absolute; top: 6px; right: 6px; background: var(--dorado); color: var(--cafe);
-  font-family: var(--font-title); font-weight: 800; font-size: 8.5px; letter-spacing: .01em;
-  padding: 4px 7px; border-radius: 20px; white-space: nowrap; z-index: 2;
-}
+/* Precio por peso (marinados): un solo "desde $X/kg" junto al título de
+   la sección en vez de repetido en cada tarjeta, ya que el costo real
+   varía según el gramaje que se pida. */
+.v2-titulo-fila { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
 .v2-card-barra { flex: 0 0 auto; background: var(--cafe); padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; gap: 6px; }
 .v2-card-barra-nombre {
   color: #fff; font-family: var(--font-title); font-weight: 700; font-size: 11px; line-height: 1.25;

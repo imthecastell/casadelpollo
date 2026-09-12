@@ -253,13 +253,15 @@ export default function HomeV2Preview() {
 
             {marinadosImg.length > 0 && (
               <div className="v2-banda v2-banda-dorado" data-color="#C8841A">
-                <div className="v2-seccion-titulo">Marinados más pedidos</div>
+                <div className="v2-titulo-fila">
+                  <div className="v2-seccion-titulo" style={{ margin: 0 }}>Marinados más pedidos</div>
+                  <div className="v2-promo-badge" style={{ margin: 0 }}>Desde $230/kg</div>
+                </div>
                 <div className="v2-grid-2filas">
                   {marinadosImg.slice(0, 6).map(p => (
                     <div key={p.id} className="v2-tile-mini2" onClick={() => mostrarToast(`${p.name} agregado al carrito`)}>
                       <div className="v2-card-foto">
                         <img src={img(p)} alt={p.name} />
-                        <div className="v2-card-badge-precio">Desde $230/kg</div>
                       </div>
                       <div className="v2-card-barra">
                         <div className="v2-card-barra-nombre">{p.name}</div>
