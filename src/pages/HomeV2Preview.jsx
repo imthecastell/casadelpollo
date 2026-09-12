@@ -28,9 +28,9 @@ function calcularTiempoMarinado(gramos) {
 const API_URL = 'https://casadelpollo-backend.onrender.com'
 
 const CATEGORIAS = [
-  { key: 'marinados', label: 'Marinados', match: 'Marinados', emoji: '🍯', desc: 'Sazonados, se venden por kg' },
-  { key: 'preparados', label: 'Preparados', match: 'Preparados', emoji: '🍗', desc: 'Nuggets, empanizadas, milanesas y más' },
-  { key: 'fresco', label: 'Pollo fresco', match: 'Pollo Fresco', emoji: '🐔', desc: 'Piezas y cortes, se pesan al entregar' },
+  { key: 'marinados', label: 'Marinados', match: 'Marinados', emoji: '⚡', antojo: 'Algo rápido', desc: 'Ya sazonado, listo para cocinar en minutos' },
+  { key: 'preparados', label: 'Preparados', match: 'Preparados', emoji: '😋', antojo: 'Algo delicioso', desc: 'Nuggets, empanizadas, milanesas y más' },
+  { key: 'fresco', label: 'Pollo fresco', match: 'Pollo Fresco', emoji: '🕐', antojo: 'Hoy tengo tiempo', desc: 'Piezas frescas para cocinar a tu manera' },
 ]
 
 // image_cooked_url solo es una foto real cuando el producto se puede cocinar
@@ -62,8 +62,8 @@ export default function HomeV2Preview() {
   const [agregadoSel, setAgregadoSel] = useState(false)
   const [mostrarAvisoSel, setMostrarAvisoSel] = useState(false)
   const [asistente, setAsistente] = useState({
-    abierto: false, paso: 1, categoria: null, producto: null,
-    gramos: 300, cantidad: 1, recogida: 'crudo',
+    abierto: false, paso: 1, personas: 2, categoria: null, producto: null,
+    gramos: 300, cantidad: 1, recogida: 'crudo', complementosAgregados: [],
     hora: null, asap: false, nombre: '', telefono: '',
     agregado: false, mostrarAviso: false, confirmado: false,
   })
@@ -208,19 +208,26 @@ export default function HomeV2Preview() {
   }
 
   // ───────────────── Asistente de pedido (botón central "Crear pedido") ─────────────────
-  // Wizard de pantalla completa: categoría → producto → configuración →
-  // horario → confirmar. Igual que en Marinados, agrega al carrito real;
-  // el paso final de "confirmar" es decorativo a propósito (no llama al
+  // Wizard de pantalla completa, amigable y guiado por recomendaciones:
+  // 1) ¿para cuántas personas? (calcula 250-300g/persona) → 2) ¿qué se te
+  // antoja? (rápido=Marinados, delicioso=Preparados, tengo tiempo=Fresco)
+  // → 3) producto → 4) configuración (pre-llenada con la recomendación) →
+  // 5) sugerencia de acompañamiento (arroz/pasta/ensalada) → 6) horario →
+  // 7) confirmar. Agrega al carrito real en cada paso que corresponde; el
+  // paso final de "confirmar" es decorativo a propósito (no llama al
   // confirmarPedido real) para no crear pedidos de verdad desde este
   // preview oculto — solo muestra el mismo resumen que vería el cliente.
+  const GRAMOS_POR_PERSONA_MIN = 250
+  const GRAMOS_POR_PERSONA_MAX = 300
+
   function patchAsistente(patch) {
     setAsistente(prev => ({ ...prev, ...patch }))
   }
 
   function abrirAsistente() {
     setAsistente({
-      abierto: true, paso: 1, categoria: null, producto: null,
-      gramos: 300, cantidad: 1, recogida: 'crudo',
+      abierto: true, paso: 1, personas: 2, categoria: null, producto: null,
+      gramos: 300, cantidad: 1, recogida: 'crudo', complementosAgregados: [],
       hora: null, asap: false, nombre: '', telefono: '',
       agregado: false, mostrarAviso: false, confirmado: false,
     })
@@ -235,8 +242,12 @@ export default function HomeV2Preview() {
     patchAsistente({ paso: asistente.paso - 1 })
   }
 
+  function cambiarPersonasAsistente(delta) {
+    patchAsistente({ personas: Math.max(1, Math.min(20, asistente.personas + delta)) })
+  }
+
   function elegirCategoriaAsistente(catKey) {
-    patchAsistente({ categoria: catKey, paso: 2 })
+    patchAsistente({ categoria: catKey, paso: 3 })
   }
 
   const productosAsistente = asistente.categoria
@@ -244,7 +255,10 @@ export default function HomeV2Preview() {
     : []
 
   function elegirProductoAsistente(p) {
-    patchAsistente({ producto: p, gramos: 300, cantidad: 1, recogida: 'crudo', paso: 3 })
+    // Precarga la config con la recomendación de 275g/persona (redondeada
+    // a pasos de 50g) o 1 pieza por persona, según la categoría.
+    const gramosRecomendados = Math.min(MARINADO_MAX, Math.max(MARINADO_MIN, Math.round((asistente.personas * 275) / MARINADO_PASO) * MARINADO_PASO))
+    patchAsistente({ producto: p, gramos: gramosRecomendados, cantidad: asistente.personas, recogida: 'crudo', paso: 4 })
   }
 
   const productoAsistente = asistente.producto
@@ -303,7 +317,23 @@ export default function HomeV2Preview() {
         resumen: `${productoAsistente.name} × ${asistente.cantidad} pz · $${productoAsistente.price}/kg (se pesa al entregar)`,
       })
     }
-    patchAsistente({ paso: 4 })
+    patchAsistente({ paso: 5 })
+  }
+
+  const complementosAsistente = productos.filter(p => p.category_name === 'Complementos' && p.active !== false)
+
+  function agregarComplementoAsistente(p) {
+    if (asistente.complementosAgregados.includes(p.id)) return
+    agregarAlCarrito({
+      tipo: 'complemento',
+      nombre: p.name,
+      cantidad: 1,
+      precio: p.price,
+      precioTotal: parseFloat(p.price || 0),
+      unidad: p.description || 'porción',
+      resumen: `${p.name} × 1 ${p.description || 'porción'} · $${parseFloat(p.price || 0).toFixed(2)}`,
+    })
+    patchAsistente({ complementosAgregados: [...asistente.complementosAgregados, p.id] })
   }
 
   const horariosAsistente = generarHorariosDisponibles(carrito, schedule, cocInicio, cocFin, cocFinSabado)
@@ -678,7 +708,7 @@ export default function HomeV2Preview() {
           <div className="v2-asistente-header">
             <button className="v2-asistente-atras" onClick={pasoAtrasAsistente}>‹</button>
             <div className="v2-asistente-progreso">
-              {[1, 2, 3, 4, 5].map(n => (
+              {[1, 2, 3, 4, 5, 6, 7].map(n => (
                 <div key={n} className={`v2-asistente-punto${asistente.paso >= n ? ' on' : ''}`} />
               ))}
             </div>
@@ -688,13 +718,33 @@ export default function HomeV2Preview() {
           <div className="v2-asistente-contenido">
             {asistente.paso === 1 && (
               <>
-                <div className="v2-asistente-titulo">¿Qué te gustaría pedir?</div>
+                <div className="v2-asistente-titulo">¿Para cuántas personas cocinamos hoy?</div>
+                <p className="v2-asistente-sub">Con eso te recomendamos la cantidad justa, ni de más ni de menos.</p>
+                <div className="v2-asistente-personas">
+                  <button className="cantidad-btn" onClick={() => cambiarPersonasAsistente(-1)} disabled={asistente.personas <= 1}>−</button>
+                  <div className="v2-asistente-personas-num">
+                    <span>{asistente.personas}</span>
+                    <span className="v2-asistente-personas-label">{asistente.personas === 1 ? 'persona' : 'personas'}</span>
+                  </div>
+                  <button className="cantidad-btn" onClick={() => cambiarPersonasAsistente(1)} disabled={asistente.personas >= 20}>+</button>
+                </div>
+                <div className="v2-asistente-recomendacion">
+                  🍗 Recomendado: <b>{asistente.personas * GRAMOS_POR_PERSONA_MIN}g – {asistente.personas * GRAMOS_POR_PERSONA_MAX}g</b> de pollo (250-300g por persona)
+                </div>
+                <button className="btn-primario" onClick={() => patchAsistente({ paso: 2 })}>Continuar →</button>
+              </>
+            )}
+
+            {asistente.paso === 2 && (
+              <>
+                <div className="v2-asistente-titulo">¿Qué se te antoja?</div>
+                <p className="v2-asistente-sub">Para {asistente.personas} {asistente.personas === 1 ? 'persona' : 'personas'}</p>
                 <div className="v2-asistente-cats">
                   {CATEGORIAS.map(c => (
                     <button key={c.key} className="v2-asistente-cat" onClick={() => elegirCategoriaAsistente(c.key)}>
                       <span className="v2-asistente-cat-emoji">{c.emoji}</span>
                       <div>
-                        <div className="v2-asistente-cat-nombre">{c.label}</div>
+                        <div className="v2-asistente-cat-nombre">{c.antojo}</div>
                         <div className="v2-asistente-cat-desc">{c.desc}</div>
                       </div>
                       <span className="v2-asistente-cat-flecha">›</span>
@@ -704,7 +754,7 @@ export default function HomeV2Preview() {
               </>
             )}
 
-            {asistente.paso === 2 && (
+            {asistente.paso === 3 && (
               <>
                 <div className="v2-asistente-titulo">Elige tu {CATEGORIAS.find(c => c.key === asistente.categoria)?.label.toLowerCase()}</div>
                 <div className="v2-grid-simple">
@@ -722,7 +772,7 @@ export default function HomeV2Preview() {
               </>
             )}
 
-            {asistente.paso === 3 && productoAsistente && (
+            {asistente.paso === 4 && productoAsistente && (
               <>
                 <div className="v2-asistente-titulo">Configura tu pedido</div>
                 <div className="card-marinado card-marinado-activo" style={{ cursor: 'default' }}>
@@ -798,7 +848,30 @@ export default function HomeV2Preview() {
               </>
             )}
 
-            {asistente.paso === 4 && (
+            {asistente.paso === 5 && (
+              <>
+                <div className="v2-asistente-titulo">¿Le entra un acompañamiento?</div>
+                <p className="v2-asistente-sub">Arroz, pasta o ensalada — se agregan directo a tu pedido</p>
+                <div className="v2-asistente-complementos">
+                  {complementosAsistente.map(p => {
+                    const agregado = asistente.complementosAgregados.includes(p.id)
+                    return (
+                      <button key={p.id} className={`v2-asistente-complemento${agregado ? ' on' : ''}`} onClick={() => agregarComplementoAsistente(p)}>
+                        <img src={p.image_url || img(p)} alt={p.name} />
+                        <div className="v2-asistente-complemento-nombre">{p.name}</div>
+                        <div className="v2-asistente-complemento-precio">${Number(p.price)}</div>
+                        <div className="v2-asistente-complemento-check">{agregado ? '✓' : '+'}</div>
+                      </button>
+                    )
+                  })}
+                </div>
+                <button className="btn-primario" onClick={() => patchAsistente({ paso: 6 })}>
+                  {asistente.complementosAgregados.length > 0 ? 'Continuar →' : 'No gracias, continuar →'}
+                </button>
+              </>
+            )}
+
+            {asistente.paso === 6 && (
               <>
                 <div className="v2-asistente-titulo">¿A qué hora recoges?</div>
                 <div style={{ background: 'var(--card-bg)', borderRadius: 'var(--radio-lg)', padding: 18, boxShadow: 'var(--sombra)' }}>
@@ -838,13 +911,13 @@ export default function HomeV2Preview() {
                   )}
                 </div>
 
-                <button className="btn-primario" disabled={!asistente.hora && !asistente.asap} onClick={() => patchAsistente({ paso: 5 })}>
+                <button className="btn-primario" disabled={!asistente.hora && !asistente.asap} onClick={() => patchAsistente({ paso: 7 })}>
                   Continuar →
                 </button>
               </>
             )}
 
-            {asistente.paso === 5 && (
+            {asistente.paso === 7 && (
               <>
                 <div className="v2-asistente-titulo">Ya casi — solo falta tu nombre</div>
                 <div style={{ background: 'var(--card-bg)', borderRadius: 'var(--radio-lg)', padding: 18, boxShadow: 'var(--sombra)', display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 16 }}>
