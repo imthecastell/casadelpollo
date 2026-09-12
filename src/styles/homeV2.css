@@ -191,11 +191,12 @@
    mantiene la foto del mismo producto en ese espacio, y la "península"
    —una franja del color del configurador— la conecta visualmente con el
    panel de abajo en vez de dejar un hueco en blanco. */
-.v2-tarjeta-relleno { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
-.v2-ts-peninsula {
-  width: calc(50% - 5.5px); margin-left: auto; height: 22px; margin-top: -11px;
-  background: var(--gris-claro); border-radius: 0 0 12px 12px;
-}
+.v2-tarjeta-relleno { overflow: visible; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.v2-tarjeta-relleno-foto { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; }
+/* Se extiende fuera de la propia tarjeta (por eso overflow:visible arriba)
+   para cerrar exactamente el gap del grid (11px) y tocar sin espacio la
+   tarjeta activa de abajo, sin depender de márgenes negativos frágiles. */
+.v2-ts-peninsula { position: absolute; left: 0; right: 0; bottom: -11px; height: 11px; background: var(--gris-claro); }
 
 /* ---- tarjetas con barra sólida abajo (solo Home) — foto arriba sin
    degradado, nombre y precio sobre una barra opaca para más legibilidad

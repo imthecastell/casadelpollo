@@ -354,15 +354,17 @@ export default function HomeV2Preview() {
                   if (dejaHueco) {
                     bloques.push(
                       <div key={`${p.id}-relleno`} className="v2-tarjeta-simple v2-tarjeta-relleno">
-                        <img src={img(p)} alt={p.name} />
-                        <div className="v2-ts-scrim" />
+                        <div className="v2-tarjeta-relleno-foto">
+                          <img src={img(p)} alt={p.name} />
+                          <div className="v2-ts-scrim" />
+                        </div>
+                        <div className="v2-ts-peninsula" />
                       </div>
                     )
                   }
 
                   bloques.push(
                     <div key={p.id} style={{ gridColumn: '1 / -1' }}>
-                      {dejaHueco && <div className="v2-ts-peninsula" />}
                       <button className="card-marinado card-marinado-activo" onClick={() => setSeleccionProducto(null)}>
                         <img src={miniaturaSrc} alt={p.name} style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'cover', flexShrink: 0 }} />
                         <div style={{ flex: 1, minWidth: 0 }}>
