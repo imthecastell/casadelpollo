@@ -3,6 +3,7 @@ import { useApp } from '../data/AppContext.jsx'
 import LogoSlot from '../Components/LogoSlot.jsx'
 import AvisoAirfryer from '../Components/AvisoAirfryer.jsx'
 import { rawCrop, cookedCrop } from '../Components/SeccionMarinados.jsx'
+import { generarHorariosDisponibles, ventanaPreparacion, obtenerCocFinEfectivo } from '../data/slots.js'
 import '../styles/homeV2.css'
 import '../styles/menu.css'
 
@@ -27,9 +28,9 @@ function calcularTiempoMarinado(gramos) {
 const API_URL = 'https://casadelpollo-backend.onrender.com'
 
 const CATEGORIAS = [
-  { key: 'marinados', label: 'Marinados', match: 'Marinados' },
-  { key: 'preparados', label: 'Preparados', match: 'Preparados' },
-  { key: 'fresco', label: 'Pollo fresco', match: 'Pollo Fresco' },
+  { key: 'marinados', label: 'Marinados', match: 'Marinados', emoji: '🍯', desc: 'Sazonados, se venden por kg' },
+  { key: 'preparados', label: 'Preparados', match: 'Preparados', emoji: '🍗', desc: 'Nuggets, empanizadas, milanesas y más' },
+  { key: 'fresco', label: 'Pollo fresco', match: 'Pollo Fresco', emoji: '🐔', desc: 'Piezas y cortes, se pesan al entregar' },
 ]
 
 // image_cooked_url solo es una foto real cuando el producto se puede cocinar
@@ -52,7 +53,7 @@ function formatearTelefono(raw) {
 }
 
 export default function HomeV2Preview() {
-  const { sucursales, sucursalActiva, setSucursalActiva, productos, carrito, agregarAlCarrito, cargando, diseno } = useApp()
+  const { sucursales, sucursalActiva, setSucursalActiva, productos, carrito, agregarAlCarrito, cargando, diseno, schedule, cocInicio, cocFin, cocFinSabado } = useApp()
   const [tab, setTab] = useState('home')
   const [categoria, setCategoria] = useState('marinados')
   const [seleccionProducto, setSeleccionProducto] = useState(null)
@@ -60,6 +61,12 @@ export default function HomeV2Preview() {
   const [recogidaSel, setRecogidaSel] = useState('crudo')
   const [agregadoSel, setAgregadoSel] = useState(false)
   const [mostrarAvisoSel, setMostrarAvisoSel] = useState(false)
+  const [asistente, setAsistente] = useState({
+    abierto: false, paso: 1, categoria: null, producto: null,
+    gramos: 300, cantidad: 1, recogida: 'crudo',
+    hora: null, asap: false, nombre: '', telefono: '',
+    agregado: false, mostrarAviso: false, confirmado: false,
+  })
   const [toast, setToast] = useState('')
   const [waPopover, setWaPopover] = useState(null) // { branchName, telefono, whatsappHref }
   const [selectorSucursalAbierto, setSelectorSucursalAbierto] = useState(false)
@@ -200,7 +207,129 @@ export default function HomeV2Preview() {
     }, 1200)
   }
 
+  // ───────────────── Asistente de pedido (botón central "Crear pedido") ─────────────────
+  // Wizard de pantalla completa: categoría → producto → configuración →
+  // horario → confirmar. Igual que en Marinados, agrega al carrito real;
+  // el paso final de "confirmar" es decorativo a propósito (no llama al
+  // confirmarPedido real) para no crear pedidos de verdad desde este
+  // preview oculto — solo muestra el mismo resumen que vería el cliente.
+  function patchAsistente(patch) {
+    setAsistente(prev => ({ ...prev, ...patch }))
+  }
+
+  function abrirAsistente() {
+    setAsistente({
+      abierto: true, paso: 1, categoria: null, producto: null,
+      gramos: 300, cantidad: 1, recogida: 'crudo',
+      hora: null, asap: false, nombre: '', telefono: '',
+      agregado: false, mostrarAviso: false, confirmado: false,
+    })
+  }
+
+  function cerrarAsistente() {
+    patchAsistente({ abierto: false })
+  }
+
+  function pasoAtrasAsistente() {
+    if (asistente.paso <= 1) { cerrarAsistente(); return }
+    patchAsistente({ paso: asistente.paso - 1 })
+  }
+
+  function elegirCategoriaAsistente(catKey) {
+    patchAsistente({ categoria: catKey, paso: 2 })
+  }
+
+  const productosAsistente = asistente.categoria
+    ? productos.filter(p => p.category_name === CATEGORIAS.find(c => c.key === asistente.categoria)?.match && p.active !== false)
+    : []
+
+  function elegirProductoAsistente(p) {
+    patchAsistente({ producto: p, gramos: 300, cantidad: 1, recogida: 'crudo', paso: 3 })
+  }
+
+  const productoAsistente = asistente.producto
+  const tiempoEstimadoAsistente = calcularTiempoMarinado(asistente.gramos)
+  const precioTotalAsistenteMarinado = productoAsistente ? (asistente.gramos / 1000) * parseFloat(productoAsistente.price || 0) : 0
+
+  function cambiarGramosAsistente(delta) {
+    patchAsistente({ gramos: Math.min(MARINADO_MAX, Math.max(MARINADO_MIN, asistente.gramos + delta)) })
+  }
+
+  function cambiarCantidadAsistente(delta) {
+    patchAsistente({ cantidad: Math.max(1, Math.min(20, asistente.cantidad + delta)) })
+  }
+
+  function elegirRecogidaAsistente(modo) {
+    patchAsistente({ recogida: modo, mostrarAviso: modo === 'cocinado' && productoAsistente?.se_puede_cocinar !== false })
+  }
+
+  function confirmarConfigAsistente() {
+    if (!productoAsistente) return
+    if (asistente.categoria === 'marinados') {
+      agregarAlCarrito({
+        tipo: 'marinado',
+        nombre: productoAsistente.name,
+        gramos: asistente.gramos,
+        recogida: asistente.recogida,
+        tiempoEstimado: asistente.recogida === 'cocinado' ? tiempoEstimadoAsistente : null,
+        necesitaHora: true,
+        precio: productoAsistente.price,
+        precioTotal: precioTotalAsistenteMarinado,
+        imagen_url: img(productoAsistente),
+        resumen: `${productoAsistente.name} ${asistente.gramos}g · ${asistente.recogida === 'crudo' ? 'Crudo' : `Cocinado ~${tiempoEstimadoAsistente} min`} · $${precioTotalAsistenteMarinado.toFixed(2)}`,
+      })
+    } else if (asistente.categoria === 'preparados') {
+      const cocina = productoAsistente.se_puede_cocinar && asistente.recogida === 'cocinado'
+      agregarAlCarrito({
+        tipo: 'preparado',
+        nombre: productoAsistente.name,
+        cantidad: asistente.cantidad,
+        precioKg: productoAsistente.price,
+        precio: productoAsistente.price,
+        recogida: productoAsistente.se_puede_cocinar ? asistente.recogida : undefined,
+        tiempoEstimado: cocina ? 20 : null,
+        necesitaHora: true,
+        imagen_url: img(productoAsistente),
+        resumen: `${productoAsistente.name} × ${asistente.cantidad} pz${cocina ? ' · Cocinado ~20 min' : ''} · $${productoAsistente.price}/kg`,
+      })
+    } else {
+      agregarAlCarrito({
+        tipo: 'pieza',
+        nombre: productoAsistente.name,
+        cantidad: asistente.cantidad,
+        precioKg: productoAsistente.price,
+        precio: productoAsistente.price,
+        imagen_url: productoAsistente.image_url,
+        resumen: `${productoAsistente.name} × ${asistente.cantidad} pz · $${productoAsistente.price}/kg (se pesa al entregar)`,
+      })
+    }
+    patchAsistente({ paso: 4 })
+  }
+
+  const horariosAsistente = generarHorariosDisponibles(carrito, schedule, cocInicio, cocFin, cocFinSabado)
+  const tieneCocinadosAsistente = ventanaPreparacion(carrito) === 40
+  const cocFinMostradoAsistente = obtenerCocFinEfectivo(cocFin, cocFinSabado)
+
+  function elegirHoraAsistente(hora) {
+    patchAsistente({ hora, asap: false })
+  }
+  function elegirAsapAsistente() {
+    patchAsistente({ asap: true, hora: null })
+  }
+
+  const puedeConfirmarAsistente = asistente.nombre.trim().length > 0 && (asistente.hora || asistente.asap)
+
+  function confirmarAsistente() {
+    if (!puedeConfirmarAsistente) return
+    patchAsistente({ confirmado: true })
+    setTimeout(() => {
+      cerrarAsistente()
+      mostrarToast('¡Pedido creado! (esto llamaría a confirmarPedido en producción)')
+    }, 1400)
+  }
+
   return (
+    <>
     <div className="v2-shell">
 
       <div className="v2-topbar" ref={topbarRef} style={colorTopbar ? { background: colorTopbar } : undefined}>
@@ -537,11 +666,226 @@ export default function HomeV2Preview() {
         <button className={`v2-tab${tab === 'home' ? ' on' : ''}`} onClick={() => setTab('home')}><span className="v2-ticono">🏠</span><span className="v2-tlabel">Home</span></button>
         <button className={`v2-tab${tab === 'productos' ? ' on' : ''}`} onClick={() => setTab('productos')}><span className="v2-ticono">📋</span><span className="v2-tlabel">Productos</span></button>
         <div className="v2-tab-central-wrap">
-          <div className="v2-tab-central" onClick={() => mostrarToast('Esto abriría el Asistente de pedido paso a paso')}>🍗</div>
+          <div className="v2-tab-central" onClick={abrirAsistente}>🍗</div>
           <div className="v2-tab-central-label">Crear pedido</div>
         </div>
         <button className={`v2-tab${tab === 'sucursales' ? ' on' : ''}`} onClick={() => setTab('sucursales')}><span className="v2-ticono">📍</span><span className="v2-tlabel">Sucursales</span></button>
       </div>
     </div>
+
+      {asistente.abierto && (
+        <div className="v2-asistente">
+          <div className="v2-asistente-header">
+            <button className="v2-asistente-atras" onClick={pasoAtrasAsistente}>‹</button>
+            <div className="v2-asistente-progreso">
+              {[1, 2, 3, 4, 5].map(n => (
+                <div key={n} className={`v2-asistente-punto${asistente.paso >= n ? ' on' : ''}`} />
+              ))}
+            </div>
+            <button className="v2-asistente-cerrar" onClick={cerrarAsistente}>✕</button>
+          </div>
+
+          <div className="v2-asistente-contenido">
+            {asistente.paso === 1 && (
+              <>
+                <div className="v2-asistente-titulo">¿Qué te gustaría pedir?</div>
+                <div className="v2-asistente-cats">
+                  {CATEGORIAS.map(c => (
+                    <button key={c.key} className="v2-asistente-cat" onClick={() => elegirCategoriaAsistente(c.key)}>
+                      <span className="v2-asistente-cat-emoji">{c.emoji}</span>
+                      <div>
+                        <div className="v2-asistente-cat-nombre">{c.label}</div>
+                        <div className="v2-asistente-cat-desc">{c.desc}</div>
+                      </div>
+                      <span className="v2-asistente-cat-flecha">›</span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {asistente.paso === 2 && (
+              <>
+                <div className="v2-asistente-titulo">Elige tu {CATEGORIAS.find(c => c.key === asistente.categoria)?.label.toLowerCase()}</div>
+                <div className="v2-grid-simple">
+                  {productosAsistente.map(p => (
+                    <button key={p.id} className="v2-tarjeta-simple v2-asistente-producto" onClick={() => elegirProductoAsistente(p)}>
+                      <img src={img(p)} alt={p.name} />
+                      <div className="v2-ts-scrim" />
+                      <div className="v2-ts-precio-top">${Number(p.price)}{asistente.categoria === 'marinados' ? '/kg' : ''}</div>
+                      <div className="v2-ts-overlay">
+                        <div className="v2-ts-nombre">{p.name}</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {asistente.paso === 3 && productoAsistente && (
+              <>
+                <div className="v2-asistente-titulo">Configura tu pedido</div>
+                <div className="card-marinado card-marinado-activo" style={{ cursor: 'default' }}>
+                  <img src={img(productoAsistente)} alt={productoAsistente.name} style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'cover', flexShrink: 0 }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="producto-nombre">{productoAsistente.name}</div>
+                    <div className="producto-precio">
+                      ${productoAsistente.price}{asistente.categoria === 'fresco' ? '/kg (se pesa al entregar)' : asistente.categoria === 'marinados' ? '/kg' : '/kg (por pieza)'}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="configurador-card" style={{ marginTop: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0 }}>
+                  {asistente.categoria === 'marinados' ? (
+                    <div>
+                      <label className="config-label">Cantidad</label>
+                      <div className="cantidad-ctrl">
+                        <button className="cantidad-btn" onClick={() => cambiarGramosAsistente(-MARINADO_PASO)} disabled={asistente.gramos <= MARINADO_MIN}>−</button>
+                        <span className="cantidad-num" style={{ fontSize: 20, minWidth: 60, textAlign: 'center' }}>{asistente.gramos}g</span>
+                        <button className="cantidad-btn" onClick={() => cambiarGramosAsistente(MARINADO_PASO)} disabled={asistente.gramos >= MARINADO_MAX}>+</button>
+                      </div>
+                      <div style={{ fontSize: 12, color: 'var(--texto-suave)', marginTop: 6 }}>
+                        {MARINADO_MIN}g — {MARINADO_MAX}g · intervalos de {MARINADO_PASO}g
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="config-label">Piezas</label>
+                      <div className="cantidad-ctrl">
+                        <button className="cantidad-btn" onClick={() => cambiarCantidadAsistente(-1)} disabled={asistente.cantidad <= 1}>−</button>
+                        <span className="cantidad-num" style={{ fontSize: 20, minWidth: 40, textAlign: 'center' }}>{asistente.cantidad}</span>
+                        <button className="cantidad-btn" onClick={() => cambiarCantidadAsistente(1)} disabled={asistente.cantidad >= 20}>+</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {asistente.categoria !== 'fresco' && productoAsistente.se_puede_cocinar && sucursalActiva?.servicio_cocinado !== false && (
+                    <div>
+                      <label className="config-label">¿Cómo lo quieres?</label>
+                      <div className="recogida-opts">
+                        <button
+                          className={`recogida-opt ${asistente.recogida === 'crudo' ? 'recogida-activo' : ''}`}
+                          onClick={() => elegirRecogidaAsistente('crudo')}
+                        >
+                          <span style={{ fontSize: 20 }}>📦</span>
+                          <div>
+                            <div className="recogida-titulo">Recoger crudo</div>
+                            <div className="recogida-sub">Listo para llevar</div>
+                          </div>
+                        </button>
+                        <button
+                          className={`recogida-opt ${asistente.recogida === 'cocinado' ? 'recogida-activo' : ''}`}
+                          onClick={() => elegirRecogidaAsistente('cocinado')}
+                        >
+                          <span style={{ fontSize: 20 }}>🔥</span>
+                          <div>
+                            <div className="recogida-titulo">Recoger cocinado</div>
+                            <div className="recogida-sub">
+                              Listo en ~{asistente.categoria === 'marinados' ? tiempoEstimadoAsistente : 20} min
+                            </div>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  <button className="btn-primario" onClick={confirmarConfigAsistente}>
+                    Agregar y continuar →
+                  </button>
+                </div>
+
+                {asistente.mostrarAviso && <AvisoAirfryer onCerrar={() => patchAsistente({ mostrarAviso: false })} />}
+              </>
+            )}
+
+            {asistente.paso === 4 && (
+              <>
+                <div className="v2-asistente-titulo">¿A qué hora recoges?</div>
+                <div style={{ background: 'var(--card-bg)', borderRadius: 'var(--radio-lg)', padding: 18, boxShadow: 'var(--sombra)' }}>
+                  {tieneCocinadosAsistente && cocInicio && cocFinMostradoAsistente && (
+                    <div style={{ fontSize: 12, color: '#92400E', background: '#FFFBEB', border: '1px solid #F59E0B44', borderRadius: 8, padding: '7px 12px', marginBottom: 10 }}>
+                      🍗 Tu pedido incluye productos cocinados · disponible entre <b>{cocInicio}</b> y <b>{cocFinMostradoAsistente}</b>
+                    </div>
+                  )}
+                  <button
+                    onClick={elegirAsapAsistente}
+                    style={{
+                      width: '100%', padding: '12px 14px', marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 2, textAlign: 'left',
+                      border: `2px solid ${asistente.asap ? 'var(--rojo)' : 'var(--gris)'}`, borderRadius: 'var(--radio)',
+                      background: asistente.asap ? '#fff5f5' : 'var(--crema)', cursor: 'pointer',
+                    }}
+                  >
+                    <span style={{ fontFamily: 'var(--font-title)', fontWeight: 800, fontSize: 15, color: asistente.asap ? 'var(--rojo)' : 'var(--texto)' }}>
+                      ⚡ Lo antes posible
+                    </span>
+                    <span style={{ fontSize: 11, color: 'var(--texto-suave)' }}>Te avisamos en cuanto esté listo</span>
+                  </button>
+
+                  {horariosAsistente.length === 0 ? (
+                    <p style={{ fontSize: 13, color: 'var(--rojo)' }}>No hay horarios disponibles con el tiempo de preparación requerido.</p>
+                  ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                      {horariosAsistente.map(hora => (
+                        <button
+                          key={hora}
+                          onClick={() => elegirHoraAsistente(hora)}
+                          style={{ padding: '10px 6px', border: `2px solid ${asistente.hora === hora ? 'var(--rojo)' : 'var(--gris)'}`, borderRadius: 'var(--radio)', background: asistente.hora === hora ? '#fff5f5' : 'var(--crema)', color: asistente.hora === hora ? 'var(--rojo)' : 'var(--texto)', fontFamily: 'var(--font-title)', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
+                        >
+                          {hora}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <button className="btn-primario" disabled={!asistente.hora && !asistente.asap} onClick={() => patchAsistente({ paso: 5 })}>
+                  Continuar →
+                </button>
+              </>
+            )}
+
+            {asistente.paso === 5 && (
+              <>
+                <div className="v2-asistente-titulo">Ya casi — solo falta tu nombre</div>
+                <div style={{ background: 'var(--card-bg)', borderRadius: 'var(--radio-lg)', padding: 18, boxShadow: 'var(--sombra)', display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 16 }}>
+                  <div>
+                    <label className="config-label">Tu nombre</label>
+                    <input
+                      type="text"
+                      placeholder="¿A nombre de quién es el pedido?"
+                      value={asistente.nombre}
+                      onChange={(e) => patchAsistente({ nombre: e.target.value })}
+                      style={{ width: '100%', padding: '11px 14px', border: '1.5px solid var(--gris)', borderRadius: 'var(--radio)', fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--texto)', background: 'var(--crema)', outline: 'none' }}
+                    />
+                  </div>
+                  <div>
+                    <label className="config-label">Teléfono (opcional)</label>
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      placeholder="668 815 1425"
+                      value={asistente.telefono}
+                      onChange={(e) => patchAsistente({ telefono: e.target.value })}
+                      style={{ width: '100%', padding: '11px 14px', border: '1.5px solid var(--gris)', borderRadius: 'var(--radio)', fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--texto)', background: 'var(--crema)', outline: 'none' }}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff5eb', border: '1.5px solid #e85d0433', borderRadius: 'var(--radio)', padding: '12px 16px' }}>
+                    <span style={{ fontSize: 14, color: 'var(--cafe-medio)' }}>Hora de recogida</span>
+                    <span style={{ fontFamily: 'var(--font-title)', fontWeight: 800, fontSize: 18, color: 'var(--rojo)' }}>
+                      {asistente.asap ? '⚡ Lo antes posible' : asistente.hora}
+                    </span>
+                  </div>
+                </div>
+
+                <button className={`btn-primario ${asistente.confirmado ? 'btn-agregado' : ''}`} disabled={!puedeConfirmarAsistente || asistente.confirmado} onClick={confirmarAsistente}>
+                  {asistente.confirmado ? '✓ ¡Pedido creado!' : 'Confirmar pedido →'}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+    </>
   )
 }
