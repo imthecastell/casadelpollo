@@ -1,0 +1,335 @@
+/* Preview oculto de navegación V2 — reutiliza las variables de :root
+   definidas en global.css (colores, fuentes de marca). Ruta /preview-v2. */
+
+.v2-cargando {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-body), sans-serif; color: var(--texto-suave); font-size: 14px;
+}
+
+.v2-shell {
+  position: fixed; inset: 0;
+  max-width: 480px; margin: 0 auto;
+  background: var(--crema);
+  display: flex; flex-direction: column;
+  font-family: var(--font-body), sans-serif;
+  color: var(--texto);
+}
+
+.v2-topbar {
+  flex: 0 0 auto; padding: calc(env(safe-area-inset-top, 0) + 14px) 14px 12px;
+  background: var(--crema); display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid rgba(0,0,0,.05); z-index: 20; position: relative;
+  transition: background-color .3s ease;
+}
+.v2-tb-btn {
+  width: 36px; height: 36px; border-radius: 50%; border: none; background: var(--gris-claro);
+  display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer;
+  color: var(--texto); position: relative;
+}
+.v2-tb-pill {
+  display: flex; align-items: center; gap: 8px; background: var(--gris-claro);
+  border-radius: 999px; padding: 5px 14px 5px 5px;
+}
+.v2-tb-pill-icono {
+  width: 28px; height: 28px; border-radius: 50%; background: var(--card-bg, #fff); border: none;
+  display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--texto); flex: 0 0 auto; cursor: pointer;
+}
+.v2-tb-pill-nombre {
+  font-family: var(--font-title); font-weight: 700; font-size: 12px; color: var(--texto); white-space: nowrap;
+  max-width: 90px; overflow: hidden; text-overflow: ellipsis; border: none; background: none; padding: 0; cursor: pointer;
+}
+.v2-tb-logo-wrap { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; }
+.v2-tb-logo-crop { position: relative; overflow: hidden; height: 32px; aspect-ratio: 6859 / 1743; }
+.v2-tb-derecha { display: flex; align-items: center; gap: 8px; }
+.v2-tb-badge {
+  position: absolute; top: -3px; right: -3px; background: var(--rojo); color: #fff;
+  font-size: 9px; font-weight: 800; width: 16px; height: 16px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-family: var(--font-title);
+}
+
+.v2-contenido { flex: 1; overflow-y: auto; position: relative; -webkit-overflow-scrolling: touch; }
+.v2-pantalla { padding: 16px 18px 26px; }
+
+.v2-saludo { font-family: var(--font-title); font-weight: 800; font-size: 19px; color: var(--texto); margin-bottom: 2px; }
+.v2-saludo-sub { font-size: 12.5px; color: var(--texto-suave); margin-bottom: 16px; }
+
+.v2-pantalla-home { padding-top: 14px; }
+
+/* ---- bandas de color vibrante a todo lo ancho, una por sección temática ----
+   Se tocan entre sí (sin margen entre bandas) para que el color pase
+   directo de una a otra en vez de cortar con un espacio crema — y llevan
+   una textura de grano/airbrush sutil encima del color sólido para que
+   no se vean como bloques planos. */
+:root {
+  --v2-grano: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' stitchTiles='stitch' result='ruido'/%3E%3CfeColorMatrix in='ruido' type='matrix' values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.v2-banda { margin: 0 -18px; padding: 14px 18px 24px; }
+/* "Gradient mesh" — dos manchas suaves (una clara arriba-izq, una oscura
+   abajo-der) detrás del grano, en vez de un solo color plano — mismos
+   tokens de marca, sin inventar ningún color nuevo. */
+.v2-banda-dorado {
+  background-color: var(--dorado);
+  background-image: var(--v2-grano),
+    radial-gradient(ellipse 90% 70% at 12% -10%, var(--dorado-claro) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 70% at 105% 110%, var(--cafe) 0%, transparent 62%);
+  background-blend-mode: overlay, normal, normal;
+}
+.v2-banda-verde {
+  background-color: var(--verde);
+  background-image: var(--v2-grano),
+    radial-gradient(ellipse 90% 70% at 12% -10%, var(--dorado-claro) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 70% at 105% 110%, var(--cafe) 0%, transparent 62%);
+  background-blend-mode: overlay, normal, normal;
+}
+.v2-banda-rojo {
+  background-color: var(--rojo);
+  background-image: var(--v2-grano),
+    radial-gradient(ellipse 90% 70% at 12% -10%, var(--rojo-claro) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 70% at 105% 110%, var(--cafe) 0%, transparent 62%);
+  background-blend-mode: overlay, normal, normal;
+}
+.v2-banda .v2-seccion-titulo { margin-top: 0; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.15); }
+.v2-banda .v2-suc-strip, .v2-banda .v2-bowl-hibrido, .v2-banda .v2-grid-2filas, .v2-banda .v2-strip-grandes { margin-bottom: 0; }
+
+/* ---- Carrusel hero promocional (Home) ----
+   A todo el ancho de la pantalla (rompe el padding de .v2-pantalla-home)
+   y en formato vertical alto, igual que el resto de las fotos — para que
+   sea lo primero y más protagonista que se ve al entrar al Home. */
+.v2-carrusel { position: relative; height: 280px; border-radius: 20px; overflow: hidden; margin-bottom: 20px; background: var(--gris-claro); }
+.v2-carrusel-promo {
+  height: auto; aspect-ratio: 4 / 5; margin: 0 -18px 10px; border-radius: 0;
+}
+.v2-carrusel-dots { position: absolute; top: 14px; right: 14px; display: flex; gap: 5px; z-index: 2; }
+.v2-cdot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.5); }
+.v2-cdot.on { width: 16px; border-radius: 4px; background: #fff; }
+
+/* ---- Slide del hero: foto a toda la pantalla + tarjeta flotante ----
+   La foto manda de principio a fin (protagonista, como se pidió desde
+   el inicio); el texto vive en su propia tarjeta opaca que flota encima
+   cerca del fondo, así nunca compite con la foto por legibilidad. */
+.v2-promo-slide {
+  position: absolute; inset: 0; opacity: 0; transition: opacity .8s ease; cursor: pointer;
+}
+.v2-promo-slide.on { opacity: 1; z-index: 1; }
+.v2-promo-foto-completa { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.v2-promo-badge {
+  display: inline-block; background: #fff; color: var(--rojo);
+  font-family: var(--font-title); font-weight: 800; font-size: 10.5px; letter-spacing: .04em;
+  padding: 5px 11px; border-radius: 8px; margin-bottom: 6px;
+}
+/* Tarjeta horizontal: texto a la izquierda, CTA a la derecha, sin precio
+   — mucho más compacta que el layout apilado de antes, así deja ver más
+   foto en vez de desperdiciar alto en la tarjeta. */
+.v2-promo-tarjeta {
+  position: absolute; left: 14px; right: 14px; bottom: 14px; z-index: 2;
+  background: var(--crema); border-radius: 18px; padding: 14px 14px 14px 16px;
+  box-shadow: 0 10px 26px rgba(0,0,0,.28);
+  display: flex; align-items: center; gap: 12px;
+}
+.v2-promo-texto { flex: 1 1 auto; min-width: 0; }
+.v2-promo-tarjeta h3 { font-family: var(--font-title); font-weight: 800; font-size: 16px; line-height: 1.15; margin: 0 0 3px; color: var(--cafe); text-wrap: balance; }
+.v2-promo-tarjeta p { font-size: 11px; color: var(--texto-suave); margin: 0; line-height: 1.35; }
+.v2-promo-fila { display: flex; align-items: center; gap: 10px; }
+.v2-promo-cta { flex: 0 0 auto; border: none; border-radius: 12px; padding: 10px 16px; font-family: var(--font-title); font-weight: 800; font-size: 12px; cursor: pointer; white-space: nowrap; }
+.v2-promo-tarjeta .v2-promo-cta { background: var(--rojo); color: #fff; }
+
+/* ---- CTA de Bowls (Home) ---- */
+.v2-bowls-cta {
+  display: flex; align-items: center; gap: 14px; cursor: pointer;
+  background: linear-gradient(135deg, var(--rojo), var(--rojo-oscuro));
+  border-radius: 20px; padding: 16px 18px; color: #fff; margin-bottom: 24px;
+  box-shadow: 0 8px 20px rgba(146,43,33,.28);
+}
+.v2-bowls-emoji { font-size: 32px; flex: 0 0 auto; }
+.v2-bowls-txt { flex: 1; min-width: 0; }
+.v2-bowls-txt strong { display: block; font-family: var(--font-title); font-weight: 800; font-size: 15px; }
+.v2-bowls-txt span { font-size: 11px; opacity: .82; line-height: 1.3; }
+.v2-bowls-precio { flex: 0 0 auto; background: rgba(255,255,255,.2); padding: 7px 12px; border-radius: 14px; font-family: var(--font-title); font-weight: 800; font-size: 11.5px; white-space: nowrap; }
+
+.v2-pills { display: flex; background: var(--gris-claro); border-radius: 14px; padding: 4px; margin-bottom: 18px; position: relative; }
+.v2-pill { flex: 1; text-align: center; padding: 9px 4px; border-radius: 11px; font-family: var(--font-title); font-weight: 700; font-size: 11.5px; color: var(--texto-suave); cursor: pointer; z-index: 1; transition: color .2s; }
+.v2-pill.on { color: #fff; }
+.v2-pill-fondo { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(33.333% - 5.333px); background: var(--rojo); border-radius: 11px; transition: transform .28s cubic-bezier(.4,0,.2,1); z-index: 0; }
+
+.v2-seccion-titulo { font-family: var(--font-title); font-weight: 800; font-size: 15px; color: var(--texto); margin: 0 0 12px; }
+
+/* ---- Tarjetas de producto image-forward (grid Productos + strip Destacados) ---- */
+.v2-grid-simple { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; margin-bottom: 6px; }
+.v2-tarjeta-simple {
+  position: relative; border-radius: 16px; overflow: hidden; box-shadow: var(--sombra);
+  background: var(--gris-claro); aspect-ratio: 4 / 5;
+}
+.v2-tarjeta-simple img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.v2-ts-scrim { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.68) 0%, rgba(0,0,0,0) 48%); }
+.v2-ts-precio-top {
+  position: absolute; top: 8px; right: 8px; z-index: 2;
+  background: var(--dorado); color: var(--cafe); font-family: var(--font-title); font-weight: 800;
+  font-size: 13px; padding: 5px 12px; border-radius: 20px; white-space: nowrap;
+}
+.v2-ts-overlay { position: absolute; left: 0; right: 0; bottom: 0; padding: 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.v2-ts-nombre {
+  color: #fff; font-family: var(--font-title); font-weight: 700; font-size: 13px; line-height: 1.25;
+  text-shadow: 0 1px 3px rgba(0,0,0,.4); flex: 1 1 auto; min-width: 0; overflow-wrap: break-word;
+}
+.v2-ts-precio-pill { flex: 0 0 auto; background: var(--dorado); color: var(--cafe); font-family: var(--font-title); font-weight: 800; font-size: 10.5px; padding: 4px 9px; border-radius: 20px; white-space: nowrap; }
+.v2-ts-add {
+  position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; border-radius: 50%; border: none;
+  background: rgba(255,255,255,.92); color: var(--texto); font-size: 15px; display: flex;
+  align-items: center; justify-content: center; cursor: pointer; z-index: 2;
+}
+/* Botón + inline (a la derecha del nombre) — solo tarjetas de la pestaña
+   Productos; distinto de .v2-ts-add (flotante) que usa el strip de Home. */
+.v2-ts-add-inline {
+  flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%; border: none;
+  background: rgba(255,255,255,.92); color: var(--texto); font-size: 16px; display: flex;
+  align-items: center; justify-content: center; cursor: pointer; z-index: 2;
+}
+
+/* Cuando una tarjeta de Marinados muta a ancho completo desde la columna
+   derecha, esa columna queda vacía en su propia fila (el bloque expandido
+   ya no cabe ahí y salta a la siguiente fila). Esta tarjeta de relleno
+   mantiene la foto del mismo producto en ese espacio, y la "península"
+   —una franja del color del configurador— la conecta visualmente con el
+   panel de abajo en vez de dejar un hueco en blanco. */
+.v2-tarjeta-relleno { overflow: visible; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.v2-tarjeta-relleno-foto { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; }
+/* Se extiende fuera de la propia tarjeta (por eso overflow:visible arriba)
+   para cerrar exactamente el gap del grid (11px) y tocar sin espacio la
+   tarjeta activa de abajo, sin depender de márgenes negativos frágiles. */
+.v2-ts-peninsula { position: absolute; left: 0; right: 0; bottom: -11px; height: 11px; background: var(--gris-claro); }
+
+/* ---- tarjetas con barra sólida abajo (solo Home) — foto arriba sin
+   degradado, nombre y precio sobre una barra opaca para más legibilidad
+   que el texto encima de la foto. No toca .v2-tarjeta-simple (Productos). */
+.v2-tile-mini2, .v2-tile-mini, .v2-tarjeta-grande-strip { display: flex; flex-direction: column; }
+.v2-card-foto { position: relative; flex: 1; min-height: 0; overflow: hidden; background: var(--gris-claro); }
+.v2-card-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Precio por peso (marinados): un solo "desde $X/kg" junto al título de
+   la sección en vez de repetido en cada tarjeta, ya que el costo real
+   varía según el gramaje que se pida. */
+.v2-titulo-fila { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+.v2-card-barra { flex: 0 0 auto; background: var(--cafe); padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.v2-card-barra-nombre {
+  color: #fff; font-family: var(--font-title); font-weight: 700; font-size: 11px; line-height: 1.25;
+  flex: 1 1 auto; min-width: 0; overflow-wrap: break-word;
+}
+
+/* ---- Bowls híbrido: foto arriba + panel de color abajo ----
+   Foto real del marinado protagonista en la mitad superior; la mitad
+   inferior reusa el mismo fondo con textura de las bandas (v2-banda-verde)
+   con el badge, título, CTA y precio — nunca depende de que el texto
+   se lea bien encima de la foto. */
+.v2-bowl-hibrido {
+  border-radius: 20px; overflow: hidden; cursor: pointer;
+  border: 3px solid var(--cafe); box-shadow: 6px 6px 0 var(--cafe);
+  display: flex; flex-direction: column;
+}
+.v2-bowl-hibrido-foto { flex: none; width: 100%; aspect-ratio: 16 / 9; background: var(--gris-claro); position: relative; overflow: hidden; }
+.v2-bowl-hibrido-foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.v2-bowl-hibrido-panel { flex: 1; padding: 18px 18px 20px; display: flex; flex-direction: column; }
+.v2-bowl-hibrido-panel .v2-promo-badge { align-self: flex-start; }
+.v2-bowl-hibrido-panel h3 { font-family: var(--font-title); font-weight: 800; font-size: 21px; color: #fff; margin: 0; line-height: 1.1; text-shadow: 0 1px 3px rgba(0,0,0,.15); }
+.v2-bowl-hibrido-panel .v2-promo-fila { margin-top: auto; padding-top: 16px; }
+.v2-bowl-hibrido-panel .v2-promo-cta { background: #fff; color: var(--verde); }
+
+/* ---- grid de dos filas de minis (scroll horizontal en columnas) ----
+   Filas de alto "auto" (no 236px fijo repartido a la fuerza en 1fr):
+   así la foto siempre puede ser 1:1 completa y es la barra de texto la
+   que crece según el nombre, en vez de robarle alto a la foto y dejarla
+   recortada/inconsistente entre tarjetas con nombres de distinto largo. */
+.v2-grid-2filas {
+  display: grid; grid-template-rows: repeat(2, auto); grid-auto-columns: 116px; grid-auto-flow: column; gap: 10px;
+  align-items: start; overflow-x: auto; padding: 0 18px 4px; margin: 0 -18px; justify-content: center;
+}
+.v2-tile-mini2 {
+  position: relative; border-radius: 14px; overflow: hidden; cursor: pointer; background: var(--gris-claro);
+  border: 3px solid var(--cafe); box-shadow: 3px 3px 0 var(--cafe);
+}
+.v2-tile-mini2 .v2-card-foto { flex: none; aspect-ratio: 1 / 1; }
+/* Barra de altura fija (2 líneas) para que las 6 tarjetas siempre midan
+   lo mismo sin importar si el nombre es corto o largo — antes un nombre
+   de 3 líneas (ej. "Agridulce (a la naranja)") hacía esa sola tarjeta
+   más alta que sus vecinas y rompía la alineación de la fila. */
+.v2-tile-mini2 .v2-card-barra { height: 44px; align-items: flex-end; }
+.v2-tile-mini2 .v2-card-barra-nombre { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+
+/* ---- tira de solo imágenes grandes ---- */
+.v2-strip-grandes { display: flex; gap: 12px; overflow-x: auto; padding: 0 18px 4px; margin: 0 -18px; }
+.v2-tarjeta-grande-strip {
+  position: relative; flex: 0 0 auto; width: 200px; aspect-ratio: 9 / 16; border-radius: 18px; overflow: hidden;
+  background: var(--gris-claro); border: 3px solid var(--cafe); box-shadow: 5px 5px 0 var(--cafe);
+}
+
+.v2-idea-card { background: linear-gradient(135deg, #FFF3DC, #FCE6D2); border-radius: 16px; padding: 14px 15px; display: flex; gap: 11px; align-items: center; margin-top: 14px; }
+.v2-idea-card .v2-emoji { font-size: 22px; }
+.v2-ic-txt b { display: block; font-family: var(--font-title); font-size: 12.5px; color: var(--cafe); }
+.v2-ic-txt span { font-size: 10.5px; color: var(--texto-suave); }
+.v2-badge-pronto { margin-left: auto; background: var(--cafe); color: #fff; font-size: 8.5px; font-weight: 800; padding: 3px 7px; border-radius: 8px; letter-spacing: .03em; white-space: nowrap; }
+
+.v2-suc-strip { display: flex; gap: 11px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 6px; }
+
+.v2-buscador { display: flex; align-items: center; gap: 8px; background: var(--gris-claro); border-radius: 12px; padding: 10px 13px; margin-bottom: 16px; }
+.v2-buscador input { border: none; background: none; outline: none; font-size: 12.5px; color: var(--texto); width: 100%; font-family: var(--font-body); }
+
+/* ---- Instagram CTA (Sucursales) ---- */
+.v2-ig-cta {
+  display: flex; align-items: center; gap: 12px; background: #fdf0f5; border-radius: 16px;
+  padding: 14px 16px; margin-bottom: 18px; text-decoration: none; color: var(--texto);
+}
+.v2-ig-icono { width: 38px; height: 38px; border-radius: 50%; background: #fbe6ef; display: flex; align-items: center; justify-content: center; font-size: 17px; flex: 0 0 auto; }
+.v2-ig-flecha { margin-left: auto; color: var(--texto-suave); font-size: 16px; }
+
+/* ---- Sucursales (pantalla completa) ---- */
+.v2-suc-full { background: var(--card-bg, #fff); border-radius: 18px; padding: 15px; box-shadow: var(--sombra); margin-bottom: 13px; }
+.v2-sc-nombre { font-family: var(--font-title); font-weight: 700; font-size: 15px; color: var(--texto); }
+.v2-sc-dir { font-size: 11px; color: var(--texto-suave); line-height: 1.4; margin: 4px 0 12px; }
+.v2-sc-btns3 { display: flex; gap: 7px; }
+.v2-sc-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  border: none; border-radius: 12px; padding: 10px 4px; font-family: var(--font-title);
+  font-weight: 700; font-size: 9.5px; cursor: pointer; text-decoration: none;
+}
+.v2-sc-btn span { font-size: 15px; }
+.v2-sc-btn-pedido { background: var(--rojo); color: #fff; }
+.v2-sc-btn-mapa { background: var(--gris-claro); color: var(--texto); }
+.v2-sc-btn-wa { background: #e4f2e9; color: var(--verde); }
+.v2-sc-btn:disabled { opacity: .5; cursor: default; }
+
+/* ---- barra inferior ---- */
+.v2-tabbar {
+  flex: 0 0 auto; background: var(--card-bg, #fff); border-top: 1px solid rgba(0,0,0,.06);
+  display: flex; align-items: center; padding: 8px 6px calc(env(safe-area-inset-bottom, 0) + 8px);
+  position: relative; z-index: 20;
+}
+.v2-tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; cursor: pointer; padding: 6px 0; color: var(--texto-suave); }
+.v2-ticono { font-size: 18px; }
+.v2-tlabel { font-family: var(--font-title); font-weight: 700; font-size: 9.5px; }
+.v2-tab.on { color: var(--rojo); }
+.v2-tab-central-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; }
+.v2-tab-central { width: 56px; height: 56px; border-radius: 50%; background: var(--rojo); color: #fff; border: 5px solid var(--crema); margin-top: -30px; display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; box-shadow: 0 6px 16px rgba(146,43,33,.4); }
+.v2-tab-central-label { font-family: var(--font-title); font-weight: 700; font-size: 9px; color: var(--rojo); margin-top: 2px; }
+
+.v2-toast {
+  position: fixed; left: 18px; right: 18px; max-width: 444px; margin: 0 auto; bottom: 158px;
+  background: var(--cafe); color: #fff; padding: 12px 16px; border-radius: 13px;
+  font-size: 12px; font-weight: 600; text-align: center; z-index: 80;
+  animation: v2-toast-in .25s ease;
+}
+@keyframes v2-toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ---- hoja/popover (WhatsApp: Llamar o Mensaje) ---- */
+.v2-sheet-overlay { position: fixed; inset: 0; max-width: 480px; margin: 0 auto; background: rgba(0,0,0,.42); z-index: 70; display: flex; align-items: flex-end; }
+.v2-sheet { background: var(--crema); width: 100%; border-radius: 26px 26px 0 0; padding: 10px 20px calc(env(safe-area-inset-bottom, 0) + 24px); animation: v2-sheet-in .3s ease; }
+@keyframes v2-sheet-in { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.v2-sheet-handle { width: 36px; height: 4px; background: var(--gris); border-radius: 2px; margin: 6px auto 16px; }
+.v2-sheet-titulo { font-family: var(--font-title); font-weight: 800; font-size: 16px; color: var(--texto); margin-bottom: 2px; }
+.v2-sheet-sub { font-size: 12px; color: var(--texto-suave); margin-bottom: 16px; }
+.v2-sheet-opcion { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--crema-oscura); text-decoration: none; color: inherit; }
+.v2-sheet-opcion:last-child { border-bottom: none; }
+.v2-sheet-opcion-btn { width: 100%; border: none; background: none; font-family: inherit; text-align: left; cursor: pointer; }
+.v2-sheet-check { margin-left: auto; color: var(--rojo); font-weight: 800; font-size: 15px; }
+.v2-so-icono { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 17px; flex: 0 0 auto; }
+.v2-so-icono.wa { background: #e4f2e9; }
+.v2-so-icono.tel { background: var(--gris-claro); }
+.v2-so-nombre { font-family: var(--font-title); font-weight: 700; font-size: 13px; color: var(--texto); }
+.v2-so-detalle { font-size: 11px; color: var(--texto-suave); }
