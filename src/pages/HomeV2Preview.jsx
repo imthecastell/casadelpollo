@@ -273,8 +273,9 @@ export default function HomeV2Preview() {
     if (asistente.paso <= 0) { cerrarAsistente(); return }
     if (asistente.paso === 1) { patchAsistente({ paso: 0 }); return }
     // Bowl entra directo al paso 3 desde el paso 0 (sin personas/antojo) y
-    // desde el paso 5 (acompañamiento) también regresa directo al 3.
-    if (asistente.categoria === 'bowls' && (asistente.paso === 3 || asistente.paso === 5)) { patchAsistente({ paso: asistente.paso === 3 ? 0 : 3 }); return }
+    // salta el 5 (acompañamiento, redundante con su propia base) yendo del
+    // 3 directo al 6 — así que de regreso también salta esos pasos.
+    if (asistente.categoria === 'bowls' && (asistente.paso === 3 || asistente.paso === 6)) { patchAsistente({ paso: asistente.paso === 3 ? 0 : 3 }); return }
     patchAsistente({ paso: asistente.paso - 1 })
   }
 
@@ -314,11 +315,20 @@ export default function HomeV2Preview() {
   }
 
   // ── Bowls: mismas reglas/filtros que SeccionBowls.jsx real ──
-  const bowlBasesAsistente = productos.filter(p =>
+  // Base curada a 3 opciones simples (igual que el acompañamiento del
+  // asistente) en vez de mostrar todas las variantes reales de arroz/pasta.
+  const bowlBasesReales = productos.filter(p =>
     p.is_bowl_base &&
     (p.category_name?.toLowerCase().includes('complement') || p.category_name?.toLowerCase().includes('extra')) &&
     p.available !== false
   )
+  const bowlBasesAsistente = [
+    { etiqueta: 'Arroz del día', match: (n) => n.toLowerCase().includes('arroz') },
+    { etiqueta: 'Pasta', match: (n) => n.toLowerCase().includes('pasta') },
+    { etiqueta: 'Ensalada', match: (n) => n.toLowerCase().includes('ensalada') },
+  ]
+    .map(def => ({ ...def, producto: bowlBasesReales.find(p => def.match(p.name)) }))
+    .filter(x => x.producto)
   const bowlMarinadosAsistente = productos.filter(p =>
     p.is_bowl_base &&
     (p.category_name?.toLowerCase().includes('marinado') ||
@@ -333,7 +343,7 @@ export default function HomeV2Preview() {
     bowlMarinadoGroupsAsistente[cat].push(p)
   })
 
-  const bowlBaseAsistente = bowlBasesAsistente.find(p => String(p.id) === asistente.bowlBaseId)
+  const bowlBaseAsistente = bowlBasesAsistente.find(x => String(x.producto.id) === asistente.bowlBaseId)?.producto
   const bowlMarinadoAsistente = bowlMarinadosAsistente.find(p => String(p.id) === asistente.bowlMarinadoId)
   const bowlListoAsistente = !!(bowlBaseAsistente && bowlMarinadoAsistente)
   const gramosBaseBowlAsistente = GRAMOS_BASE_BOWL_ASISTENTE + asistente.bowlExtraBase
@@ -366,7 +376,9 @@ export default function HomeV2Preview() {
       imagen_referencia: bowlMarinadoAsistente.image_cooked_url || bowlMarinadoAsistente.image_url || null,
       resumen: `Bowl: ${bowlBaseAsistente.name} ${gramosBaseBowlAsistente}g + ${bowlMarinadoAsistente.name} ${gramosMarinadoBowlAsistente}g · $${precioTotalBowlAsistente.toFixed(2)} · ~${TIEMPO_BOWL_ASISTENTE} min`,
     })
-    patchAsistente({ paso: 5 })
+    // El bowl ya trae su propia base (arroz/pasta/ensalada) — se salta el
+    // paso de acompañamiento para no ofrecer lo mismo dos veces.
+    patchAsistente({ paso: 6 })
   }
 
   function confirmarConfigAsistente() {
@@ -937,13 +949,13 @@ export default function HomeV2Preview() {
                     <span>{gramosBaseBowlAsistente}g</span>
                   </div>
                   <div className="v2-asistente-bowl-opciones">
-                    {bowlBasesAsistente.map(b => (
+                    {bowlBasesAsistente.map(({ etiqueta, producto }) => (
                       <button
-                        key={b.id}
-                        className={`v2-asistente-bowl-opcion${asistente.bowlBaseId === String(b.id) ? ' on' : ''}`}
-                        onClick={() => patchAsistente({ bowlBaseId: String(b.id) })}
+                        key={producto.id}
+                        className={`v2-asistente-bowl-opcion${asistente.bowlBaseId === String(producto.id) ? ' on' : ''}`}
+                        onClick={() => patchAsistente({ bowlBaseId: String(producto.id) })}
                       >
-                        {b.name}
+                        {etiqueta}
                       </button>
                     ))}
                   </div>
