@@ -471,6 +471,17 @@
 }
 .v2-asistente-bowl-grupo-head span:last-child { font-size: 11px; font-weight: 500; color: var(--texto-suave); }
 .v2-asistente-bowl-grupo-head.on { border-color: var(--rojo); }
+/* Milanesas/Preparados: una sola foto grande representativa del grupo
+   (todos los sabores/variantes comparten casi la misma foto) + lista de
+   texto con los sabores, en vez de repetir la misma foto por cada uno. */
+.v2-asistente-bowl-grupo-foto { width: 100%; aspect-ratio: 16 / 9; border-radius: 10px 10px 0 0; overflow: hidden; background: var(--gris-claro); }
+.v2-asistente-bowl-grupo-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.v2-asistente-bowl-grupo-sabores { border: 1.5px solid var(--gris-claro); border-top: none; border-radius: 0 0 10px 10px; overflow: hidden; }
+.v2-asistente-bowl-grupo-sabores button {
+  display: block; width: 100%; text-align: left; padding: 10px 12px; background: var(--card-bg);
+  border: none; border-bottom: 1px solid var(--gris-claro); font-size: 13px; color: var(--texto); cursor: pointer;
+}
+.v2-asistente-bowl-grupo-sabores button:last-child { border-bottom: none; }
 
 /* ---- Ruleta de horario (carrusel con scroll-snap) ---- */
 .v2-asistente-ruleta-label {

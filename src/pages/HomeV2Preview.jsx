@@ -17,6 +17,35 @@ function calcularTiempoMarinado(gramos) {
   return gramos <= 300 ? base : base + extra
 }
 
+// Elige `cantidad` productos "al azar" pero estables durante todo el día:
+// la semilla sale de la fecha (YYYY-MM-DD), así que todos ven los mismos
+// destacados hasta la medianoche, y al día siguiente cambian solos.
+function semillaDesdeTexto(texto) {
+  let h = 0
+  for (let i = 0; i < texto.length; i++) h = (h * 31 + texto.charCodeAt(i)) >>> 0
+  return h
+}
+function aleatorioConSemilla(semilla) {
+  let estado = semilla
+  return function () {
+    estado |= 0; estado = (estado + 0x6D2B79F5) | 0
+    let t = Math.imul(estado ^ (estado >>> 15), 1 | estado)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+function destacadosDelDia(lista, cantidad) {
+  if (lista.length <= cantidad) return lista
+  const hoy = new Date().toISOString().slice(0, 10)
+  const azar = aleatorioConSemilla(semillaDesdeTexto(hoy))
+  const copia = [...lista]
+  for (let i = copia.length - 1; i > 0; i--) {
+    const j = Math.floor(azar() * (i + 1))
+    ;[copia[i], copia[j]] = [copia[j], copia[i]]
+  }
+  return copia.slice(0, cantidad)
+}
+
 // Mismos valores que SeccionBowls.jsx (la página real de Bowls).
 const TIEMPO_BOWL_ASISTENTE = 20
 const PRECIO_BASE_BOWL_ASISTENTE = 110
@@ -202,6 +231,17 @@ export default function HomeV2Preview() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab])
 
+  // El popup de "agregar" (Home) y la tarjeta expandida (Productos) usan
+  // el mismo estado de selección — cambiar de pestaña cierra cualquiera
+  // de los dos en vez de dejarlo colgado.
+  function cambiarTab(t) {
+    setSeleccionProducto(null)
+    setGramosSel(300)
+    setRecogidaSel('crudo')
+    setAgregadoSel(false)
+    setTab(t)
+  }
+
   const linkDe = (nombre) => links?.branches?.find(b => b.name === nombre)
 
   const marinadosImg = productos.filter(p => p.category_name === 'Marinados' && img(p))
@@ -210,12 +250,15 @@ export default function HomeV2Preview() {
   const ensalada = productos.find(p => p.name === 'Ensalada')
   const bowlImg = img(ensalada) || img(marinadosImg[0])
   const bowlGrande = marinadosImg[1] || marinadosImg[0]
+  // "Más pedidos" del Home: 6 productos al azar (marinados o preparados)
+  // que cambian una vez al día, para no mostrar siempre los mismos.
+  const destacadosHoy = destacadosDelDia([...marinadosImg, ...preparadosImg], 6)
 
   const promos = [
     nuevoProducto && {
       badge: 'NUEVO', titulo: nuevoProducto.name, desc: 'Recién agregado al menú — pruébalo hoy.',
       cta: 'Ver marinados', imagen: img(nuevoProducto),
-      accion: () => { setTab('productos'); setCategoria('marinados') },
+      accion: () => { cambiarTab('productos'); setCategoria('marinados') },
     },
     {
       badge: 'BOWLS', titulo: 'Arma tu Bowl', desc: 'Base + marinado + tu toque, listo en minutos.',
@@ -225,7 +268,7 @@ export default function HomeV2Preview() {
     marinadosImg[2] && {
       badge: 'TEMPORADA', titulo: 'Marinados listos para la sartén', desc: 'Sazonados en casa, cocina en minutos.',
       cta: 'Ver todos', imagen: img(marinadosImg[2]),
-      accion: () => { setTab('productos'); setCategoria('marinados') },
+      accion: () => { cambiarTab('productos'); setCategoria('marinados') },
     },
   ].filter(Boolean)
 
@@ -243,7 +286,9 @@ export default function HomeV2Preview() {
   const catDef = CATEGORIAS.find(c => c.key === categoria)
   const productosCategoria = productos.filter(p => p.category_name === catDef.match && p.active !== false)
 
-  const tiempoEstimadoSel = calcularTiempoMarinado(gramosSel)
+  // Solo Marinados escala el tiempo de cocción con el peso — Preparados
+  // usa el mismo estimado fijo que ya usa el asistente para esa categoría.
+  const tiempoEstimadoSel = seleccionProducto?.category_name === 'Marinados' ? calcularTiempoMarinado(gramosSel) : 20
   const precioTotalSel = seleccionProducto ? (gramosSel / 1000) * parseFloat(seleccionProducto.price || 0) : 0
 
   function abrirSeleccion(p) {
@@ -576,7 +621,7 @@ export default function HomeV2Preview() {
           </div>
         </div>
         <div className="v2-tb-derecha">
-          <button className="v2-tb-btn" onClick={() => { setTab('productos'); mostrarToast('Buscador enfocado') }}>🔍</button>
+          <button className="v2-tb-btn" onClick={() => { cambiarTab('productos'); mostrarToast('Buscador enfocado') }}>🔍</button>
           <button className="v2-tb-btn" onClick={() => mostrarToast(`${carrito.length} producto${carrito.length === 1 ? '' : 's'} en tu carrito`)}>
             🛒{carrito.length > 0 && <span className="v2-tb-badge">{carrito.length}</span>}
           </button>
@@ -608,15 +653,15 @@ export default function HomeV2Preview() {
               </div>
             )}
 
-            {marinadosImg.length > 0 && (
+            {destacadosHoy.length > 0 && (
               <div className="v2-banda v2-banda-dorado" data-color="#C8841A">
                 <div className="v2-titulo-fila">
                   <div className="v2-seccion-titulo" style={{ margin: 0 }}>Marinados más pedidos</div>
                   <div className="v2-promo-badge" style={{ margin: 0 }}>Desde $230/kg</div>
                 </div>
                 <div className="v2-grid-2filas">
-                  {marinadosImg.slice(0, 6).map(p => (
-                    <div key={p.id} className="v2-tile-mini2" onClick={() => mostrarToast(`${p.name} agregado al carrito`)}>
+                  {destacadosHoy.map(p => (
+                    <div key={p.id} className="v2-tile-mini2" onClick={() => abrirSeleccion(p)}>
                       <div className="v2-card-foto">
                         <img src={img(p)} alt={p.name} />
                       </div>
@@ -685,8 +730,6 @@ export default function HomeV2Preview() {
               </div>
               <div className="v2-bowls-precio">Desde ${Number(sucursalActiva.bowl_price || 120)}</div>
             </div>
-
-            {mostrarAvisoSel && <AvisoAirfryer onCerrar={() => setMostrarAvisoSel(false)} />}
 
             <div className="v2-grid-simple">
               {productosCategoria.flatMap((p, index) => {
@@ -905,14 +948,78 @@ export default function HomeV2Preview() {
         </div>
       )}
 
+      {/* Popup de "agregar al carrito" para los destacados del Home
+          (Marinados más pedidos): mismo estado/lógica que la tarjeta
+          expandida de Productos (gramos, crudo/cocinado, agregar), pero
+          como hoja inferior en vez de expandirse dentro del grid. */}
+      {tab === 'home' && seleccionProducto && (
+        <div className="v2-sheet-overlay on" onClick={(e) => { if (e.target === e.currentTarget) setSeleccionProducto(null) }}>
+          <div className="v2-sheet">
+            <div className="v2-sheet-handle" />
+            <div className="v2-asistente-bowl-seleccionado" style={{ marginBottom: 16 }}>
+              <MarimadoImg imageUrl={seleccionProducto.image_url} imageCookedUrl={seleccionProducto.image_cooked_url} isSelected recogida={recogidaSel} />
+              <span>{seleccionProducto.name}</span>
+              <button onClick={() => setSeleccionProducto(null)}>cerrar ✕</button>
+            </div>
+
+            <label className="config-label">Cantidad</label>
+            <div className="cantidad-ctrl">
+              <button className="cantidad-btn" onClick={() => cambiarGramosSel(-MARINADO_PASO)} disabled={gramosSel <= MARINADO_MIN}>−</button>
+              <span className="cantidad-num" style={{ fontSize: 20, minWidth: 60, textAlign: 'center' }}>{gramosSel}g</span>
+              <button className="cantidad-btn" onClick={() => cambiarGramosSel(MARINADO_PASO)} disabled={gramosSel >= MARINADO_MAX}>+</button>
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--texto-suave)', margin: '6px 0 16px' }}>
+              {MARINADO_MIN}g — {MARINADO_MAX}g · intervalos de {MARINADO_PASO}g
+            </div>
+
+            {seleccionProducto.se_puede_cocinar && sucursalActiva?.servicio_cocinado !== false && (
+              <>
+                <label className="config-label">¿Cómo lo quieres?</label>
+                <div className="recogida-opts" style={{ marginBottom: 16 }}>
+                  <button
+                    className={`recogida-opt ${recogidaSel === 'crudo' ? 'recogida-activo' : ''}`}
+                    onClick={() => elegirRecogidaSel('crudo')}
+                  >
+                    <span style={{ fontSize: 20 }}>📦</span>
+                    <div>
+                      <div className="recogida-titulo">Recoger crudo</div>
+                      <div className="recogida-sub">Listo para llevar</div>
+                    </div>
+                  </button>
+                  <button
+                    className={`recogida-opt ${recogidaSel === 'cocinado' ? 'recogida-activo' : ''}`}
+                    onClick={() => elegirRecogidaSel('cocinado')}
+                  >
+                    <span style={{ fontSize: 20 }}>🔥</span>
+                    <div>
+                      <div className="recogida-titulo">Recoger cocinado</div>
+                      <div className="recogida-sub">Listo en ~{tiempoEstimadoSel} min</div>
+                    </div>
+                  </button>
+                </div>
+              </>
+            )}
+
+            <button
+              className={`btn-primario ${agregadoSel ? 'btn-agregado' : ''}`}
+              onClick={handleAgregarSel}
+            >
+              {agregadoSel ? '✓ Agregado' : `Agregar ${gramosSel}g · $${precioTotalSel.toFixed(2)}`}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {mostrarAvisoSel && <AvisoAirfryer onCerrar={() => setMostrarAvisoSel(false)} />}
+
       <div className="v2-tabbar">
-        <button className={`v2-tab${tab === 'home' ? ' on' : ''}`} onClick={() => setTab('home')}><span className="v2-ticono">🏠</span><span className="v2-tlabel">Home</span></button>
-        <button className={`v2-tab${tab === 'productos' ? ' on' : ''}`} onClick={() => setTab('productos')}><span className="v2-ticono">📋</span><span className="v2-tlabel">Productos</span></button>
+        <button className={`v2-tab${tab === 'home' ? ' on' : ''}`} onClick={() => cambiarTab('home')}><span className="v2-ticono">🏠</span><span className="v2-tlabel">Home</span></button>
+        <button className={`v2-tab${tab === 'productos' ? ' on' : ''}`} onClick={() => cambiarTab('productos')}><span className="v2-ticono">📋</span><span className="v2-tlabel">Productos</span></button>
         <div className="v2-tab-central-wrap">
           <div className="v2-tab-central" onClick={abrirAsistente}>🍗</div>
           <div className="v2-tab-central-label">Crear pedido</div>
         </div>
-        <button className={`v2-tab${tab === 'sucursales' ? ' on' : ''}`} onClick={() => setTab('sucursales')}><span className="v2-ticono">📍</span><span className="v2-tlabel">Sucursales</span></button>
+        <button className={`v2-tab${tab === 'sucursales' ? ' on' : ''}`} onClick={() => cambiarTab('sucursales')}><span className="v2-ticono">📍</span><span className="v2-tlabel">Sucursales</span></button>
       </div>
     </div>
 
@@ -1079,22 +1186,45 @@ export default function HomeV2Preview() {
                             <span>{catName}</span>
                             <span>{items.length} opciones {abierto ? '▲' : '▼'}</span>
                           </button>
+                          {/* Marinados: cada sabor se ve muy distinto en foto (adobado,
+                              pesto, teriyaki...), así que vale la pena una cuadrícula de
+                              fotos grandes. Milanesas y Preparados son variantes de un
+                              mismo corte/producto (solo cambia el sazonado o la salsa) y
+                              comparten prácticamente la misma foto — mostrar 19 fotos
+                              casi idénticas de milanesas no aporta nada, así que ahí se
+                              deja una sola foto grande representativa y se listan los
+                              sabores como texto. */}
                           {abierto && (
-                            <div className="v2-grid-simple" style={{ marginTop: 8 }}>
-                              {items.map(item => (
-                                <button
-                                  key={item.id}
-                                  className="v2-tarjeta-simple v2-asistente-producto"
-                                  onClick={() => patchAsistente({ bowlMarinadoId: String(item.id), bowlMarinadoCat: '' })}
-                                >
-                                  <img src={img(item)} alt={item.name} />
-                                  <div className="v2-ts-scrim" />
-                                  <div className="v2-ts-overlay">
-                                    <div className="v2-ts-nombre">{item.name}{catName === 'Milanesas' ? ' · 1 pz' : ''}</div>
-                                  </div>
-                                </button>
-                              ))}
-                            </div>
+                            catName === 'Marinados' ? (
+                              <div className="v2-grid-simple" style={{ marginTop: 8 }}>
+                                {items.map(item => (
+                                  <button
+                                    key={item.id}
+                                    className="v2-tarjeta-simple v2-asistente-producto"
+                                    onClick={() => patchAsistente({ bowlMarinadoId: String(item.id), bowlMarinadoCat: '' })}
+                                  >
+                                    <img src={img(item)} alt={item.name} />
+                                    <div className="v2-ts-scrim" />
+                                    <div className="v2-ts-overlay">
+                                      <div className="v2-ts-nombre">{item.name}</div>
+                                    </div>
+                                  </button>
+                                ))}
+                              </div>
+                            ) : (
+                              <div style={{ marginTop: 8 }}>
+                                <div className="v2-asistente-bowl-grupo-foto">
+                                  <img src={img(items[0])} alt={catName} />
+                                </div>
+                                <div className="v2-asistente-bowl-grupo-sabores">
+                                  {items.map(item => (
+                                    <button key={item.id} onClick={() => patchAsistente({ bowlMarinadoId: String(item.id), bowlMarinadoCat: '' })}>
+                                      {item.name}{catName === 'Milanesas' ? ' · 1 pz' : ''}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )
                           )}
                         </div>
                       )
