@@ -461,9 +461,16 @@ export default function HomeV2Preview() {
   }
 
   const horariosAsistente = generarHorariosDisponibles(carrito, schedule, cocInicio, cocFin, cocFinSabado)
-  // Muestra solo cada 30 min (el primer horario siempre es el real, calculado
-  // con el tiempo de preparación) para no saturar de botones al cliente.
-  const horariosSimplificadosAsistente = horariosAsistente.filter((_, i) => i % 3 === 0)
+  // Máximo 4 botones (además de "Lo antes posible"), sin importar qué tan
+  // amplio sea el horario de la sucursal — siempre incluye el primer
+  // horario real (calculado con el tiempo de preparación) y reparte el
+  // resto a espacios iguales en vez de mostrar todo cada 10-30 min.
+  const MAX_HORARIOS_ASISTENTE = 4
+  const horariosSimplificadosAsistente = (() => {
+    if (horariosAsistente.length <= MAX_HORARIOS_ASISTENTE) return horariosAsistente
+    const paso = Math.ceil(horariosAsistente.length / MAX_HORARIOS_ASISTENTE)
+    return horariosAsistente.filter((_, i) => i % paso === 0).slice(0, MAX_HORARIOS_ASISTENTE)
+  })()
   const tieneCocinadosAsistente = ventanaPreparacion(carrito) === 40
   const cocFinMostradoAsistente = obtenerCocFinEfectivo(cocFin, cocFinSabado)
 
@@ -1177,7 +1184,7 @@ export default function HomeV2Preview() {
                   {horariosSimplificadosAsistente.length === 0 ? (
                     <p style={{ fontSize: 13, color: 'var(--rojo)' }}>No hay horarios disponibles con el tiempo de preparación requerido.</p>
                   ) : (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
                       {horariosSimplificadosAsistente.map(hora => (
                         <button
                           key={hora}
