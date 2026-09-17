@@ -1117,15 +1117,43 @@ export default function HomeV2Preview() {
             {asistente.paso === 4 && productoAsistente && (
               <>
                 <div className="v2-asistente-titulo">Configura tu pedido</div>
-                <div className="card-marinado card-marinado-activo" style={{ cursor: 'default' }}>
-                  <img src={img(productoAsistente)} alt={productoAsistente.name} style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'cover', flexShrink: 0 }} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div className="producto-nombre">{productoAsistente.name}</div>
-                    <div className="producto-precio">
-                      ${productoAsistente.price}{asistente.categoria === 'fresco' ? '/kg (se pesa al entregar)' : asistente.categoria === 'marinados' ? '/kg' : '/kg (por pieza)'}
+
+                {asistente.categoria === 'marinados' ? (
+                  // Misma foto grande conectada al detalle que en la pestaña
+                  // Productos, para que seleccionar un marinado se vea igual
+                  // sin importar si viene del asistente o del catálogo. Aquí
+                  // no hace falta "península" porque no hay hueco de grid que
+                  // tapar: la foto y la tarjeta ya quedan pegadas en el flujo
+                  // normal de la pantalla. flexShrink:0 evita que el flex
+                  // column de .v2-asistente-contenido aplaste esta tarjeta
+                  // (su overflow:hidden la vuelve encogible a 0 por defecto)
+                  // en vez de simplemente hacer scroll.
+                  <div style={{ flexShrink: 0 }}>
+                    <div className="v2-tarjeta-simple v2-tarjeta-relleno v2-tarjeta-relleno-ancha">
+                      <div className="v2-tarjeta-relleno-foto">
+                        <img src={img(productoAsistente)} alt={productoAsistente.name} />
+                        <div className="v2-ts-scrim" />
+                      </div>
+                    </div>
+                    <div className="card-marinado card-marinado-activo" style={{ cursor: 'default', borderTopLeftRadius: 0, borderTopRightRadius: 0 }}>
+                      <MarimadoImg imageUrl={productoAsistente.image_url} imageCookedUrl={productoAsistente.image_cooked_url} isSelected recogida={asistente.recogida} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div className="producto-nombre">{productoAsistente.name}</div>
+                        <div className="producto-precio">${productoAsistente.price}/kg</div>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="card-marinado card-marinado-activo" style={{ cursor: 'default' }}>
+                    <img src={img(productoAsistente)} alt={productoAsistente.name} style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'cover', flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="producto-nombre">{productoAsistente.name}</div>
+                      <div className="producto-precio">
+                        ${productoAsistente.price}{asistente.categoria === 'fresco' ? '/kg (se pesa al entregar)' : '/kg (por pieza)'}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="configurador-card" style={{ marginTop: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0 }}>
                   {asistente.categoria === 'marinados' ? (
