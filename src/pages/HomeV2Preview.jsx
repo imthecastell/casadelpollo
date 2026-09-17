@@ -73,6 +73,16 @@ function formatearTelefono(raw) {
   return d.length === 10 ? `${d.slice(0, 3)} ${d.slice(3, 6)} ${d.slice(6)}` : (raw || '')
 }
 
+// El dato interno sigue en 24h ("HH:MM", el formato que produce
+// generarHorariosDisponibles) — esto solo formatea lo que se muestra.
+function formatearHora12(hhmm) {
+  if (!hhmm) return hhmm
+  const [h, m] = hhmm.split(':').map(Number)
+  const periodo = h >= 12 ? 'PM' : 'AM'
+  const h12 = h % 12 === 0 ? 12 : h % 12
+  return `${h12}:${String(m).padStart(2, '0')} ${periodo}`
+}
+
 // Ruleta de horarios: un solo carrusel con las horas realmente válidas
 // (calculadas por generarHorariosDisponibles) en vez de un grid de botones.
 // No son dos ruletas independientes de hora/minuto porque eso permitiría
@@ -113,7 +123,7 @@ function RuletaHoras({ horas, valor, onCambiar }) {
       <div className="v2-asistente-ruleta" ref={contRef} onScroll={manejarScroll} style={{ paddingTop: padding, paddingBottom: padding }}>
         {horas.map(h => (
           <div key={h} className={`v2-asistente-ruleta-item${h === valor ? ' on' : ''}`} onClick={() => elegir(h)}>
-            {h}
+            {formatearHora12(h)}
           </div>
         ))}
       </div>
@@ -921,7 +931,7 @@ export default function HomeV2Preview() {
               </div>
               <div className="v2-asistente-recibo-hora">
                 <span>Hora de recogida</span>
-                <span>{asistente.asap ? '⚡ Lo antes posible' : asistente.hora}</span>
+                <span>{asistente.asap ? '⚡ Lo antes posible' : formatearHora12(asistente.hora)}</span>
               </div>
               <p className="v2-asistente-recibo-pago">Pago en el local al recoger</p>
             </div>
@@ -1205,7 +1215,7 @@ export default function HomeV2Preview() {
                 <div style={{ background: 'var(--card-bg)', borderRadius: 'var(--radio-lg)', padding: 18, boxShadow: 'var(--sombra)' }}>
                   {tieneCocinadosAsistente && cocInicio && cocFinMostradoAsistente && (
                     <div style={{ fontSize: 12, color: '#92400E', background: '#FFFBEB', border: '1px solid #F59E0B44', borderRadius: 8, padding: '7px 12px', marginBottom: 10 }}>
-                      🍗 Tu pedido incluye productos cocinados · disponible entre <b>{cocInicio}</b> y <b>{cocFinMostradoAsistente}</b>
+                      🍗 Tu pedido incluye productos cocinados · disponible entre <b>{formatearHora12(cocInicio)}</b> y <b>{formatearHora12(cocFinMostradoAsistente)}</b>
                     </div>
                   )}
                   <button
@@ -1270,7 +1280,7 @@ export default function HomeV2Preview() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff5eb', border: '1.5px solid #e85d0433', borderRadius: 'var(--radio)', padding: '12px 16px' }}>
                     <span style={{ fontSize: 14, color: 'var(--cafe-medio)' }}>Hora de recogida</span>
                     <span style={{ fontFamily: 'var(--font-title)', fontWeight: 800, fontSize: 18, color: 'var(--rojo)' }}>
-                      {asistente.asap ? '⚡ Lo antes posible' : asistente.hora}
+                      {asistente.asap ? '⚡ Lo antes posible' : formatearHora12(asistente.hora)}
                     </span>
                   </div>
                 </div>
