@@ -859,18 +859,12 @@ export default function HomeV2Preview() {
                 }
 
                 return (
-                  <div key={p.id} className="v2-tarjeta-simple">
+                  <div key={p.id} className="v2-tarjeta-simple" onClick={() => abrirSeleccion(p)}>
                     <img src={img(p)} alt={p.name} />
                     <div className="v2-ts-scrim" />
                     <div className="v2-ts-precio-top">${Number(p.price)}{esMarinado ? '/kg' : ''}</div>
                     <div className="v2-ts-overlay">
                       <div className="v2-ts-nombre">{p.name}</div>
-                      <button
-                        className="v2-ts-add-inline"
-                        onClick={() => abrirSeleccion(p)}
-                      >
-                        +
-                      </button>
                     </div>
                   </div>
                 )

@@ -157,7 +157,7 @@
 .v2-grid-simple { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; margin-bottom: 6px; }
 .v2-tarjeta-simple {
   position: relative; border-radius: 16px; overflow: hidden; box-shadow: var(--sombra);
-  background: var(--gris-claro); aspect-ratio: 4 / 5;
+  background: var(--gris-claro); aspect-ratio: 4 / 5; cursor: pointer;
 }
 .v2-tarjeta-simple img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .v2-ts-scrim { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.68) 0%, rgba(0,0,0,0) 48%); }
@@ -177,14 +177,6 @@
   background: rgba(255,255,255,.92); color: var(--texto); font-size: 15px; display: flex;
   align-items: center; justify-content: center; cursor: pointer; z-index: 2;
 }
-/* Botón + inline (a la derecha del nombre) — solo tarjetas de la pestaña
-   Productos; distinto de .v2-ts-add (flotante) que usa el strip de Home. */
-.v2-ts-add-inline {
-  flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%; border: none;
-  background: rgba(255,255,255,.92); color: var(--texto); font-size: 16px; display: flex;
-  align-items: center; justify-content: center; cursor: pointer; z-index: 2;
-}
-
 /* Cuando una tarjeta de Marinados muta a ancho completo desde la columna
    derecha, esa columna queda vacía en su propia fila (el bloque expandido
    ya no cabe ahí y salta a la siguiente fila). Esta tarjeta de relleno
