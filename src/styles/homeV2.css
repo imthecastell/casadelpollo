@@ -192,6 +192,9 @@
    —una franja del color del configurador— la conecta visualmente con el
    panel de abajo en vez de dejar un hueco en blanco. */
 .v2-tarjeta-relleno { overflow: visible; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+/* A todo el ancho (cuando no hace falta tapar un hueco del grid) se ve
+   como un banner en vez de una foto vertical de una sola columna. */
+.v2-tarjeta-relleno-ancha { aspect-ratio: 16 / 9; }
 .v2-tarjeta-relleno-foto { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; }
 /* Se extiende fuera de la propia tarjeta (por eso overflow:visible arriba)
    para cerrar exactamente el gap del grid (11px) y tocar sin espacio la

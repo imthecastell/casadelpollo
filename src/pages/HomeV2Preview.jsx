@@ -694,27 +694,31 @@ export default function HomeV2Preview() {
                 const expandido = esMarinado && seleccionProducto?.id === p.id
 
                 if (expandido) {
-                  // Al mutar a ancho completo, si esta tarjeta iba en la
-                  // columna derecha (índice impar), la columna derecha de
-                  // su propia fila queda vacía porque el bloque expandido
-                  // no cabe ahí y salta a la siguiente fila. Se rellena esa
-                  // columna con la foto del mismo producto y una "península"
-                  // del color del configurador para que quede conectado,
-                  // en vez de un hueco en blanco.
+                  // La foto grande del producto cocinado siempre acompaña
+                  // la tarjeta expandida (no solo la miniatura). Si esta
+                  // tarjeta iba en la columna derecha (índice impar), esa
+                  // columna quedaría vacía en su propia fila porque el
+                  // bloque expandido no cabe ahí y salta a la siguiente —
+                  // ahí la foto ocupa esa sola columna para tapar el hueco.
+                  // Si iba en la columna izquierda (índice par) no hay
+                  // hueco que tapar, así que la foto se muestra a todo el
+                  // ancho en su lugar. En ambos casos se conecta con la
+                  // tarjeta activa mediante la "península".
                   const dejaHueco = index % 2 === 1
 
-                  const bloques = []
-                  if (dejaHueco) {
-                    bloques.push(
-                      <div key={`${p.id}-relleno`} className="v2-tarjeta-simple v2-tarjeta-relleno">
-                        <div className="v2-tarjeta-relleno-foto">
-                          <img src={img(p)} alt={p.name} />
-                          <div className="v2-ts-scrim" />
-                        </div>
-                        <div className="v2-ts-peninsula" />
+                  const bloques = [
+                    <div
+                      key={`${p.id}-relleno`}
+                      className={`v2-tarjeta-simple v2-tarjeta-relleno${dejaHueco ? '' : ' v2-tarjeta-relleno-ancha'}`}
+                      style={dejaHueco ? undefined : { gridColumn: '1 / -1' }}
+                    >
+                      <div className="v2-tarjeta-relleno-foto">
+                        <img src={img(p)} alt={p.name} />
+                        <div className="v2-ts-scrim" />
                       </div>
-                    )
-                  }
+                      <div className="v2-ts-peninsula" />
+                    </div>,
+                  ]
 
                   bloques.push(
                     <div key={p.id} style={{ gridColumn: '1 / -1' }}>
