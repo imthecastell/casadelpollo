@@ -38,8 +38,8 @@ const CATEGORIAS = [
 // real de esa sucursal si está disponible.
 const TIPS_ASISTENTE = {
   marinados: { texto: 'Los marinados se lucen con algo fresco al lado.', sugerido: 'Ensalada' },
-  preparados: { texto: 'Para acompañar algo delicioso, nada como un arroz bien hecho.', sugerido: 'Arroz basmati a la jardinera' },
-  fresco: { texto: 'Si cocinas desde cero, un arroz blanco es el comodín perfecto.', sugerido: 'Arroz basmati blanco' },
+  preparados: { texto: 'Para acompañar algo delicioso, nada como un arroz bien hecho.', sugerido: 'Arroz del día' },
+  fresco: { texto: 'Si cocinas desde cero, un arroz blanco es el comodín perfecto.', sugerido: 'Arroz del día' },
 }
 
 // image_cooked_url solo es una foto real cuando el producto se puede cocinar
@@ -62,7 +62,7 @@ function formatearTelefono(raw) {
 }
 
 export default function HomeV2Preview() {
-  const { sucursales, sucursalActiva, setSucursalActiva, productos, carrito, agregarAlCarrito, cargando, diseno, schedule, cocInicio, cocFin, cocFinSabado } = useApp()
+  const { sucursales, sucursalActiva, setSucursalActiva, productos, carrito, agregarAlCarrito, eliminarDelCarrito, cargando, diseno, schedule, cocInicio, cocFin, cocFinSabado } = useApp()
   const [tab, setTab] = useState('home')
   const [categoria, setCategoria] = useState('marinados')
   const [seleccionProducto, setSeleccionProducto] = useState(null)
@@ -72,8 +72,8 @@ export default function HomeV2Preview() {
   const [mostrarAvisoSel, setMostrarAvisoSel] = useState(false)
   const [asistente, setAsistente] = useState({
     abierto: false, paso: 1, personas: 2, categoria: null, producto: null,
-    gramos: 300, cantidad: 1, recogida: 'crudo', complementosAgregados: [],
-    hora: null, asap: false, nombre: '', telefono: '',
+    gramos: 300, cantidad: 1, recogida: 'crudo', complementos: {},
+    hora: null, asap: false, nombre: '', telefono: '', numeroOrden: null,
     agregado: false, mostrarAviso: false, confirmado: false,
   })
   const [toast, setToast] = useState('')
@@ -236,8 +236,8 @@ export default function HomeV2Preview() {
   function abrirAsistente() {
     setAsistente({
       abierto: true, paso: 1, personas: 2, categoria: null, producto: null,
-      gramos: 300, cantidad: 1, recogida: 'crudo', complementosAgregados: [],
-      hora: null, asap: false, nombre: '', telefono: '',
+      gramos: 300, cantidad: 1, recogida: 'crudo', complementos: {},
+      hora: null, asap: false, nombre: '', telefono: '', numeroOrden: null,
       agregado: false, mostrarAviso: false, confirmado: false,
     })
   }
@@ -329,23 +329,46 @@ export default function HomeV2Preview() {
     patchAsistente({ paso: 5 })
   }
 
-  const complementosAsistente = productos.filter(p => p.category_name === 'Complementos' && p.active !== false)
+  // Acompañamiento resumido a 4 opciones fijas (no todo Complementos) —
+  // cada una se resuelve al producto real disponible en esta sucursal.
+  const ACOMPANAMIENTOS_ASISTENTE = [
+    { etiqueta: 'Arroz del día', match: (n) => n.toLowerCase().includes('arroz') },
+    { etiqueta: 'Pasta del día', match: (n) => n.toLowerCase().includes('pasta') },
+    { etiqueta: 'Ensalada', match: (n) => n.toLowerCase().includes('ensalada') },
+    { etiqueta: 'Sopa Fan Si', match: (n) => n.toLowerCase().includes('fan si') },
+  ]
+  const complementosAsistente = ACOMPANAMIENTOS_ASISTENTE
+    .map(def => ({ ...def, producto: productos.find(p => p.category_name === 'Complementos' && p.active !== false && def.match(p.name)) }))
+    .filter(x => x.producto)
 
-  function agregarComplementoAsistente(p) {
-    if (asistente.complementosAgregados.includes(p.id)) return
-    agregarAlCarrito({
-      tipo: 'complemento',
-      nombre: p.name,
-      cantidad: 1,
-      precio: p.price,
-      precioTotal: parseFloat(p.price || 0),
-      unidad: p.description || 'porción',
-      resumen: `${p.name} × 1 ${p.description || 'porción'} · $${parseFloat(p.price || 0).toFixed(2)}`,
-    })
-    patchAsistente({ complementosAgregados: [...asistente.complementosAgregados, p.id] })
+  function cambiarComplementoAsistente(p, delta) {
+    const actual = asistente.complementos[p.id]
+    const nuevaCantidad = Math.max(0, (actual?.cantidad || 0) + delta)
+    if (actual?.cartId) eliminarDelCarrito(actual.cartId)
+
+    const nuevosComplementos = { ...asistente.complementos }
+    if (nuevaCantidad === 0) {
+      delete nuevosComplementos[p.id]
+    } else {
+      const precioTotal = parseFloat(p.price || 0) * nuevaCantidad
+      const cartId = agregarAlCarrito({
+        tipo: 'complemento',
+        nombre: p.name,
+        cantidad: nuevaCantidad,
+        precio: p.price,
+        precioTotal,
+        unidad: p.description || 'porción',
+        resumen: `${p.name} × ${nuevaCantidad} ${p.description || 'porción'} · $${precioTotal.toFixed(2)}`,
+      })
+      nuevosComplementos[p.id] = { cantidad: nuevaCantidad, cartId }
+    }
+    patchAsistente({ complementos: nuevosComplementos })
   }
 
   const horariosAsistente = generarHorariosDisponibles(carrito, schedule, cocInicio, cocFin, cocFinSabado)
+  // Muestra solo cada 30 min (el primer horario siempre es el real, calculado
+  // con el tiempo de preparación) para no saturar de botones al cliente.
+  const horariosSimplificadosAsistente = horariosAsistente.filter((_, i) => i % 3 === 0)
   const tieneCocinadosAsistente = ventanaPreparacion(carrito) === 40
   const cocFinMostradoAsistente = obtenerCocFinEfectivo(cocFin, cocFinSabado)
 
@@ -360,11 +383,11 @@ export default function HomeV2Preview() {
 
   function confirmarAsistente() {
     if (!puedeConfirmarAsistente) return
-    patchAsistente({ confirmado: true })
-    setTimeout(() => {
-      cerrarAsistente()
-      mostrarToast('¡Pedido creado! (esto llamaría a confirmarPedido en producción)')
-    }, 1400)
+    // Decorativo a propósito: genera un número de orden simulado en vez de
+    // llamar al confirmarPedido real, para no crear pedidos de verdad desde
+    // este preview oculto.
+    const numeroOrden = Math.floor(1000 + Math.random() * 9000)
+    patchAsistente({ confirmado: true, numeroOrden, paso: 8 })
   }
 
   return (
@@ -712,7 +735,36 @@ export default function HomeV2Preview() {
       </div>
     </div>
 
-      {asistente.abierto && (
+      {asistente.abierto && asistente.paso === 8 && (
+        <div className="v2-asistente">
+          <div className="v2-asistente-confirmado">
+            <LogoSlot type="logotipo" src={diseno?.logo_original_url || diseno?.logo_url} mode="original" width={150} height={35} />
+            <div className="v2-asistente-confirmado-emoji">🎉</div>
+            <div className="v2-asistente-confirmado-titulo">¡Pedido recibido!</div>
+            <p className="v2-asistente-confirmado-suc">{sucursalActiva?.name}</p>
+
+            <div className="v2-asistente-recibo">
+              <div className="v2-asistente-recibo-orden">
+                <p>Número de orden</p>
+                <p>{asistente.numeroOrden}</p>
+              </div>
+              <div className="v2-asistente-recibo-hora">
+                <span>Hora de recogida</span>
+                <span>{asistente.asap ? '⚡ Lo antes posible' : asistente.hora}</span>
+              </div>
+              <p className="v2-asistente-recibo-pago">Pago en el local al recoger</p>
+            </div>
+
+            <p className="v2-asistente-confirmado-nota">
+              Vista previa — esto llamaría a confirmarPedido en producción y generaría un número de orden real.
+            </p>
+
+            <button className="btn-primario" onClick={cerrarAsistente}>Cerrar</button>
+          </div>
+        </div>
+      )}
+
+      {asistente.abierto && asistente.paso < 8 && (
         <div className="v2-asistente">
           <div className="v2-asistente-header">
             <button className="v2-asistente-atras" onClick={pasoAtrasAsistente}>‹</button>
@@ -867,22 +919,27 @@ export default function HomeV2Preview() {
                   </div>
                 )}
                 <div className="v2-asistente-complementos">
-                  {complementosAsistente.map(p => {
-                    const agregado = asistente.complementosAgregados.includes(p.id)
-                    const sugerido = p.name === TIPS_ASISTENTE[asistente.categoria]?.sugerido
+                  {complementosAsistente.map(({ etiqueta, producto: p }) => {
+                    const cantidad = asistente.complementos[p.id]?.cantidad || 0
+                    const sugerido = etiqueta === TIPS_ASISTENTE[asistente.categoria]?.sugerido
                     return (
-                      <button key={p.id} className={`v2-asistente-complemento${agregado ? ' on' : ''}${sugerido ? ' sugerido' : ''}`} onClick={() => agregarComplementoAsistente(p)}>
-                        {sugerido && !agregado && <div className="v2-asistente-complemento-badge">Sugerido</div>}
-                        <img src={p.image_url || img(p)} alt={p.name} />
-                        <div className="v2-asistente-complemento-nombre">{p.name}</div>
+                      <div key={p.id} className={`v2-asistente-complemento${cantidad > 0 ? ' on' : ''}${sugerido ? ' sugerido' : ''}`}>
+                        {sugerido && <div className="v2-asistente-complemento-badge">Sugerido</div>}
+                        <img src={p.image_url || img(p)} alt={etiqueta} />
+                        <div className="v2-asistente-complemento-nombre">{etiqueta}</div>
                         <div className="v2-asistente-complemento-precio">${Number(p.price)}</div>
-                        <div className="v2-asistente-complemento-check">{agregado ? '✓' : '+'}</div>
-                      </button>
+                        <div className="v2-asistente-complemento-stepper">
+                          <button onClick={() => cambiarComplementoAsistente(p, -1)} disabled={cantidad === 0}>−</button>
+                          <span>{cantidad}</span>
+                          <button onClick={() => cambiarComplementoAsistente(p, 1)}>+</button>
+                        </div>
+                      </div>
                     )
                   })}
                 </div>
+                <p className="v2-asistente-disclaimer">*Sujeto a disponibilidad</p>
                 <button className="btn-primario" onClick={() => patchAsistente({ paso: 6 })}>
-                  {asistente.complementosAgregados.length > 0 ? 'Continuar →' : 'No gracias, continuar →'}
+                  {Object.keys(asistente.complementos).length > 0 ? 'Continuar →' : 'No gracias, continuar →'}
                 </button>
               </>
             )}
@@ -910,11 +967,11 @@ export default function HomeV2Preview() {
                     <span style={{ fontSize: 11, color: 'var(--texto-suave)' }}>Te avisamos en cuanto esté listo</span>
                   </button>
 
-                  {horariosAsistente.length === 0 ? (
+                  {horariosSimplificadosAsistente.length === 0 ? (
                     <p style={{ fontSize: 13, color: 'var(--rojo)' }}>No hay horarios disponibles con el tiempo de preparación requerido.</p>
                   ) : (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-                      {horariosAsistente.map(hora => (
+                      {horariosSimplificadosAsistente.map(hora => (
                         <button
                           key={hora}
                           onClick={() => elegirHoraAsistente(hora)}
@@ -966,8 +1023,8 @@ export default function HomeV2Preview() {
                   </div>
                 </div>
 
-                <button className={`btn-primario ${asistente.confirmado ? 'btn-agregado' : ''}`} disabled={!puedeConfirmarAsistente || asistente.confirmado} onClick={confirmarAsistente}>
-                  {asistente.confirmado ? '✓ ¡Pedido creado!' : 'Confirmar pedido →'}
+                <button className="btn-primario" disabled={!puedeConfirmarAsistente} onClick={confirmarAsistente}>
+                  Confirmar pedido →
                 </button>
               </>
             )}

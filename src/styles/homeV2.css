@@ -387,18 +387,22 @@
 .v2-asistente-complementos { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
 .v2-asistente-complemento {
   position: relative; border: 2px solid transparent; border-radius: 16px; overflow: hidden;
-  background: var(--card-bg); box-shadow: var(--sombra); padding: 0; cursor: pointer; text-align: left;
+  background: var(--card-bg); box-shadow: var(--sombra); text-align: left;
 }
 .v2-asistente-complemento.on { border-color: var(--verde); }
 .v2-asistente-complemento img { width: 100%; height: 90px; object-fit: cover; display: block; background: var(--gris-claro); }
 .v2-asistente-complemento-nombre { font-family: var(--font-title); font-weight: 700; font-size: 12.5px; color: var(--texto); padding: 8px 10px 0; }
-.v2-asistente-complemento-precio { font-size: 12px; color: var(--texto-suave); padding: 2px 10px 10px; }
-.v2-asistente-complemento-check {
-  position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; border-radius: 50%;
-  background: rgba(255,255,255,.92); color: var(--rojo); font-size: 14px; font-weight: 800;
-  display: flex; align-items: center; justify-content: center;
+.v2-asistente-complemento-precio { font-size: 12px; color: var(--texto-suave); padding: 2px 10px 8px; }
+.v2-asistente-complemento-stepper {
+  display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 0 8px 10px;
 }
-.v2-asistente-complemento.on .v2-asistente-complemento-check { background: var(--verde); color: #fff; }
+.v2-asistente-complemento-stepper button {
+  width: 26px; height: 26px; border-radius: 50%; border: none; background: var(--gris-claro);
+  color: var(--rojo); font-size: 15px; font-weight: 700; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; line-height: 1;
+}
+.v2-asistente-complemento-stepper button:disabled { opacity: .35; cursor: not-allowed; }
+.v2-asistente-complemento-stepper span { font-family: var(--font-title); font-weight: 800; font-size: 14px; color: var(--texto); }
 .v2-asistente-complemento.sugerido { border-color: var(--dorado); }
 .v2-asistente-complemento-badge {
   position: absolute; top: 8px; left: 8px; z-index: 1; background: var(--dorado); color: var(--cafe);
@@ -410,3 +414,25 @@
   background: #FFFBEB; border: 1px solid #F59E0B44; color: #92400E;
   border-radius: var(--radio); padding: 12px 14px; font-size: 13px; line-height: 1.5;
 }
+.v2-asistente-disclaimer { font-size: 11px; color: var(--texto-suave); text-align: center; margin: -6px 0 0; }
+
+.v2-asistente-confirmado {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: calc(env(safe-area-inset-top, 0) + 40px) 24px calc(env(safe-area-inset-bottom, 0) + 24px);
+  text-align: center; overflow-y: auto;
+}
+.v2-asistente-confirmado-emoji { font-size: 44px; }
+.v2-asistente-confirmado-titulo { font-family: var(--font-title); font-weight: 800; font-size: 23px; color: var(--texto); }
+.v2-asistente-confirmado-suc { font-size: 13px; color: var(--texto-suave); margin: -6px 0 0; }
+.v2-asistente-recibo {
+  width: 100%; max-width: 320px; background: #fff; border-radius: 18px; padding: 18px 20px;
+  border: 1.5px solid var(--gris-claro); box-shadow: var(--sombra); margin-top: 8px;
+}
+.v2-asistente-recibo-orden { background: var(--rojo); border-radius: 12px; padding: 10px 24px; margin-bottom: 10px; }
+.v2-asistente-recibo-orden p:first-child { font-size: 10px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,255,255,.75); margin: 0 0 2px; }
+.v2-asistente-recibo-orden p:last-child { font-family: var(--font-title); font-weight: 900; font-size: 44px; color: #fff; line-height: 1; letter-spacing: -2px; margin: 0; }
+.v2-asistente-recibo-hora { display: flex; align-items: center; justify-content: space-between; background: var(--crema); border: 1px solid var(--gris-claro); border-radius: 8px; padding: 8px 14px; }
+.v2-asistente-recibo-hora span:first-child { font-size: 10px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--texto-suave); }
+.v2-asistente-recibo-hora span:last-child { font-family: var(--font-title); font-weight: 800; font-size: 18px; color: var(--texto); }
+.v2-asistente-recibo-pago { font-size: 10px; color: var(--gris); margin: 8px 0 0; }
+.v2-asistente-confirmado-nota { font-size: 11px; color: var(--texto-suave); max-width: 300px; line-height: 1.5; }
