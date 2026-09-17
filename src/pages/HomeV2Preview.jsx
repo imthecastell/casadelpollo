@@ -17,6 +17,17 @@ function calcularTiempoMarinado(gramos) {
   return gramos <= 300 ? base : base + extra
 }
 
+// Mismos valores que SeccionBowls.jsx (la página real de Bowls).
+const TIEMPO_BOWL_ASISTENTE = 20
+const PRECIO_BASE_BOWL_ASISTENTE = 110
+const GRAMOS_BASE_BOWL_ASISTENTE = 200
+const BOWL_MAX_EXTRA = 400
+
+function precioExtraBowlAsistente(producto, gramosExtra) {
+  const precioKg = parseFloat(producto?.price || 0)
+  return (gramosExtra / 1000) * precioKg
+}
+
 /* Preview oculto de la navegación V2 (Home + tab bar). Ruta secreta
    /preview-v2, fuera del flujo de `vista` normal — no afecta nada de
    producción. Usa datos reales (sucursales, catálogo, WhatsApp, /api/links)
@@ -33,6 +44,15 @@ const CATEGORIAS = [
   { key: 'fresco', label: 'Pollo fresco', match: 'Pollo Fresco', emoji: '🕐', antojo: 'Hoy tengo tiempo', desc: 'Piezas frescas para cocinar a tu manera' },
 ]
 
+// Solo para el paso "¿qué se te antoja?" del asistente — Bowls no es una
+// categoría real del catálogo (usa is_bowl_base) así que no se agrega a
+// CATEGORIAS, que también arma las pills de la pestaña Productos (esas
+// sí son 3 fijas).
+const ANTOJOS_ASISTENTE = [
+  ...CATEGORIAS,
+  { key: 'bowls', label: 'Bowls', match: null, emoji: '🥗', antojo: 'Arma tu bowl', desc: 'Base + marinado cocinado, arma tu combinación' },
+]
+
 // Tip del asistente en el paso de acompañamiento — recomendación fija por
 // categoría (nada de IA/chat: son rutas guiadas), resalta un complemento
 // real de esa sucursal si está disponible.
@@ -40,6 +60,7 @@ const TIPS_ASISTENTE = {
   marinados: { texto: 'Los marinados se lucen con algo fresco al lado.', sugerido: 'Ensalada' },
   preparados: { texto: 'Para acompañar algo delicioso, nada como un arroz bien hecho.', sugerido: 'Arroz del día' },
   fresco: { texto: 'Si cocinas desde cero, un arroz blanco es el comodín perfecto.', sugerido: 'Arroz del día' },
+  bowls: { texto: 'Tu bowl ya trae base y marinado, pero una sopa nunca sobra.', sugerido: 'Sopa Fan Si' },
 }
 
 // image_cooked_url solo es una foto real cuando el producto se puede cocinar
@@ -73,6 +94,7 @@ export default function HomeV2Preview() {
   const [asistente, setAsistente] = useState({
     abierto: false, paso: 1, personas: 2, categoria: null, producto: null,
     gramos: 300, cantidad: 1, recogida: 'crudo', complementos: {},
+    bowlBaseId: '', bowlMarinadoId: '', bowlMarinadoCat: '', bowlExtraBase: 0, bowlExtraMarinado: 0,
     hora: null, asap: false, nombre: '', telefono: '', numeroOrden: null,
     agregado: false, mostrarAviso: false, confirmado: false,
   })
@@ -237,6 +259,7 @@ export default function HomeV2Preview() {
     setAsistente({
       abierto: true, paso: 1, personas: 2, categoria: null, producto: null,
       gramos: 300, cantidad: 1, recogida: 'crudo', complementos: {},
+      bowlBaseId: '', bowlMarinadoId: '', bowlMarinadoCat: '', bowlExtraBase: 0, bowlExtraMarinado: 0,
       hora: null, asap: false, nombre: '', telefono: '', numeroOrden: null,
       agregado: false, mostrarAviso: false, confirmado: false,
     })
@@ -248,6 +271,9 @@ export default function HomeV2Preview() {
 
   function pasoAtrasAsistente() {
     if (asistente.paso <= 1) { cerrarAsistente(); return }
+    // Bowls arma todo (base+marinado+extras) en el paso 3; no hay paso 4
+    // propio, así que desde el paso 5 (acompañamiento) regresa al 3.
+    if (asistente.categoria === 'bowls' && asistente.paso === 5) { patchAsistente({ paso: 3 }); return }
     patchAsistente({ paso: asistente.paso - 1 })
   }
 
@@ -284,6 +310,62 @@ export default function HomeV2Preview() {
 
   function elegirRecogidaAsistente(modo) {
     patchAsistente({ recogida: modo, mostrarAviso: modo === 'cocinado' && productoAsistente?.se_puede_cocinar !== false })
+  }
+
+  // ── Bowls: mismas reglas/filtros que SeccionBowls.jsx real ──
+  const bowlBasesAsistente = productos.filter(p =>
+    p.is_bowl_base &&
+    (p.category_name?.toLowerCase().includes('complement') || p.category_name?.toLowerCase().includes('extra')) &&
+    p.available !== false
+  )
+  const bowlMarinadosAsistente = productos.filter(p =>
+    p.is_bowl_base &&
+    (p.category_name?.toLowerCase().includes('marinado') ||
+     p.category_name?.toLowerCase().includes('preparado') ||
+     p.category_name?.toLowerCase().includes('milanesa')) &&
+    p.available !== false
+  )
+  const bowlMarinadoGroupsAsistente = {}
+  bowlMarinadosAsistente.forEach(p => {
+    const cat = p.category_name || 'Otros'
+    if (!bowlMarinadoGroupsAsistente[cat]) bowlMarinadoGroupsAsistente[cat] = []
+    bowlMarinadoGroupsAsistente[cat].push(p)
+  })
+
+  const bowlBaseAsistente = bowlBasesAsistente.find(p => String(p.id) === asistente.bowlBaseId)
+  const bowlMarinadoAsistente = bowlMarinadosAsistente.find(p => String(p.id) === asistente.bowlMarinadoId)
+  const bowlListoAsistente = !!(bowlBaseAsistente && bowlMarinadoAsistente)
+  const gramosBaseBowlAsistente = GRAMOS_BASE_BOWL_ASISTENTE + asistente.bowlExtraBase
+  const gramosMarinadoBowlAsistente = GRAMOS_BASE_BOWL_ASISTENTE + asistente.bowlExtraMarinado
+  const precioBaseBowlAsistente = parseFloat(sucursalActiva?.bowl_price) || PRECIO_BASE_BOWL_ASISTENTE
+  const precioTotalBowlAsistente = precioBaseBowlAsistente
+    + precioExtraBowlAsistente(bowlBaseAsistente, asistente.bowlExtraBase)
+    + precioExtraBowlAsistente(bowlMarinadoAsistente, asistente.bowlExtraMarinado)
+
+  function cambiarExtraBowlAsistente(tipo, delta) {
+    const campo = tipo === 'base' ? 'bowlExtraBase' : 'bowlExtraMarinado'
+    const siguiente = Math.max(0, Math.min(BOWL_MAX_EXTRA, asistente[campo] + delta))
+    patchAsistente({ [campo]: siguiente })
+  }
+
+  function confirmarBowlAsistente() {
+    if (!bowlListoAsistente) return
+    agregarAlCarrito({
+      tipo: 'bowl',
+      base: bowlBaseAsistente.name,
+      marinado: bowlMarinadoAsistente.name,
+      gramosBase: gramosBaseBowlAsistente,
+      gramosMarinado: gramosMarinadoBowlAsistente,
+      extraBase: asistente.bowlExtraBase,
+      extraMarinado: asistente.bowlExtraMarinado,
+      tiempoEstimado: TIEMPO_BOWL_ASISTENTE,
+      necesitaHora: true,
+      precio: precioTotalBowlAsistente,
+      precioTotal: precioTotalBowlAsistente,
+      imagen_referencia: bowlMarinadoAsistente.image_cooked_url || bowlMarinadoAsistente.image_url || null,
+      resumen: `Bowl: ${bowlBaseAsistente.name} ${gramosBaseBowlAsistente}g + ${bowlMarinadoAsistente.name} ${gramosMarinadoBowlAsistente}g · $${precioTotalBowlAsistente.toFixed(2)} · ~${TIEMPO_BOWL_ASISTENTE} min`,
+    })
+    patchAsistente({ paso: 5 })
   }
 
   function confirmarConfigAsistente() {
@@ -798,7 +880,7 @@ export default function HomeV2Preview() {
                 <div className="v2-asistente-titulo">¿Qué se te antoja?</div>
                 <p className="v2-asistente-sub">Para {asistente.personas} {asistente.personas === 1 ? 'persona' : 'personas'}</p>
                 <div className="v2-asistente-cats">
-                  {CATEGORIAS.map(c => (
+                  {ANTOJOS_ASISTENTE.map(c => (
                     <button key={c.key} className="v2-asistente-cat" onClick={() => elegirCategoriaAsistente(c.key)}>
                       <span className="v2-asistente-cat-emoji">{c.emoji}</span>
                       <div>
@@ -812,9 +894,93 @@ export default function HomeV2Preview() {
               </>
             )}
 
-            {asistente.paso === 3 && (
+            {asistente.paso === 3 && asistente.categoria === 'bowls' && (
               <>
-                <div className="v2-asistente-titulo">Elige tu {CATEGORIAS.find(c => c.key === asistente.categoria)?.label.toLowerCase()}</div>
+                <div className="v2-asistente-titulo">Arma tu bowl</div>
+                <p className="v2-asistente-sub">200g de base + 200g de marinado cocinado · extras en intervalos de 50g</p>
+
+                <div className="v2-asistente-bowl-card">
+                  <div className="v2-asistente-bowl-head">
+                    <span>Base</span>
+                    <span>{gramosBaseBowlAsistente}g</span>
+                  </div>
+                  <div className="v2-asistente-bowl-opciones">
+                    {bowlBasesAsistente.map(b => (
+                      <button
+                        key={b.id}
+                        className={`v2-asistente-bowl-opcion${asistente.bowlBaseId === String(b.id) ? ' on' : ''}`}
+                        onClick={() => patchAsistente({ bowlBaseId: String(b.id) })}
+                      >
+                        {b.name}
+                      </button>
+                    ))}
+                  </div>
+                  {bowlBaseAsistente && (
+                    <div className="cantidad-ctrl" style={{ marginTop: 8 }}>
+                      <button className="cantidad-btn" onClick={() => cambiarExtraBowlAsistente('base', -MARINADO_PASO)} disabled={asistente.bowlExtraBase <= 0}>−</button>
+                      <span className="cantidad-num">{asistente.bowlExtraBase > 0 ? `+${asistente.bowlExtraBase}g` : 'sin extra'}</span>
+                      <button className="cantidad-btn" onClick={() => cambiarExtraBowlAsistente('base', MARINADO_PASO)} disabled={asistente.bowlExtraBase >= BOWL_MAX_EXTRA}>+</button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="v2-asistente-bowl-card">
+                  <div className="v2-asistente-bowl-head">
+                    <span>Marinado (cocinado)</span>
+                    <span>{gramosMarinadoBowlAsistente}g</span>
+                  </div>
+
+                  {bowlMarinadoAsistente ? (
+                    <div className="v2-asistente-bowl-seleccionado">
+                      <img src={bowlMarinadoAsistente.image_cooked_url || bowlMarinadoAsistente.image_url} alt="" />
+                      <span>{bowlMarinadoAsistente.name}</span>
+                      <button onClick={() => patchAsistente({ bowlMarinadoId: '' })}>cambiar ✕</button>
+                    </div>
+                  ) : (
+                    Object.entries(bowlMarinadoGroupsAsistente).map(([catName, items]) => {
+                      const abierto = asistente.bowlMarinadoCat === catName
+                      return (
+                        <div key={catName} className="v2-asistente-bowl-grupo">
+                          <button className={`v2-asistente-bowl-grupo-head${abierto ? ' on' : ''}`} onClick={() => patchAsistente({ bowlMarinadoCat: abierto ? '' : catName })}>
+                            <span>{catName}</span>
+                            <span>{items.length} opciones {abierto ? '▲' : '▼'}</span>
+                          </button>
+                          {abierto && (
+                            <div className="v2-asistente-bowl-grupo-lista">
+                              {items.map(item => (
+                                <button key={item.id} onClick={() => patchAsistente({ bowlMarinadoId: String(item.id), bowlMarinadoCat: '' })}>
+                                  {item.name}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })
+                  )}
+
+                  {bowlMarinadoAsistente && (
+                    <div className="cantidad-ctrl" style={{ marginTop: 8 }}>
+                      <button className="cantidad-btn" onClick={() => cambiarExtraBowlAsistente('marinado', -MARINADO_PASO)} disabled={asistente.bowlExtraMarinado <= 0}>−</button>
+                      <span className="cantidad-num">{asistente.bowlExtraMarinado > 0 ? `+${asistente.bowlExtraMarinado}g` : 'sin extra'}</span>
+                      <button className="cantidad-btn" onClick={() => cambiarExtraBowlAsistente('marinado', MARINADO_PASO)} disabled={asistente.bowlExtraMarinado >= BOWL_MAX_EXTRA}>+</button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="v2-asistente-recomendacion">
+                  💲 Total del bowl: <b>${precioTotalBowlAsistente.toFixed(2)}</b> · listo en ~{TIEMPO_BOWL_ASISTENTE} min
+                </div>
+
+                <button className="btn-primario" disabled={!bowlListoAsistente} onClick={confirmarBowlAsistente}>
+                  Agregar bowl y continuar →
+                </button>
+              </>
+            )}
+
+            {asistente.paso === 3 && asistente.categoria !== 'bowls' && (
+              <>
+                <div className="v2-asistente-titulo">Elige tu {ANTOJOS_ASISTENTE.find(c => c.key === asistente.categoria)?.label.toLowerCase()}</div>
                 <div className="v2-grid-simple">
                   {productosAsistente.map(p => (
                     <button key={p.id} className="v2-tarjeta-simple v2-asistente-producto" onClick={() => elegirProductoAsistente(p)}>
