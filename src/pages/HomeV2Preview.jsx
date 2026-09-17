@@ -44,15 +44,6 @@ const CATEGORIAS = [
   { key: 'fresco', label: 'Pollo fresco', match: 'Pollo Fresco', emoji: '🕐', antojo: 'Hoy tengo tiempo', desc: 'Piezas frescas para cocinar a tu manera' },
 ]
 
-// Solo para el paso "¿qué se te antoja?" del asistente — Bowls no es una
-// categoría real del catálogo (usa is_bowl_base) así que no se agrega a
-// CATEGORIAS, que también arma las pills de la pestaña Productos (esas
-// sí son 3 fijas).
-const ANTOJOS_ASISTENTE = [
-  ...CATEGORIAS,
-  { key: 'bowls', label: 'Bowls', match: null, emoji: '🥗', antojo: 'Arma tu bowl', desc: 'Base + marinado cocinado, arma tu combinación' },
-]
-
 // Tip del asistente en el paso de acompañamiento — recomendación fija por
 // categoría (nada de IA/chat: son rutas guiadas), resalta un complemento
 // real de esa sucursal si está disponible.
@@ -257,7 +248,7 @@ export default function HomeV2Preview() {
 
   function abrirAsistente() {
     setAsistente({
-      abierto: true, paso: 1, personas: 2, categoria: null, producto: null,
+      abierto: true, paso: 0, personas: 2, categoria: null, producto: null,
       gramos: 300, cantidad: 1, recogida: 'crudo', complementos: {},
       bowlBaseId: '', bowlMarinadoId: '', bowlMarinadoCat: '', bowlExtraBase: 0, bowlExtraMarinado: 0,
       hora: null, asap: false, nombre: '', telefono: '', numeroOrden: null,
@@ -269,11 +260,21 @@ export default function HomeV2Preview() {
     patchAsistente({ abierto: false })
   }
 
+  // Bowl tiene su propia sección desde el arranque (paso 0): arma todo
+  // en un solo paso (base+marinado+extras), sin pasar por personas/antojo.
+  function elegirBowlAsistente() {
+    patchAsistente({ categoria: 'bowls', paso: 3 })
+  }
+  function elegirAsistenteGuiadoAsistente() {
+    patchAsistente({ paso: 1 })
+  }
+
   function pasoAtrasAsistente() {
-    if (asistente.paso <= 1) { cerrarAsistente(); return }
-    // Bowls arma todo (base+marinado+extras) en el paso 3; no hay paso 4
-    // propio, así que desde el paso 5 (acompañamiento) regresa al 3.
-    if (asistente.categoria === 'bowls' && asistente.paso === 5) { patchAsistente({ paso: 3 }); return }
+    if (asistente.paso <= 0) { cerrarAsistente(); return }
+    if (asistente.paso === 1) { patchAsistente({ paso: 0 }); return }
+    // Bowl entra directo al paso 3 desde el paso 0 (sin personas/antojo) y
+    // desde el paso 5 (acompañamiento) también regresa directo al 3.
+    if (asistente.categoria === 'bowls' && (asistente.paso === 3 || asistente.paso === 5)) { patchAsistente({ paso: asistente.paso === 3 ? 0 : 3 }); return }
     patchAsistente({ paso: asistente.paso - 1 })
   }
 
@@ -814,6 +815,37 @@ export default function HomeV2Preview() {
       </div>
     </div>
 
+      {asistente.abierto && asistente.paso === 0 && (
+        <div className="v2-asistente">
+          <div className="v2-asistente-header">
+            <div className="v2-asistente-atras" style={{ visibility: 'hidden' }} />
+            <div className="v2-asistente-progreso" />
+            <button className="v2-asistente-cerrar" onClick={cerrarAsistente}>✕</button>
+          </div>
+          <div className="v2-asistente-contenido">
+            <div className="v2-asistente-titulo">¿Qué quieres pedir hoy?</div>
+            <div className="v2-asistente-cats">
+              <button className="v2-asistente-cat" onClick={elegirBowlAsistente}>
+                <span className="v2-asistente-cat-emoji">🥗</span>
+                <div>
+                  <div className="v2-asistente-cat-nombre">Arma tu Bowl</div>
+                  <div className="v2-asistente-cat-desc">Base + marinado cocinado, es individual — listo en minutos</div>
+                </div>
+                <span className="v2-asistente-cat-flecha">›</span>
+              </button>
+              <button className="v2-asistente-cat" onClick={elegirAsistenteGuiadoAsistente}>
+                <span className="v2-asistente-cat-emoji">🍗</span>
+                <div>
+                  <div className="v2-asistente-cat-nombre">Continuar al asistente</div>
+                  <div className="v2-asistente-cat-desc">Te ayudamos a elegir según cuántos son y qué se te antoja</div>
+                </div>
+                <span className="v2-asistente-cat-flecha">›</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {asistente.abierto && asistente.paso === 8 && (
         <div className="v2-asistente">
           <div className="v2-asistente-confirmado">
@@ -843,7 +875,7 @@ export default function HomeV2Preview() {
         </div>
       )}
 
-      {asistente.abierto && asistente.paso < 8 && (
+      {asistente.abierto && asistente.paso > 0 && asistente.paso < 8 && (
         <div className="v2-asistente">
           <div className="v2-asistente-header">
             <button className="v2-asistente-atras" onClick={pasoAtrasAsistente}>‹</button>
@@ -880,7 +912,7 @@ export default function HomeV2Preview() {
                 <div className="v2-asistente-titulo">¿Qué se te antoja?</div>
                 <p className="v2-asistente-sub">Para {asistente.personas} {asistente.personas === 1 ? 'persona' : 'personas'}</p>
                 <div className="v2-asistente-cats">
-                  {ANTOJOS_ASISTENTE.map(c => (
+                  {CATEGORIAS.map(c => (
                     <button key={c.key} className="v2-asistente-cat" onClick={() => elegirCategoriaAsistente(c.key)}>
                       <span className="v2-asistente-cat-emoji">{c.emoji}</span>
                       <div>
@@ -980,7 +1012,7 @@ export default function HomeV2Preview() {
 
             {asistente.paso === 3 && asistente.categoria !== 'bowls' && (
               <>
-                <div className="v2-asistente-titulo">Elige tu {ANTOJOS_ASISTENTE.find(c => c.key === asistente.categoria)?.label.toLowerCase()}</div>
+                <div className="v2-asistente-titulo">Elige tu {CATEGORIAS.find(c => c.key === asistente.categoria)?.label.toLowerCase()}</div>
                 <div className="v2-grid-simple">
                   {productosAsistente.map(p => (
                     <button key={p.id} className="v2-tarjeta-simple v2-asistente-producto" onClick={() => elegirProductoAsistente(p)}>
