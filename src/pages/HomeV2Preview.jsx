@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import QRCode from 'qrcode'
 import { useApp } from '../data/AppContext.jsx'
 import LogoSlot from '../Components/LogoSlot.jsx'
 import AvisoAirfryer from '../Components/AvisoAirfryer.jsx'
@@ -55,6 +56,38 @@ const BOWL_MAX_EXTRA = 400
 function precioExtraBowlAsistente(producto, gramosExtra) {
   const precioKg = parseFloat(producto?.price || 0)
   return (gramosExtra / 1000) * precioKg
+}
+
+// ── Programa de lealtad (preview) ──────────────────────────────────────
+// La tarjeta vive solo en este dispositivo (localStorage) — no hay
+// backend real todavía. El plan acordado: 2 visitas de regalo al crear
+// la tarjeta y 1 por cada visita real (la registraría el admin al
+// escanear, cuando exista esa pieza); de la visita 10 a la 14 se puede
+// canjear 10% una vez, de la 15 en adelante 15% una vez; canjear
+// cualquiera de los dos reinicia el contador a 0.
+const LEALTAD_CLAVE = 'cdp_lealtad'
+const LEALTAD_VISITAS_REGALO = 2
+const LEALTAD_META_10 = 10
+const LEALTAD_META_15 = 15
+
+function descuentoLealtad(visitas) {
+  if (visitas >= LEALTAD_META_15) return 15
+  if (visitas >= LEALTAD_META_10) return 10
+  return 0
+}
+
+function generarCodigoCliente() {
+  return Math.floor(100000 + Math.random() * 900000).toString()
+}
+
+// El QR no muestra el teléfono en claro — codifica un payload simple que
+// el lector del admin (cuando se construya) podrá decodificar para
+// buscar/crear el registro. Esto es solo una ofuscación básica (base64),
+// no cifrado real; cuando se conecte al backend de verdad se define el
+// esquema definitivo ahí.
+function payloadQRLealtad({ codigoCliente, telefono }) {
+  const contenido = JSON.stringify({ c: codigoCliente, t: telefono })
+  return `CDP1:${btoa(contenido)}`
 }
 
 /* Preview oculto de la navegación V2 (Home + tab bar). Ruta secreta
@@ -170,6 +203,14 @@ export default function HomeV2Preview() {
   const [agregadoSel, setAgregadoSel] = useState(false)
   const [mostrarAvisoSel, setMostrarAvisoSel] = useState(false)
   const [mostrarCarrito, setMostrarCarrito] = useState(false)
+  const [lealtad, setLealtad] = useState(() => {
+    try {
+      const guardado = localStorage.getItem(LEALTAD_CLAVE)
+      return guardado ? JSON.parse(guardado) : null
+    } catch { return null }
+  })
+  const [telefonoLealtad, setTelefonoLealtad] = useState('')
+  const [qrLealtad, setQrLealtad] = useState('')
   const [asistente, setAsistente] = useState({
     abierto: false, paso: 1, personas: 2, categoria: null, producto: null,
     gramos: 300, cantidad: 1, recogida: 'crudo', complementos: {},
@@ -208,6 +249,46 @@ export default function HomeV2Preview() {
   }, [toast])
 
   const mostrarToast = (msg) => setToast(msg)
+
+  // Sin rama para "sin tarjeta": el JSX ya deja de mostrar el QR en
+  // cuanto lealtad es null, así que no hace falta limpiar qrLealtad acá.
+  useEffect(() => {
+    if (!lealtad) return
+    let vivo = true
+    QRCode.toDataURL(payloadQRLealtad(lealtad), { margin: 1, width: 220 })
+      .then(url => { if (vivo) setQrLealtad(url) })
+      .catch(() => { if (vivo) setQrLealtad('') })
+    return () => { vivo = false }
+  }, [lealtad])
+
+  function guardarLealtad(siguiente) {
+    setLealtad(siguiente)
+    try { localStorage.setItem(LEALTAD_CLAVE, JSON.stringify(siguiente)) } catch { /* modo privado */ }
+  }
+
+  function crearTarjetaLealtad() {
+    const telefono = digitosLocales(telefonoLealtad)
+    if (telefono.length !== 10) return
+    guardarLealtad({ codigoCliente: generarCodigoCliente(), telefono, visitas: LEALTAD_VISITAS_REGALO })
+    setTelefonoLealtad('')
+  }
+
+  function canjearDescuentoLealtad() {
+    const descuento = descuentoLealtad(lealtad?.visitas || 0)
+    if (!descuento) return
+    guardarLealtad({ ...lealtad, visitas: 0 })
+    mostrarToast(`🎉 ${descuento}% de descuento aplicado a tu próxima orden`)
+  }
+
+  // Controles solo para probar el flujo mientras no existe el lector del
+  // admin — simulan lo que haría un escaneo real en la sucursal.
+  function simularVisitaLealtad() {
+    guardarLealtad({ ...lealtad, visitas: (lealtad?.visitas || 0) + 1 })
+  }
+  function reiniciarTarjetaLealtad() {
+    guardarLealtad(null)
+    try { localStorage.removeItem(LEALTAD_CLAVE) } catch { /* modo privado */ }
+  }
 
   // La barra superior "absorbe" el color de la banda que queda justo
   // detrás de ella al hacer scroll, como si fuera transparente sobre
@@ -825,6 +906,81 @@ export default function HomeV2Preview() {
           </div>
         )}
 
+        {tab === 'lealtad' && (
+          <div className="v2-pantalla">
+            <div className="v2-saludo">Lealtad</div>
+
+            {!lealtad ? (
+              <>
+                <div className="v2-lealtad-intro">
+                  <div className="v2-lealtad-intro-emoji">🎁</div>
+                  <h3>Únete al programa de lealtad</h3>
+                  <p>Recibe 2 visitas de regalo al crear tu tarjeta y 1 visita más por cada pedido en sucursal.</p>
+                  <div className="v2-lealtad-metas">
+                    <div><b>10 visitas</b><span>10% de descuento</span></div>
+                    <div><b>15 visitas</b><span>15% de descuento</span></div>
+                  </div>
+                </div>
+                <label className="config-label">Tu número de celular</label>
+                <input
+                  className="v2-lealtad-input"
+                  type="tel"
+                  inputMode="numeric"
+                  placeholder="10 dígitos"
+                  value={telefonoLealtad}
+                  onChange={e => setTelefonoLealtad(e.target.value)}
+                />
+                <button
+                  className="btn-primario"
+                  style={{ marginTop: 14 }}
+                  disabled={digitosLocales(telefonoLealtad).length !== 10}
+                  onClick={crearTarjetaLealtad}
+                >
+                  Crear mi tarjeta
+                </button>
+              </>
+            ) : (() => {
+              const descuento = descuentoLealtad(lealtad.visitas)
+              const meta = lealtad.visitas < LEALTAD_META_10 ? LEALTAD_META_10 : LEALTAD_META_15
+              const progreso = Math.min(100, Math.round((lealtad.visitas / meta) * 100))
+              return (
+                <>
+                  <div className="v2-lealtad-tarjeta">
+                    {qrLealtad && <img src={qrLealtad} alt="Código de tu tarjeta de lealtad" className="v2-lealtad-qr" />}
+                    <div className="v2-lealtad-codigo">Cliente #{lealtad.codigoCliente}</div>
+                    <div className="v2-lealtad-tel">{formatearTelefono(lealtad.telefono)}</div>
+                  </div>
+
+                  <div className="v2-lealtad-progreso-card">
+                    <div className="v2-lealtad-visitas">
+                      <b>{lealtad.visitas}</b> {lealtad.visitas === 1 ? 'visita' : 'visitas'}
+                    </div>
+                    {descuento > 0 ? (
+                      <>
+                        <p className="v2-lealtad-msg">🎉 Tienes <b>{descuento}%</b> de descuento disponible</p>
+                        <button className="btn-primario" onClick={canjearDescuentoLealtad}>Canjear {descuento}%</button>
+                      </>
+                    ) : (
+                      <>
+                        <div className="v2-lealtad-barra"><div style={{ width: `${progreso}%` }} /></div>
+                        <p className="v2-lealtad-msg">Te faltan <b>{meta - lealtad.visitas}</b> {meta - lealtad.visitas === 1 ? 'visita' : 'visitas'} para tu {meta === LEALTAD_META_10 ? '10%' : '15%'} de descuento</p>
+                      </>
+                    )}
+                  </div>
+
+                  <div className="v2-lealtad-dev">
+                    <p>🧪 Pruebas — todavía no existe el lector del admin</p>
+                    <div className="v2-lealtad-dev-btns">
+                      <button className="v2-sc-btn v2-sc-btn-mapa" onClick={simularVisitaLealtad}>+1 visita (simular escaneo)</button>
+                      <button className="v2-sc-btn v2-sc-btn-mapa" onClick={reiniciarTarjetaLealtad}>Borrar tarjeta</button>
+                    </div>
+                  </div>
+                </>
+              )
+            })()}
+          </div>
+        )}
+
       </div>
 
       {toast && <div className="v2-toast on">{toast}</div>}
@@ -983,6 +1139,7 @@ export default function HomeV2Preview() {
           <div className="v2-tab-central-label">Crear pedido</div>
         </div>
         <button className={`v2-tab${tab === 'sucursales' ? ' on' : ''}`} onClick={() => cambiarTab('sucursales')}><span className="v2-ticono">📍</span><span className="v2-tlabel">Sucursales</span></button>
+        <button className={`v2-tab${tab === 'lealtad' ? ' on' : ''}`} onClick={() => cambiarTab('lealtad')}><span className="v2-ticono">🎁</span><span className="v2-tlabel">Lealtad</span></button>
       </div>
     </div>
 

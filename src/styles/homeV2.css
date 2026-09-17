@@ -281,6 +281,41 @@
 .v2-sc-btn-wa { background: #e4f2e9; color: var(--verde); }
 .v2-sc-btn:disabled { opacity: .5; cursor: default; }
 
+/* ---- programa de lealtad ---- */
+.v2-lealtad-intro {
+  background: var(--card-bg); border-radius: var(--radio-lg); box-shadow: var(--sombra);
+  padding: 22px 18px; text-align: center; margin-bottom: 18px;
+}
+.v2-lealtad-intro-emoji { font-size: 34px; margin-bottom: 6px; }
+.v2-lealtad-intro h3 { font-family: var(--font-title); font-weight: 800; font-size: 16px; color: var(--texto); margin: 0 0 6px; }
+.v2-lealtad-intro p { font-size: 12.5px; color: var(--texto-suave); line-height: 1.5; margin: 0 0 16px; }
+.v2-lealtad-metas { display: flex; gap: 10px; }
+.v2-lealtad-metas > div { flex: 1; background: var(--gris-claro); border-radius: 12px; padding: 10px 8px; }
+.v2-lealtad-metas b { display: block; font-family: var(--font-title); font-weight: 800; font-size: 13px; color: var(--texto); }
+.v2-lealtad-metas span { font-size: 11px; color: var(--rojo); font-weight: 700; }
+.v2-lealtad-input {
+  width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--gris-claro);
+  background: var(--card-bg); font-size: 15px; font-family: var(--font-body); color: var(--texto); margin-top: 6px;
+}
+.v2-lealtad-tarjeta {
+  background: linear-gradient(135deg, var(--rojo), var(--rojo-oscuro)); border-radius: var(--radio-lg);
+  padding: 22px; text-align: center; color: #fff; margin-bottom: 14px; box-shadow: var(--sombra-lg);
+}
+.v2-lealtad-qr { width: 160px; height: 160px; border-radius: 10px; background: #fff; padding: 8px; box-sizing: border-box; margin-bottom: 12px; }
+.v2-lealtad-codigo { font-family: var(--font-title); font-weight: 800; font-size: 15px; }
+.v2-lealtad-tel { font-size: 12px; opacity: .85; margin-top: 2px; }
+.v2-lealtad-progreso-card { background: var(--card-bg); border-radius: var(--radio-lg); box-shadow: var(--sombra); padding: 18px; text-align: center; }
+.v2-lealtad-visitas { font-family: var(--font-title); font-size: 14px; color: var(--texto); margin-bottom: 10px; }
+.v2-lealtad-visitas b { font-size: 22px; color: var(--rojo); }
+.v2-lealtad-barra { height: 8px; border-radius: 4px; background: var(--gris-claro); overflow: hidden; margin-bottom: 10px; }
+.v2-lealtad-barra > div { height: 100%; background: var(--rojo); border-radius: 4px; transition: width .3s ease; }
+.v2-lealtad-msg { font-size: 12.5px; color: var(--texto-suave); margin: 0 0 12px; }
+.v2-lealtad-msg b { color: var(--texto); }
+.v2-lealtad-dev { margin-top: 18px; border: 1.5px dashed var(--gris); border-radius: 12px; padding: 12px; }
+.v2-lealtad-dev p { font-size: 11px; color: var(--texto-suave); margin: 0 0 8px; }
+.v2-lealtad-dev-btns { display: flex; gap: 8px; }
+.v2-lealtad-dev-btns .v2-sc-btn { flex: 1; padding: 10px 4px; }
+
 /* ---- barra inferior ---- */
 .v2-tabbar {
   flex: 0 0 auto; background: var(--card-bg, #fff); border-top: 1px solid rgba(0,0,0,.06);
