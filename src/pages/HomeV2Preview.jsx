@@ -364,6 +364,18 @@ export default function HomeV2Preview() {
     patchAsistente({ abierto: false })
   }
 
+  // Bowl arranca con 200g de arroz + 200g del primer marinado ya
+  // preseleccionados (el usuario puede cambiarlos), en vez de forzarlo a
+  // elegir ambos antes de poder agregar. bowlBasesAsistente/
+  // bowlMarinadosAsistente se calculan más abajo en el render, pero para
+  // cuando se llega a invocar esto (un click, después del render
+  // completo) ya están listos — el orden de declaración no importa aquí.
+  function idsBowlPorDefecto() {
+    const base = bowlBasesAsistente.find(x => x.etiqueta === 'Arroz del día')?.producto || bowlBasesAsistente[0]?.producto
+    const marinado = bowlMarinadosAsistente.find(p => p.category_name === 'Marinados') || bowlMarinadosAsistente[0]
+    return { bowlBaseId: base ? String(base.id) : '', bowlMarinadoId: marinado ? String(marinado.id) : '' }
+  }
+
   // Accesos directos a "Arma tu Bowl" fuera del asistente (Home, banda
   // verde, CTA de Productos) abren el asistente ya posicionado en el
   // paso 3 de bowls, igual que si el usuario hubiera entrado por
@@ -372,16 +384,17 @@ export default function HomeV2Preview() {
     setAsistente({
       abierto: true, paso: 3, personas: 2, categoria: 'bowls', producto: null,
       gramos: 300, cantidad: 1, recogida: 'crudo', complementos: {},
-      bowlBaseId: '', bowlMarinadoId: '', bowlMarinadoCat: '', bowlExtraBase: 0, bowlExtraMarinado: 0,
+      bowlMarinadoCat: '', bowlExtraBase: 0, bowlExtraMarinado: 0,
       hora: null, asap: false, nombre: '', telefono: '', numeroOrden: null,
       agregado: false, mostrarAviso: false, confirmado: false,
+      ...idsBowlPorDefecto(),
     })
   }
 
   // Bowl tiene su propia sección desde el arranque (paso 0): arma todo
   // en un solo paso (base+marinado+extras), sin pasar por personas/antojo.
   function elegirBowlAsistente() {
-    patchAsistente({ categoria: 'bowls', paso: 3 })
+    patchAsistente({ categoria: 'bowls', paso: 3, ...idsBowlPorDefecto() })
   }
   function elegirAsistenteGuiadoAsistente() {
     patchAsistente({ paso: 1 })
@@ -747,128 +760,16 @@ export default function HomeV2Preview() {
             </div>
 
             <div className="v2-grid-simple">
-              {productosCategoria.flatMap((p, index) => {
-                const esMarinado = categoria === 'marinados'
-                const expandido = esMarinado && seleccionProducto?.id === p.id
-
-                if (expandido) {
-                  // La foto grande del producto cocinado siempre acompaña
-                  // la tarjeta expandida, a todo el ancho, sin importar el
-                  // índice del producto. Si esta tarjeta iba en la columna
-                  // derecha (índice impar), esa columna quedaría vacía en
-                  // su propia fila porque el bloque de ancho completo no
-                  // cabe ahí y salta a la siguiente — se cierra esa fila
-                  // con un espaciador invisible (sin foto duplicada) para
-                  // que el grid no deje un hueco visible. Se conecta con
-                  // la tarjeta activa mediante la "península".
-                  const dejaHueco = index % 2 === 1
-
-                  const bloques = []
-                  if (dejaHueco) {
-                    // Esta tarjeta va a todo el ancho, así que su columna
-                    // derecha queda sin producto en esta fila. En vez de
-                    // dejar el hueco transparente (donde se llegaba a
-                    // transparentar el banner fijo de "Instalar app" al
-                    // hacer scroll, pareciendo un ícono puesto ahí "de
-                    // relleno"), se llena a propósito con el ícono de la
-                    // marca como marca de agua — el mismo logo_icon_url
-                    // que ya usa el resto del sitio.
-                    bloques.push(
-                      <div key={`${p.id}-espaciador`} className="v2-tarjeta-simple v2-tarjeta-espaciador" aria-hidden="true">
-                        <LogoSlot type="icon" src={diseno?.logo_icon_url} mode="tema" width={56} height={56} />
-                      </div>
-                    )
-                  }
-                  bloques.push(
-                    <div
-                      key={`${p.id}-relleno`}
-                      className="v2-tarjeta-simple v2-tarjeta-relleno v2-tarjeta-relleno-ancha"
-                      style={{ gridColumn: '1 / -1' }}
-                    >
-                      <div className="v2-tarjeta-relleno-foto">
-                        <img src={img(p)} alt={p.name} />
-                        <div className="v2-ts-scrim" />
-                      </div>
-                      <div className="v2-ts-peninsula" />
-                    </div>
-                  )
-
-                  bloques.push(
-                    <div key={p.id} style={{ gridColumn: '1 / -1' }}>
-                      <button className="card-marinado card-marinado-activo" onClick={() => setSeleccionProducto(null)}>
-                        <MarimadoImg imageUrl={p.image_url} imageCookedUrl={p.image_cooked_url} isSelected recogida={recogidaSel} />
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div className="producto-nombre">{p.name}</div>
-                          <div className="producto-precio">${p.price}/kg</div>
-                        </div>
-                        <div className="card-check">✓</div>
-                      </button>
-
-                      <div className="configurador-card slide-up" style={{ marginTop: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0 }}>
-                        <div>
-                          <label className="config-label">Cantidad</label>
-                          <div className="cantidad-ctrl">
-                            <button className="cantidad-btn" onClick={() => cambiarGramosSel(-MARINADO_PASO)} disabled={gramosSel <= MARINADO_MIN}>−</button>
-                            <span className="cantidad-num" style={{ fontSize: 20, minWidth: 60, textAlign: 'center' }}>{gramosSel}g</span>
-                            <button className="cantidad-btn" onClick={() => cambiarGramosSel(MARINADO_PASO)} disabled={gramosSel >= MARINADO_MAX}>+</button>
-                          </div>
-                          <div style={{ fontSize: 12, color: 'var(--texto-suave)', marginTop: 6 }}>
-                            {MARINADO_MIN}g — {MARINADO_MAX}g · intervalos de {MARINADO_PASO}g
-                          </div>
-                        </div>
-
-                        {p.se_puede_cocinar && sucursalActiva?.servicio_cocinado !== false && (
-                          <div>
-                            <label className="config-label">¿Cómo lo quieres?</label>
-                            <div className="recogida-opts">
-                              <button
-                                className={`recogida-opt ${recogidaSel === 'crudo' ? 'recogida-activo' : ''}`}
-                                onClick={() => elegirRecogidaSel('crudo')}
-                              >
-                                <span style={{ fontSize: 20 }}>📦</span>
-                                <div>
-                                  <div className="recogida-titulo">Recoger crudo</div>
-                                  <div className="recogida-sub">Listo para llevar</div>
-                                </div>
-                              </button>
-                              <button
-                                className={`recogida-opt ${recogidaSel === 'cocinado' ? 'recogida-activo' : ''}`}
-                                onClick={() => elegirRecogidaSel('cocinado')}
-                              >
-                                <span style={{ fontSize: 20 }}>🔥</span>
-                                <div>
-                                  <div className="recogida-titulo">Recoger cocinado</div>
-                                  <div className="recogida-sub">Listo en ~{tiempoEstimadoSel} min</div>
-                                </div>
-                              </button>
-                            </div>
-                          </div>
-                        )}
-
-                        <button
-                          className={`btn-primario ${agregadoSel ? 'btn-agregado' : ''}`}
-                          onClick={handleAgregarSel}
-                        >
-                          {agregadoSel ? '✓ Agregado' : `Agregar ${gramosSel}g de ${p.name}`}
-                        </button>
-                      </div>
-                    </div>
-                  )
-
-                  return bloques
-                }
-
-                return (
-                  <div key={p.id} className="v2-tarjeta-simple" onClick={() => abrirSeleccion(p)}>
-                    <img src={img(p)} alt={p.name} />
-                    <div className="v2-ts-scrim" />
-                    <div className="v2-ts-precio-top">${Number(p.price)}{esMarinado ? '/kg' : ''}</div>
-                    <div className="v2-ts-overlay">
-                      <div className="v2-ts-nombre">{p.name}</div>
-                    </div>
+              {productosCategoria.map(p => (
+                <div key={p.id} className="v2-tarjeta-simple" onClick={() => abrirSeleccion(p)}>
+                  <img src={img(p)} alt={p.name} />
+                  <div className="v2-ts-scrim" />
+                  <div className="v2-ts-precio-top">${Number(p.price)}{categoria === 'marinados' ? '/kg' : ''}</div>
+                  <div className="v2-ts-overlay">
+                    <div className="v2-ts-nombre">{p.name}</div>
                   </div>
-                )
-              })}
+                </div>
+              ))}
             </div>
 
             {categoria === 'fresco' && (
@@ -963,14 +864,12 @@ export default function HomeV2Preview() {
         </div>
       )}
 
-      {/* Popup de "agregar al carrito": mismo estado/lógica que la
-          tarjeta expandida de Marinados en Productos (gramos,
-          crudo/cocinado, agregar), pero como hoja inferior. Cubre todo
-          Home (donde no hay grid para expandir en línea) y, en
-          Productos, Preparados/Fresco (Marinados ahí sigue usando su
-          propia tarjeta expandida con foto grande, así que se excluye
-          para no mostrar los dos a la vez). */}
-      {seleccionProducto && (tab === 'home' || (tab === 'productos' && categoria !== 'marinados')) && (
+      {/* Popup de "agregar al carrito" (gramos + crudo/cocinado):
+          único camino para agregar, tanto en Home como en cualquier
+          categoría de Productos — se probó la tarjeta expandida con
+          foto grande en línea para Marinados y este popup se ve mejor,
+          así que se unificó todo aquí. */}
+      {seleccionProducto && (
         <div className="v2-sheet-overlay on" onClick={(e) => { if (e.target === e.currentTarget) setSeleccionProducto(null) }}>
           <div className="v2-sheet">
             <div className="v2-sheet-handle" />

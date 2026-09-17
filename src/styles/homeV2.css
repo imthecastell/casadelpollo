@@ -177,26 +177,12 @@
   background: rgba(255,255,255,.92); color: var(--texto); font-size: 15px; display: flex;
   align-items: center; justify-content: center; cursor: pointer; z-index: 2;
 }
-/* Cuando una tarjeta de Marinados muta a ancho completo desde la columna
-   derecha, esa columna queda vacía en su propia fila (el bloque expandido
-   ya no cabe ahí y salta a la siguiente fila). Esta tarjeta de relleno
-   mantiene la foto del mismo producto en ese espacio, y la "península"
-   —una franja del color del configurador— la conecta visualmente con el
-   panel de abajo en vez de dejar un hueco en blanco. */
+/* Foto grande del marinado sobre la tarjeta compacta, en el paso
+   "Configura tu pedido" del asistente guiado (no en la pestaña
+   Productos, que ahora usa el popup de agregar para todo). */
 .v2-tarjeta-relleno { overflow: visible; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
-/* A todo el ancho (cuando no hace falta tapar un hueco del grid) se ve
-   como un banner en vez de una foto vertical de una sola columna. */
 .v2-tarjeta-relleno-ancha { aspect-ratio: 16 / 9; }
 .v2-tarjeta-relleno-foto { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; }
-/* Se extiende fuera de la propia tarjeta (por eso overflow:visible arriba)
-   para cerrar exactamente el gap del grid (11px) y tocar sin espacio la
-   tarjeta activa de abajo, sin depender de márgenes negativos frágiles. */
-.v2-ts-peninsula { position: absolute; left: 0; right: 0; bottom: -11px; height: 11px; background: var(--gris-claro); }
-
-/* Columna que queda sin producto junto al banner de foto grande (ver
-   comentario arriba de v2-tarjeta-relleno): se llena con el ícono de la
-   marca a modo de marca de agua, no con una foto. */
-.v2-tarjeta-espaciador { display: flex; align-items: center; justify-content: center; opacity: 0.18; }
 
 /* ---- tarjetas con barra sólida abajo (solo Home) — foto arriba sin
    degradado, nombre y precio sobre una barra opaca para más legibilidad
