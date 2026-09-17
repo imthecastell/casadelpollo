@@ -329,12 +329,15 @@ export default function HomeV2Preview() {
   ]
     .map(def => ({ ...def, producto: bowlBasesReales.find(p => def.match(p.name)) }))
     .filter(x => x.producto)
+  // De Preparados solo se ofrecen estas 3 (tempura, tenders, boneless sin
+  // salsa) — el resto de Preparados no aplica para bowl, a diferencia de
+  // Marinados y Milanesas que sí se ofrecen completos.
+  const PREPARADOS_BOWL_ASISTENTE = ['Nuggets tempura', 'Tenders', 'Trozos de pollo']
   const bowlMarinadosAsistente = productos.filter(p =>
-    p.is_bowl_base &&
+    p.is_bowl_base && p.available !== false &&
     (p.category_name?.toLowerCase().includes('marinado') ||
-     p.category_name?.toLowerCase().includes('preparado') ||
-     p.category_name?.toLowerCase().includes('milanesa')) &&
-    p.available !== false
+     p.category_name?.toLowerCase().includes('milanesa') ||
+     (p.category_name?.toLowerCase().includes('preparado') && PREPARADOS_BOWL_ASISTENTE.includes(p.name)))
   )
   const bowlMarinadoGroupsAsistente = {}
   bowlMarinadosAsistente.forEach(p => {
@@ -984,7 +987,7 @@ export default function HomeV2Preview() {
                   {bowlMarinadoAsistente ? (
                     <div className="v2-asistente-bowl-seleccionado">
                       <img src={bowlMarinadoAsistente.image_cooked_url || bowlMarinadoAsistente.image_url} alt="" />
-                      <span>{bowlMarinadoAsistente.name}</span>
+                      <span>{bowlMarinadoAsistente.name}{bowlMarinadoAsistente.category_name === 'Milanesas' ? ' · 1 pz' : ''}</span>
                       <button onClick={() => patchAsistente({ bowlMarinadoId: '' })}>cambiar ✕</button>
                     </div>
                   ) : (
@@ -1000,7 +1003,7 @@ export default function HomeV2Preview() {
                             <div className="v2-asistente-bowl-grupo-lista">
                               {items.map(item => (
                                 <button key={item.id} onClick={() => patchAsistente({ bowlMarinadoId: String(item.id), bowlMarinadoCat: '' })}>
-                                  {item.name}
+                                  {item.name}{catName === 'Milanesas' ? ' · 1 pz' : ''}
                                 </button>
                               ))}
                             </div>
