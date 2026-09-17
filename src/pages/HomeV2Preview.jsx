@@ -707,7 +707,19 @@ export default function HomeV2Preview() {
 
                   const bloques = []
                   if (dejaHueco) {
-                    bloques.push(<div key={`${p.id}-espaciador`} aria-hidden="true" />)
+                    // Esta tarjeta va a todo el ancho, así que su columna
+                    // derecha queda sin producto en esta fila. En vez de
+                    // dejar el hueco transparente (donde se llegaba a
+                    // transparentar el banner fijo de "Instalar app" al
+                    // hacer scroll, pareciendo un ícono puesto ahí "de
+                    // relleno"), se llena a propósito con el ícono de la
+                    // marca como marca de agua — el mismo logo_icon_url
+                    // que ya usa el resto del sitio.
+                    bloques.push(
+                      <div key={`${p.id}-espaciador`} className="v2-tarjeta-simple v2-tarjeta-espaciador" aria-hidden="true">
+                        <LogoSlot type="icon" src={diseno?.logo_icon_url} mode="tema" width={56} height={56} />
+                      </div>
+                    )
                   }
                   bloques.push(
                     <div

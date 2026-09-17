@@ -201,6 +201,11 @@
    tarjeta activa de abajo, sin depender de márgenes negativos frágiles. */
 .v2-ts-peninsula { position: absolute; left: 0; right: 0; bottom: -11px; height: 11px; background: var(--gris-claro); }
 
+/* Columna que queda sin producto junto al banner de foto grande (ver
+   comentario arriba de v2-tarjeta-relleno): se llena con el ícono de la
+   marca a modo de marca de agua, no con una foto. */
+.v2-tarjeta-espaciador { display: flex; align-items: center; justify-content: center; opacity: 0.18; }
+
 /* ---- tarjetas con barra sólida abajo (solo Home) — foto arriba sin
    degradado, nombre y precio sobre una barra opaca para más legibilidad
    que el texto encima de la foto. No toca .v2-tarjeta-simple (Productos). */
