@@ -297,12 +297,15 @@
   width: 100%; box-sizing: border-box; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--gris-claro);
   background: var(--card-bg); font-size: 15px; font-family: var(--font-body); color: var(--texto); margin-top: 6px;
 }
+.v2-lealtad-fila2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px; }
+.v2-lealtad-nota { font-size: 11px; color: var(--texto-suave); line-height: 1.5; margin: 10px 0 0; }
 .v2-lealtad-tarjeta {
   background: linear-gradient(135deg, var(--rojo), var(--rojo-oscuro)); border-radius: var(--radio-lg);
   padding: 22px; text-align: center; color: #fff; margin-bottom: 14px; box-shadow: var(--sombra-lg);
 }
 .v2-lealtad-qr { width: 160px; height: 160px; border-radius: 10px; background: #fff; padding: 8px; box-sizing: border-box; margin-bottom: 12px; }
-.v2-lealtad-codigo { font-family: var(--font-title); font-weight: 800; font-size: 15px; }
+.v2-lealtad-nombre { font-family: var(--font-title); font-weight: 800; font-size: 17px; margin-bottom: 2px; }
+.v2-lealtad-codigo { font-family: var(--font-title); font-weight: 700; font-size: 13px; opacity: .9; }
 .v2-lealtad-tel { font-size: 12px; opacity: .85; margin-top: 2px; }
 .v2-lealtad-progreso-card { background: var(--card-bg); border-radius: var(--radio-lg); box-shadow: var(--sombra); padding: 18px; text-align: center; }
 .v2-lealtad-visitas { font-family: var(--font-title); font-size: 14px; color: var(--texto); margin-bottom: 10px; }

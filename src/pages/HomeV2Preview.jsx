@@ -84,10 +84,12 @@ function generarCodigoCliente() {
 // el lector del admin (cuando se construya) podrá decodificar para
 // buscar/crear el registro. Esto es solo una ofuscación básica (base64),
 // no cifrado real; cuando se conecte al backend de verdad se define el
-// esquema definitivo ahí.
-function payloadQRLealtad({ codigoCliente, telefono }) {
-  const contenido = JSON.stringify({ c: codigoCliente, t: telefono })
-  return `CDP1:${btoa(contenido)}`
+// esquema definitivo ahí. base64 vía TextEncoder para que nombres con
+// acentos/ñ no rompan btoa (que solo acepta Latin-1).
+function payloadQRLealtad({ codigoCliente, nombre, apellido, telefono }) {
+  const contenido = JSON.stringify({ c: codigoCliente, n: nombre, a: apellido, t: telefono })
+  const binario = String.fromCharCode(...new TextEncoder().encode(contenido))
+  return `CDP1:${btoa(binario)}`
 }
 
 /* Preview oculto de la navegación V2 (Home + tab bar). Ruta secreta
@@ -209,8 +211,11 @@ export default function HomeV2Preview() {
       return guardado ? JSON.parse(guardado) : null
     } catch { return null }
   })
+  const [nombreLealtad, setNombreLealtad] = useState('')
+  const [apellidoLealtad, setApellidoLealtad] = useState('')
   const [telefonoLealtad, setTelefonoLealtad] = useState('')
   const [qrLealtad, setQrLealtad] = useState('')
+  const canvasLealtadRef = useRef(null)
   const [asistente, setAsistente] = useState({
     abierto: false, paso: 1, personas: 2, categoria: null, producto: null,
     gramos: 300, cantidad: 1, recogida: 'crudo', complementos: {},
@@ -268,8 +273,12 @@ export default function HomeV2Preview() {
 
   function crearTarjetaLealtad() {
     const telefono = digitosLocales(telefonoLealtad)
-    if (telefono.length !== 10) return
-    guardarLealtad({ codigoCliente: generarCodigoCliente(), telefono, visitas: LEALTAD_VISITAS_REGALO })
+    const nombre = nombreLealtad.trim()
+    const apellido = apellidoLealtad.trim()
+    if (!nombre || !apellido || telefono.length !== 10) return
+    guardarLealtad({ codigoCliente: generarCodigoCliente(), nombre, apellido, telefono, visitas: LEALTAD_VISITAS_REGALO })
+    setNombreLealtad('')
+    setApellidoLealtad('')
     setTelefonoLealtad('')
   }
 
@@ -278,6 +287,64 @@ export default function HomeV2Preview() {
     if (!descuento) return
     guardarLealtad({ ...lealtad, visitas: 0 })
     mostrarToast(`🎉 ${descuento}% de descuento aplicado a tu próxima orden`)
+  }
+
+  // Compone la tarjeta (QR + nombre + datos) como una sola imagen PNG en
+  // un canvas oculto, y dispara la descarga — así el cliente la guarda
+  // en su galería en vez de depender de un screenshot manual.
+  function descargarTarjetaLealtad() {
+    const canvas = canvasLealtadRef.current
+    if (!lealtad || !qrLealtad || !canvas) return
+    const ctx = canvas.getContext('2d')
+    const w = canvas.width, h = canvas.height
+
+    const grad = ctx.createLinearGradient(0, 0, w, h)
+    grad.addColorStop(0, '#922B21')
+    grad.addColorStop(1, '#5E1515')
+    ctx.fillStyle = grad
+    ctx.fillRect(0, 0, w, h)
+
+    ctx.textAlign = 'center'
+    ctx.fillStyle = '#fff'
+    ctx.font = '700 40px sans-serif'
+    ctx.fillText('Casa del Pollo', w / 2, 90)
+    ctx.font = '600 24px sans-serif'
+    ctx.fillStyle = 'rgba(255,255,255,0.85)'
+    ctx.fillText('Programa de Lealtad', w / 2, 128)
+
+    const qrImg = new Image()
+    qrImg.onload = () => {
+      const qrSize = 480
+      const qrX = (w - qrSize) / 2
+      const qrY = 170
+      const pad = 24
+      ctx.fillStyle = '#fff'
+      if (ctx.roundRect) {
+        ctx.beginPath()
+        ctx.roundRect(qrX - pad, qrY - pad, qrSize + pad * 2, qrSize + pad * 2, 20)
+        ctx.fill()
+      } else {
+        ctx.fillRect(qrX - pad, qrY - pad, qrSize + pad * 2, qrSize + pad * 2)
+      }
+      ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize)
+
+      let y = qrY + qrSize + pad * 2 + 60
+      ctx.fillStyle = '#fff'
+      ctx.font = '700 34px sans-serif'
+      ctx.fillText(`${lealtad.nombre} ${lealtad.apellido}`, w / 2, y)
+      y += 42
+      ctx.font = '600 22px sans-serif'
+      ctx.fillStyle = 'rgba(255,255,255,0.85)'
+      ctx.fillText(`Cliente #${lealtad.codigoCliente}`, w / 2, y)
+      y += 32
+      ctx.fillText(formatearTelefono(lealtad.telefono), w / 2, y)
+
+      const enlace = document.createElement('a')
+      enlace.href = canvas.toDataURL('image/png')
+      enlace.download = `tarjeta-lealtad-casadelpollo-${lealtad.codigoCliente}.png`
+      enlace.click()
+    }
+    qrImg.src = qrLealtad
   }
 
   // Controles solo para probar el flujo mientras no existe el lector del
@@ -921,6 +988,28 @@ export default function HomeV2Preview() {
                     <div><b>15 visitas</b><span>15% de descuento</span></div>
                   </div>
                 </div>
+                <div className="v2-lealtad-fila2">
+                  <div>
+                    <label className="config-label">Nombre</label>
+                    <input
+                      className="v2-lealtad-input"
+                      type="text"
+                      placeholder="Tu nombre"
+                      value={nombreLealtad}
+                      onChange={e => setNombreLealtad(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="config-label">Apellido</label>
+                    <input
+                      className="v2-lealtad-input"
+                      type="text"
+                      placeholder="Tu apellido"
+                      value={apellidoLealtad}
+                      onChange={e => setApellidoLealtad(e.target.value)}
+                    />
+                  </div>
+                </div>
                 <label className="config-label">Tu número de celular</label>
                 <input
                   className="v2-lealtad-input"
@@ -930,10 +1019,11 @@ export default function HomeV2Preview() {
                   value={telefonoLealtad}
                   onChange={e => setTelefonoLealtad(e.target.value)}
                 />
+                <p className="v2-lealtad-nota">Estos datos no se guardan en ningún servidor — solo se usan para generar la imagen de tu tarjeta, que tú mismo guardas en tu celular.</p>
                 <button
                   className="btn-primario"
-                  style={{ marginTop: 14 }}
-                  disabled={digitosLocales(telefonoLealtad).length !== 10}
+                  style={{ marginTop: 6 }}
+                  disabled={!nombreLealtad.trim() || !apellidoLealtad.trim() || digitosLocales(telefonoLealtad).length !== 10}
                   onClick={crearTarjetaLealtad}
                 >
                   Crear mi tarjeta
@@ -947,9 +1037,14 @@ export default function HomeV2Preview() {
                 <>
                   <div className="v2-lealtad-tarjeta">
                     {qrLealtad && <img src={qrLealtad} alt="Código de tu tarjeta de lealtad" className="v2-lealtad-qr" />}
+                    <div className="v2-lealtad-nombre">{lealtad.nombre} {lealtad.apellido}</div>
                     <div className="v2-lealtad-codigo">Cliente #{lealtad.codigoCliente}</div>
                     <div className="v2-lealtad-tel">{formatearTelefono(lealtad.telefono)}</div>
                   </div>
+                  <button className="v2-sc-btn v2-sc-btn-mapa" style={{ width: '100%', flexDirection: 'row', gap: 8, marginBottom: 14 }} onClick={descargarTarjetaLealtad}>
+                    <span>⬇️</span>Guardar tarjeta como imagen
+                  </button>
+                  <canvas ref={canvasLealtadRef} width={720} height={960} style={{ display: 'none' }} />
 
                   <div className="v2-lealtad-progreso-card">
                     <div className="v2-lealtad-visitas">
