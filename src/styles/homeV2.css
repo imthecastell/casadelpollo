@@ -399,3 +399,14 @@
   display: flex; align-items: center; justify-content: center;
 }
 .v2-asistente-complemento.on .v2-asistente-complemento-check { background: var(--verde); color: #fff; }
+.v2-asistente-complemento.sugerido { border-color: var(--dorado); }
+.v2-asistente-complemento-badge {
+  position: absolute; top: 8px; left: 8px; z-index: 1; background: var(--dorado); color: var(--cafe);
+  font-family: var(--font-title); font-weight: 800; font-size: 9.5px; letter-spacing: .02em;
+  padding: 3px 8px; border-radius: 20px;
+}
+
+.v2-asistente-tip {
+  background: #FFFBEB; border: 1px solid #F59E0B44; color: #92400E;
+  border-radius: var(--radio); padding: 12px 14px; font-size: 13px; line-height: 1.5;
+}

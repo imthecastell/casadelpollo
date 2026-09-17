@@ -33,6 +33,15 @@ const CATEGORIAS = [
   { key: 'fresco', label: 'Pollo fresco', match: 'Pollo Fresco', emoji: '🕐', antojo: 'Hoy tengo tiempo', desc: 'Piezas frescas para cocinar a tu manera' },
 ]
 
+// Tip del asistente en el paso de acompañamiento — recomendación fija por
+// categoría (nada de IA/chat: son rutas guiadas), resalta un complemento
+// real de esa sucursal si está disponible.
+const TIPS_ASISTENTE = {
+  marinados: { texto: 'Los marinados se lucen con algo fresco al lado.', sugerido: 'Ensalada' },
+  preparados: { texto: 'Para acompañar algo delicioso, nada como un arroz bien hecho.', sugerido: 'Arroz basmati a la jardinera' },
+  fresco: { texto: 'Si cocinas desde cero, un arroz blanco es el comodín perfecto.', sugerido: 'Arroz basmati blanco' },
+}
+
 // image_cooked_url solo es una foto real cuando el producto se puede cocinar
 // (se_puede_cocinar) — en productos que no, el campo trae un recorte basura
 // (ej. Ensalada/Arroz: un 10% sobrante de la imagen) que no debe usarse.
@@ -852,11 +861,18 @@ export default function HomeV2Preview() {
               <>
                 <div className="v2-asistente-titulo">¿Le entra un acompañamiento?</div>
                 <p className="v2-asistente-sub">Arroz, pasta o ensalada — se agregan directo a tu pedido</p>
+                {TIPS_ASISTENTE[asistente.categoria] && (
+                  <div className="v2-asistente-tip">
+                    💡 {TIPS_ASISTENTE[asistente.categoria].texto} Te recomendamos <b>{TIPS_ASISTENTE[asistente.categoria].sugerido}</b>.
+                  </div>
+                )}
                 <div className="v2-asistente-complementos">
                   {complementosAsistente.map(p => {
                     const agregado = asistente.complementosAgregados.includes(p.id)
+                    const sugerido = p.name === TIPS_ASISTENTE[asistente.categoria]?.sugerido
                     return (
-                      <button key={p.id} className={`v2-asistente-complemento${agregado ? ' on' : ''}`} onClick={() => agregarComplementoAsistente(p)}>
+                      <button key={p.id} className={`v2-asistente-complemento${agregado ? ' on' : ''}${sugerido ? ' sugerido' : ''}`} onClick={() => agregarComplementoAsistente(p)}>
+                        {sugerido && !agregado && <div className="v2-asistente-complemento-badge">Sugerido</div>}
                         <img src={p.image_url || img(p)} alt={p.name} />
                         <div className="v2-asistente-complemento-nombre">{p.name}</div>
                         <div className="v2-asistente-complemento-precio">${Number(p.price)}</div>
