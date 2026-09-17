@@ -467,3 +467,27 @@
   border: none; border-bottom: 1px solid var(--gris-claro); font-size: 13px; color: var(--texto); cursor: pointer;
 }
 .v2-asistente-bowl-grupo-lista button:last-child { border-bottom: none; }
+
+/* ---- Ruleta de horario (carrusel con scroll-snap) ---- */
+.v2-asistente-ruleta-label {
+  text-align: center; font-size: 12px; font-weight: 700; color: var(--texto-suave);
+  text-transform: uppercase; letter-spacing: .04em; margin: 4px 0 2px;
+}
+.v2-asistente-ruleta-label.apagado { opacity: .4; }
+.v2-asistente-ruleta-wrap { position: relative; }
+.v2-asistente-ruleta {
+  height: 132px; overflow-y: scroll; scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch; scrollbar-width: none;
+}
+.v2-asistente-ruleta::-webkit-scrollbar { display: none; }
+.v2-asistente-ruleta-item {
+  height: 44px; display: flex; align-items: center; justify-content: center;
+  scroll-snap-align: center; font-family: var(--font-title); font-weight: 700; font-size: 17px;
+  color: var(--texto-suave); cursor: pointer; transition: color .15s, font-size .15s;
+}
+.v2-asistente-ruleta-item.on { color: var(--rojo); font-weight: 800; font-size: 21px; }
+.v2-asistente-ruleta-marco {
+  position: absolute; top: 44px; left: 0; right: 0; height: 44px;
+  border-top: 1.5px solid var(--gris); border-bottom: 1.5px solid var(--gris);
+  pointer-events: none; z-index: 1;
+}

@@ -73,6 +73,54 @@ function formatearTelefono(raw) {
   return d.length === 10 ? `${d.slice(0, 3)} ${d.slice(3, 6)} ${d.slice(6)}` : (raw || '')
 }
 
+// Ruleta de horarios: un solo carrusel con las horas realmente válidas
+// (calculadas por generarHorariosDisponibles) en vez de un grid de botones.
+// No son dos ruletas independientes de hora/minuto porque eso permitiría
+// combinaciones inválidas (fuera de horario o antes del tiempo de
+// preparación) — aquí solo se puede llegar a una hora que sí existe.
+const RULETA_ITEM_ALTO = 44
+const RULETA_FILAS_VISIBLES = 3
+function RuletaHoras({ horas, valor, onCambiar }) {
+  const contRef = useRef(null)
+  const timeoutRef = useRef(null)
+  const padding = RULETA_ITEM_ALTO * Math.floor(RULETA_FILAS_VISIBLES / 2)
+
+  useEffect(() => {
+    const idx = horas.indexOf(valor)
+    if (idx >= 0 && contRef.current) contRef.current.scrollTop = idx * RULETA_ITEM_ALTO
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  function manejarScroll() {
+    clearTimeout(timeoutRef.current)
+    timeoutRef.current = setTimeout(() => {
+      const el = contRef.current
+      if (!el) return
+      const idx = Math.round(el.scrollTop / RULETA_ITEM_ALTO)
+      const hora = horas[Math.max(0, Math.min(horas.length - 1, idx))]
+      if (hora) onCambiar(hora)
+    }, 120)
+  }
+
+  function elegir(hora) {
+    const idx = horas.indexOf(hora)
+    contRef.current?.scrollTo({ top: idx * RULETA_ITEM_ALTO, behavior: 'smooth' })
+    onCambiar(hora)
+  }
+
+  return (
+    <div className="v2-asistente-ruleta-wrap">
+      <div className="v2-asistente-ruleta-marco" />
+      <div className="v2-asistente-ruleta" ref={contRef} onScroll={manejarScroll} style={{ paddingTop: padding, paddingBottom: padding }}>
+        {horas.map(h => (
+          <div key={h} className={`v2-asistente-ruleta-item${h === valor ? ' on' : ''}`} onClick={() => elegir(h)}>
+            {h}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function HomeV2Preview() {
   const { sucursales, sucursalActiva, setSucursalActiva, productos, carrito, agregarAlCarrito, eliminarDelCarrito, cargando, diseno, schedule, cocInicio, cocFin, cocFinSabado } = useApp()
   const [tab, setTab] = useState('home')
@@ -464,16 +512,6 @@ export default function HomeV2Preview() {
   }
 
   const horariosAsistente = generarHorariosDisponibles(carrito, schedule, cocInicio, cocFin, cocFinSabado)
-  // Máximo 4 botones (además de "Lo antes posible"), sin importar qué tan
-  // amplio sea el horario de la sucursal — siempre incluye el primer
-  // horario real (calculado con el tiempo de preparación) y reparte el
-  // resto a espacios iguales en vez de mostrar todo cada 10-30 min.
-  const MAX_HORARIOS_ASISTENTE = 4
-  const horariosSimplificadosAsistente = (() => {
-    if (horariosAsistente.length <= MAX_HORARIOS_ASISTENTE) return horariosAsistente
-    const paso = Math.ceil(horariosAsistente.length / MAX_HORARIOS_ASISTENTE)
-    return horariosAsistente.filter((_, i) => i % paso === 0).slice(0, MAX_HORARIOS_ASISTENTE)
-  })()
   const tieneCocinadosAsistente = ventanaPreparacion(carrito) === 40
   const cocFinMostradoAsistente = obtenerCocFinEfectivo(cocFin, cocFinSabado)
 
@@ -1184,20 +1222,17 @@ export default function HomeV2Preview() {
                     <span style={{ fontSize: 11, color: 'var(--texto-suave)' }}>Te avisamos en cuanto esté listo</span>
                   </button>
 
-                  {horariosSimplificadosAsistente.length === 0 ? (
+                  {horariosAsistente.length === 0 ? (
                     <p style={{ fontSize: 13, color: 'var(--rojo)' }}>No hay horarios disponibles con el tiempo de preparación requerido.</p>
                   ) : (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
-                      {horariosSimplificadosAsistente.map(hora => (
-                        <button
-                          key={hora}
-                          onClick={() => elegirHoraAsistente(hora)}
-                          style={{ padding: '10px 6px', border: `2px solid ${asistente.hora === hora ? 'var(--rojo)' : 'var(--gris)'}`, borderRadius: 'var(--radio)', background: asistente.hora === hora ? '#fff5f5' : 'var(--crema)', color: asistente.hora === hora ? 'var(--rojo)' : 'var(--texto)', fontFamily: 'var(--font-title)', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
-                        >
-                          {hora}
-                        </button>
-                      ))}
-                    </div>
+                    <>
+                      <div className={`v2-asistente-ruleta-label${asistente.asap ? ' apagado' : ''}`}>O elige tu hora</div>
+                      <RuletaHoras
+                        horas={horariosAsistente}
+                        valor={asistente.hora || horariosAsistente[0]}
+                        onCambiar={elegirHoraAsistente}
+                      />
+                    </>
                   )}
                 </div>
 
