@@ -521,7 +521,19 @@ export default function HomeV2Preview() {
     patchAsistente({ complementos: nuevosComplementos })
   }
 
-  const horariosAsistente = generarHorariosDisponibles(carrito, schedule, cocInicio, cocFin, cocFinSabado)
+  // Reglas del negocio para hoy: el último turno de recogida es a las
+  // 3:40pm y a partir de las 3:30pm ya no se toman más pedidos (aunque
+  // técnicamente quedaran huecos de preparación antes de esa hora).
+  const HORA_MAXIMA_PEDIDO_ASISTENTE = '15:30'
+  const ULTIMO_HORARIO_ASISTENTE = '15:40'
+  const ahoraPasadoElLimiteAsistente = (() => {
+    const ahora = new Date()
+    const [h, m] = HORA_MAXIMA_PEDIDO_ASISTENTE.split(':').map(Number)
+    return ahora.getHours() * 60 + ahora.getMinutes() >= h * 60 + m
+  })()
+  const horariosAsistente = ahoraPasadoElLimiteAsistente
+    ? []
+    : generarHorariosDisponibles(carrito, schedule, cocInicio, cocFin, cocFinSabado).filter(h => h <= ULTIMO_HORARIO_ASISTENTE)
   const tieneCocinadosAsistente = ventanaPreparacion(carrito) === 40
   const cocFinMostradoAsistente = obtenerCocFinEfectivo(cocFin, cocFinSabado)
 
@@ -1213,35 +1225,43 @@ export default function HomeV2Preview() {
               <>
                 <div className="v2-asistente-titulo">¿A qué hora recoges?</div>
                 <div style={{ background: 'var(--card-bg)', borderRadius: 'var(--radio-lg)', padding: 18, boxShadow: 'var(--sombra)' }}>
-                  {tieneCocinadosAsistente && cocInicio && cocFinMostradoAsistente && (
-                    <div style={{ fontSize: 12, color: '#92400E', background: '#FFFBEB', border: '1px solid #F59E0B44', borderRadius: 8, padding: '7px 12px', marginBottom: 10 }}>
-                      🍗 Tu pedido incluye productos cocinados · disponible entre <b>{formatearHora12(cocInicio)}</b> y <b>{formatearHora12(cocFinMostradoAsistente)}</b>
-                    </div>
-                  )}
-                  <button
-                    onClick={elegirAsapAsistente}
-                    style={{
-                      width: '100%', padding: '12px 14px', marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 2, textAlign: 'left',
-                      border: `2px solid ${asistente.asap ? 'var(--rojo)' : 'var(--gris)'}`, borderRadius: 'var(--radio)',
-                      background: asistente.asap ? '#fff5f5' : 'var(--crema)', cursor: 'pointer',
-                    }}
-                  >
-                    <span style={{ fontFamily: 'var(--font-title)', fontWeight: 800, fontSize: 15, color: asistente.asap ? 'var(--rojo)' : 'var(--texto)' }}>
-                      ⚡ Lo antes posible
-                    </span>
-                    <span style={{ fontSize: 11, color: 'var(--texto-suave)' }}>Te avisamos en cuanto esté listo</span>
-                  </button>
-
-                  {horariosAsistente.length === 0 ? (
-                    <p style={{ fontSize: 13, color: 'var(--rojo)' }}>No hay horarios disponibles con el tiempo de preparación requerido.</p>
+                  {ahoraPasadoElLimiteAsistente ? (
+                    <p style={{ fontSize: 13, color: 'var(--rojo)', margin: 0 }}>
+                      Ya no se están tomando pedidos por hoy — el horario de pedidos cierra a las {formatearHora12(HORA_MAXIMA_PEDIDO_ASISTENTE)}.
+                    </p>
                   ) : (
                     <>
-                      <div className={`v2-asistente-ruleta-label${asistente.asap ? ' apagado' : ''}`}>O elige tu hora</div>
-                      <RuletaHoras
-                        horas={horariosAsistente}
-                        valor={asistente.hora || horariosAsistente[0]}
-                        onCambiar={elegirHoraAsistente}
-                      />
+                      {tieneCocinadosAsistente && cocInicio && cocFinMostradoAsistente && (
+                        <div style={{ fontSize: 12, color: '#92400E', background: '#FFFBEB', border: '1px solid #F59E0B44', borderRadius: 8, padding: '7px 12px', marginBottom: 10 }}>
+                          🍗 Tu pedido incluye productos cocinados · disponible entre <b>{formatearHora12(cocInicio)}</b> y <b>{formatearHora12(cocFinMostradoAsistente)}</b>
+                        </div>
+                      )}
+                      <button
+                        onClick={elegirAsapAsistente}
+                        style={{
+                          width: '100%', padding: '12px 14px', marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 2, textAlign: 'left',
+                          border: `2px solid ${asistente.asap ? 'var(--rojo)' : 'var(--gris)'}`, borderRadius: 'var(--radio)',
+                          background: asistente.asap ? '#fff5f5' : 'var(--crema)', cursor: 'pointer',
+                        }}
+                      >
+                        <span style={{ fontFamily: 'var(--font-title)', fontWeight: 800, fontSize: 15, color: asistente.asap ? 'var(--rojo)' : 'var(--texto)' }}>
+                          ⚡ Lo antes posible
+                        </span>
+                        <span style={{ fontSize: 11, color: 'var(--texto-suave)' }}>Te avisamos en cuanto esté listo</span>
+                      </button>
+
+                      {horariosAsistente.length === 0 ? (
+                        <p style={{ fontSize: 13, color: 'var(--rojo)' }}>No hay horarios disponibles con el tiempo de preparación requerido.</p>
+                      ) : (
+                        <>
+                          <div className={`v2-asistente-ruleta-label${asistente.asap ? ' apagado' : ''}`}>O elige tu hora</div>
+                          <RuletaHoras
+                            horas={horariosAsistente}
+                            valor={asistente.hora || horariosAsistente[0]}
+                            onCambiar={elegirHoraAsistente}
+                          />
+                        </>
+                      )}
                     </>
                   )}
                 </div>
