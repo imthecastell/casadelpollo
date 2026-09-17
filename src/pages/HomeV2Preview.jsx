@@ -1080,11 +1080,18 @@ export default function HomeV2Preview() {
                             <span>{items.length} opciones {abierto ? '▲' : '▼'}</span>
                           </button>
                           {abierto && (
-                            <div className="v2-asistente-bowl-grupo-lista">
+                            <div className="v2-grid-simple" style={{ marginTop: 8 }}>
                               {items.map(item => (
-                                <button key={item.id} onClick={() => patchAsistente({ bowlMarinadoId: String(item.id), bowlMarinadoCat: '' })}>
-                                  <img src={img(item)} alt="" />
-                                  {item.name}{catName === 'Milanesas' ? ' · 1 pz' : ''}
+                                <button
+                                  key={item.id}
+                                  className="v2-tarjeta-simple v2-asistente-producto"
+                                  onClick={() => patchAsistente({ bowlMarinadoId: String(item.id), bowlMarinadoCat: '' })}
+                                >
+                                  <img src={img(item)} alt={item.name} />
+                                  <div className="v2-ts-scrim" />
+                                  <div className="v2-ts-overlay">
+                                    <div className="v2-ts-nombre">{item.name}{catName === 'Milanesas' ? ' · 1 pz' : ''}</div>
+                                  </div>
                                 </button>
                               ))}
                             </div>
