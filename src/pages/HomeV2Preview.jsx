@@ -69,6 +69,23 @@ const LEALTAD_CLAVE = 'cdp_lealtad'
 const LEALTAD_VISITAS_REGALO = 2
 const LEALTAD_META_10 = 10
 const LEALTAD_META_15 = 15
+// Simula lo que sabría el backend real una vez que exista el lector del
+// admin: solo {codigoCliente, telefono, visitas} — nunca nombre/apellido,
+// que quedan solo en el dispositivo que creó la tarjeta. Se llena la
+// primera vez que se "escanea" (por ahora, el botón de prueba), y NO se
+// borra con "Borrar tarjeta" (que solo simula perder la copia local) —
+// así se puede probar de verdad el flujo de recuperar por teléfono.
+const LEALTAD_BACKEND_SIM_CLAVE = 'cdp_lealtad_backend_sim'
+
+function leerRegistroBackendSim() {
+  try {
+    const guardado = localStorage.getItem(LEALTAD_BACKEND_SIM_CLAVE)
+    return guardado ? JSON.parse(guardado) : null
+  } catch { return null }
+}
+function guardarRegistroBackendSim(registro) {
+  try { localStorage.setItem(LEALTAD_BACKEND_SIM_CLAVE, JSON.stringify(registro)) } catch { /* modo privado */ }
+}
 
 function descuentoLealtad(visitas) {
   if (visitas >= LEALTAD_META_15) return 15
@@ -215,6 +232,8 @@ export default function HomeV2Preview() {
   const [apellidoLealtad, setApellidoLealtad] = useState('')
   const [telefonoLealtad, setTelefonoLealtad] = useState('')
   const [qrLealtad, setQrLealtad] = useState('')
+  const [mostrarRecuperarLealtad, setMostrarRecuperarLealtad] = useState(false)
+  const [telefonoRecuperar, setTelefonoRecuperar] = useState('')
   const canvasLealtadRef = useRef(null)
   const [asistente, setAsistente] = useState({
     abierto: false, paso: 1, personas: 2, categoria: null, producto: null,
@@ -286,6 +305,9 @@ export default function HomeV2Preview() {
     const descuento = descuentoLealtad(lealtad?.visitas || 0)
     if (!descuento) return
     guardarLealtad({ ...lealtad, visitas: 0 })
+    // El canje pasaría por el admin en la vida real, así que también
+    // actualiza lo que "sabe" el backend simulado.
+    guardarRegistroBackendSim({ codigoCliente: lealtad.codigoCliente, telefono: lealtad.telefono, visitas: 0 })
     mostrarToast(`🎉 ${descuento}% de descuento aplicado a tu próxima orden`)
   }
 
@@ -330,9 +352,11 @@ export default function HomeV2Preview() {
 
       let y = qrY + qrSize + pad * 2 + 60
       ctx.fillStyle = '#fff'
-      ctx.font = '700 34px sans-serif'
-      ctx.fillText(`${lealtad.nombre} ${lealtad.apellido}`, w / 2, y)
-      y += 42
+      if (lealtad.nombre) {
+        ctx.font = '700 34px sans-serif'
+        ctx.fillText(`${lealtad.nombre} ${lealtad.apellido}`, w / 2, y)
+        y += 42
+      }
       ctx.font = '600 22px sans-serif'
       ctx.fillStyle = 'rgba(255,255,255,0.85)'
       ctx.fillText(`Cliente #${lealtad.codigoCliente}`, w / 2, y)
@@ -348,13 +372,33 @@ export default function HomeV2Preview() {
   }
 
   // Controles solo para probar el flujo mientras no existe el lector del
-  // admin — simulan lo que haría un escaneo real en la sucursal.
+  // admin — simulan lo que haría un escaneo real en la sucursal: suma
+  // una visita Y, como sería la primera vez que el admin ve esa tarjeta,
+  // deja constancia en el "backend simulado" (buscable luego por teléfono).
   function simularVisitaLealtad() {
-    guardarLealtad({ ...lealtad, visitas: (lealtad?.visitas || 0) + 1 })
+    const visitas = (lealtad?.visitas || 0) + 1
+    guardarLealtad({ ...lealtad, visitas })
+    guardarRegistroBackendSim({ codigoCliente: lealtad.codigoCliente, telefono: lealtad.telefono, visitas })
   }
+  // Solo borra la copia local — simula perder el celular o borrar datos
+  // del navegador. El registro simulado del "backend" sigue existiendo,
+  // así se puede probar de verdad "Recuperar mi tarjeta" por teléfono.
   function reiniciarTarjetaLealtad() {
     guardarLealtad(null)
     try { localStorage.removeItem(LEALTAD_CLAVE) } catch { /* modo privado */ }
+  }
+
+  function recuperarTarjetaLealtad() {
+    const telefono = digitosLocales(telefonoRecuperar)
+    if (telefono.length !== 10) return
+    const registro = leerRegistroBackendSim()
+    if (!registro || registro.telefono !== telefono) {
+      mostrarToast('❌ No encontramos ninguna tarjeta escaneada con ese teléfono')
+      return
+    }
+    guardarLealtad({ codigoCliente: registro.codigoCliente, telefono: registro.telefono, visitas: registro.visitas, nombre: '', apellido: '' })
+    setTelefonoRecuperar('')
+    mostrarToast(`✅ Tarjeta recuperada — ${registro.visitas} visitas`)
   }
 
   // La barra superior "absorbe" el color de la banda que queda justo
@@ -1028,6 +1072,30 @@ export default function HomeV2Preview() {
                 >
                   Crear mi tarjeta
                 </button>
+
+                <button className="v2-lealtad-link" onClick={() => setMostrarRecuperarLealtad(v => !v)}>
+                  ¿Ya tienes una tarjeta? Recuperarla con tu teléfono
+                </button>
+                {mostrarRecuperarLealtad && (
+                  <div className="v2-lealtad-recuperar">
+                    <input
+                      className="v2-lealtad-input"
+                      type="tel"
+                      inputMode="numeric"
+                      placeholder="Tu teléfono (10 dígitos)"
+                      value={telefonoRecuperar}
+                      onChange={e => setTelefonoRecuperar(e.target.value)}
+                    />
+                    <p className="v2-lealtad-nota">Solo se puede recuperar una tarjeta que ya haya sido escaneada al menos una vez en sucursal. Si nunca la escanearon, no hay forma de validarla — tendrás que crear una nueva.</p>
+                    <button
+                      className="btn-primario"
+                      disabled={digitosLocales(telefonoRecuperar).length !== 10}
+                      onClick={recuperarTarjetaLealtad}
+                    >
+                      Buscar mi tarjeta
+                    </button>
+                  </div>
+                )}
               </>
             ) : (() => {
               const descuento = descuentoLealtad(lealtad.visitas)
@@ -1037,7 +1105,7 @@ export default function HomeV2Preview() {
                 <>
                   <div className="v2-lealtad-tarjeta">
                     {qrLealtad && <img src={qrLealtad} alt="Código de tu tarjeta de lealtad" className="v2-lealtad-qr" />}
-                    <div className="v2-lealtad-nombre">{lealtad.nombre} {lealtad.apellido}</div>
+                    {lealtad.nombre && <div className="v2-lealtad-nombre">{lealtad.nombre} {lealtad.apellido}</div>}
                     <div className="v2-lealtad-codigo">Cliente #{lealtad.codigoCliente}</div>
                     <div className="v2-lealtad-tel">{formatearTelefono(lealtad.telefono)}</div>
                   </div>
