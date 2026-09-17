@@ -125,6 +125,57 @@ const CATEGORIAS = [
   { key: 'fresco', label: 'Pollo fresco', match: 'Pollo Fresco', emoji: '🕐', antojo: 'Hoy tengo tiempo', desc: 'Piezas frescas para cocinar a tu manera' },
 ]
 
+// Descripciones de prueba para poder armar y probar el buscador ya
+// mismo — en el catálogo real este texto vendría del backend
+// (campo description, todavía no existe) y se cargaría desde el admin.
+// Escritas para cubrir palabras por las que alguien buscaría: sabor,
+// nivel de picor, ingredientes, ocasión.
+const DESCRIPCIONES_PRUEBA = {
+  'A la mexicana': 'Marinado clásico mexicano con jitomate, cebolla y chile — sabor casero, término medio de picor.',
+  'Adobado': 'Marinado rojo tradicional con chiles secos y especias, sabor intenso y ligeramente picante.',
+  'Agridulce (a la naranja)': 'Marinado agridulce cítrico con naranja, ideal si buscas algo dulce y refrescante, muy suave.',
+  'Al pastor': 'Marinado inspirado en el trompo, con achiote y piña — sabor dulce-ahumado, para toda la familia.',
+  'Al pesto': 'Marinado con albahaca, ajo y aceite de oliva, sabor herbal e italiano, muy suave.',
+  'Almendrado': 'Marinado cremoso con almendra y especias suaves, sabor delicado y suave.',
+  'Hoisin': 'Marinado asiático dulce y salado con salsa hoisin y ajonjolí, ideal para wok o sartén.',
+  'Mostaza miel': 'Marinado dulce con mostaza y miel, sabor suave, muy popular con niños.',
+  'Parmesano con cilantro': 'Marinado cremoso con queso parmesano y cilantro fresco, sabor suave y aromático.',
+  'Tailandés': 'Marinado picante-dulce con especias tailandesas, curry suave y toque de coco.',
+  'Teriyaki': 'Marinado japonés dulce y salado con soya y jengibre, listo para sartén o parrilla.',
+  'Albóndigas': 'Bolitas de pollo sazonadas, listas para air fryer — práctico para una comida rápida.',
+  'Chiles rellenos': 'Chile relleno empanizado, con queso, para hornear o air fryer — sabor tradicional mexicano.',
+  'Empanada de brócoli coliflor y queso': 'Empanada vegetariana rellena de brócoli, coliflor y queso — la única opción vegetariana del menú.',
+  'Empanada de jamón y queso': 'Empanada clásica de jamón y queso, ideal para niños y como snack rápido.',
+  'Hamburguesa': 'Hamburguesa de pollo lista para air fryer o sartén — rápida y sin complicaciones.',
+  'Medallón con tocino': 'Medallón de pollo envuelto en tocino, sabor ahumado, para una comida más contundente.',
+  'Nuggets caseros': 'Nuggets de pollo empanizados estilo casero, favoritos de los niños.',
+  'Nuggets de Dinosaurio': 'Nuggets con forma de dinosaurio, empanizados, pensados para los más pequeños.',
+  'Nuggets tempura': 'Nuggets con empanizado tipo tempura, más crujiente, ideal para bowls.',
+  'Pechuga rellena de Verdura': 'Pechuga rellena de verduras, opción más ligera y balanceada.',
+  'pechuga rellena Jamón y queso': 'Pechuga rellena de jamón y queso derretido, sabor clásico y contundente.',
+  'Pechuga rellena Pesto, mozzarella y espinacas': 'Pechuga rellena de pesto, mozzarella y espinacas, sabor italiano con verduras.',
+  'Rollo Relleno': 'Rollo de pollo relleno, para hornear o air fryer, buena opción para compartir.',
+  'Tenders': 'Tiras de pollo empanizadas, crujientes, clásico favorito de toda la familia.',
+  'Trozos de pollo': 'Trozos de pollo empanizados estilo boneless, sin salsa, ideal para bowls o botana.',
+}
+function descripcionProducto(p) {
+  return DESCRIPCIONES_PRUEBA[p.name] || ''
+}
+
+// Índice de búsqueda: nombre + descripción + categoría, sin acentos ni
+// mayúsculas, para que "jalapeno" encuentre "jalapeño" y viceversa.
+// Cuando exista el campo real en el backend, esto solo cambia de dónde
+// saca la descripción — la lógica de indexado/coincidencia queda igual.
+function normalizarTexto(txt) {
+  return (txt || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+}
+function coincideBusqueda(producto, consulta) {
+  const palabras = normalizarTexto(consulta).split(/\s+/).filter(Boolean)
+  if (palabras.length === 0) return false
+  const indice = normalizarTexto(`${producto.name} ${descripcionProducto(producto)} ${producto.category_name || ''}`)
+  return palabras.every(palabra => indice.includes(palabra))
+}
+
 // Tip del asistente en el paso de acompañamiento — recomendación fija por
 // categoría (nada de IA/chat: son rutas guiadas), resalta un complemento
 // real de esa sucursal si está disponible.
@@ -235,6 +286,8 @@ export default function HomeV2Preview() {
   const [mostrarRecuperarLealtad, setMostrarRecuperarLealtad] = useState(false)
   const [telefonoRecuperar, setTelefonoRecuperar] = useState('')
   const canvasLealtadRef = useRef(null)
+  const [mostrarBuscador, setMostrarBuscador] = useState(false)
+  const [consultaBusqueda, setConsultaBusqueda] = useState('')
   const [asistente, setAsistente] = useState({
     abierto: false, paso: 1, personas: 2, categoria: null, producto: null,
     gramos: 300, cantidad: 1, recogida: 'crudo', complementos: {},
@@ -446,6 +499,11 @@ export default function HomeV2Preview() {
   // "Más pedidos" del Home: 6 productos al azar (marinados o preparados)
   // que cambian una vez al día, para no mostrar siempre los mismos.
   const destacadosHoy = destacadosDelDia([...marinadosImg, ...preparadosImg], 6)
+
+  const productosBuscables = productos.filter(p => CATEGORIAS.some(c => c.match === p.category_name) && img(p))
+  const resultadosBusqueda = consultaBusqueda.trim()
+    ? productosBuscables.filter(p => coincideBusqueda(p, consultaBusqueda))
+    : []
 
   const promos = [
     nuevoProducto && {
@@ -841,7 +899,7 @@ export default function HomeV2Preview() {
           </div>
         </div>
         <div className="v2-tb-derecha">
-          <button className="v2-tb-btn" onClick={() => { cambiarTab('productos'); mostrarToast('Buscador enfocado') }}>🔍</button>
+          <button className="v2-tb-btn" onClick={() => setMostrarBuscador(true)}>🔍</button>
           <button className="v2-tb-btn" onClick={() => setMostrarCarrito(true)}>
             🛒{carrito.length > 0 && <span className="v2-tb-badge">{carrito.length}</span>}
           </button>
@@ -1179,6 +1237,48 @@ export default function HomeV2Preview() {
               <div className="v2-so-icono wa">💬</div>
               <div><div className="v2-so-nombre">Mensaje (WhatsApp)</div><div className="v2-so-detalle">Abre un chat prellenado</div></div>
             </a>
+          </div>
+        </div>
+      )}
+
+      {/* Buscador: indexa nombre + descripción (de prueba, ver
+          DESCRIPCIONES_PRUEBA) + categoría de los 3 tipos de producto.
+          z-index más bajo que el popup de agregar, para que seleccionar
+          un resultado abra el popup por encima del buscador. */}
+      {mostrarBuscador && (
+        <div className="v2-buscador-overlay">
+          <div className="v2-asistente-header">
+            <div className="v2-buscador-campo">
+              <span>🔍</span>
+              <input
+                type="text"
+                placeholder="Busca por sabor, ingrediente o antojo…"
+                value={consultaBusqueda}
+                onChange={e => setConsultaBusqueda(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <button className="v2-asistente-cerrar" onClick={() => { setMostrarBuscador(false); setConsultaBusqueda('') }}>✕</button>
+          </div>
+          <div className="v2-asistente-contenido">
+            {!consultaBusqueda.trim() ? (
+              <p className="v2-sheet-sub">Prueba con algo como "picante", "para niños", "dulce" o "sin salsa".</p>
+            ) : resultadosBusqueda.length === 0 ? (
+              <p className="v2-sheet-sub">No encontramos productos con esas palabras.</p>
+            ) : (
+              <div className="v2-grid-simple">
+                {resultadosBusqueda.map(p => (
+                  <div key={p.id} className="v2-tarjeta-simple" onClick={() => { abrirSeleccion(p); setMostrarBuscador(false) }}>
+                    <img src={img(p)} alt={p.name} />
+                    <div className="v2-ts-scrim" />
+                    <div className="v2-ts-precio-top">${Number(p.price)}{p.category_name === 'Marinados' ? '/kg' : ''}</div>
+                    <div className="v2-ts-overlay">
+                      <div className="v2-ts-nombre">{p.name}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

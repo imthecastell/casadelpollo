@@ -384,6 +384,19 @@
   background: var(--crema); display: flex; flex-direction: column;
   font-family: var(--font-body), sans-serif; color: var(--texto);
 }
+/* Mismo tratamiento de pantalla completa que .v2-asistente, pero con
+   z-index más bajo que el popup de "agregar" (70) — así, al elegir un
+   resultado, el popup se ve por encima del buscador en vez de detrás. */
+.v2-buscador-overlay {
+  position: fixed; inset: 0; max-width: 480px; margin: 0 auto; z-index: 60;
+  background: var(--crema); display: flex; flex-direction: column;
+  font-family: var(--font-body), sans-serif; color: var(--texto);
+}
+.v2-buscador-campo {
+  flex: 1; display: flex; align-items: center; gap: 8px; background: var(--gris-claro);
+  border-radius: 12px; padding: 10px 13px; min-width: 0;
+}
+.v2-buscador-campo input { border: none; background: none; outline: none; font-size: 13.5px; color: var(--texto); width: 100%; font-family: var(--font-body); }
 .v2-asistente-header {
   flex: 0 0 auto; display: flex; align-items: center; gap: 12px;
   padding: calc(env(safe-area-inset-top, 0) + 14px) 14px 12px;
