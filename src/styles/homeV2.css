@@ -265,7 +265,7 @@
 .v2-strip-grandes { display: flex; gap: 12px; overflow-x: auto; padding: 0 18px 4px; margin: 0 -18px; }
 .v2-tarjeta-grande-strip {
   position: relative; flex: 0 0 auto; width: 200px; aspect-ratio: 9 / 16; border-radius: 18px; overflow: hidden;
-  background: var(--gris-claro); border: 3px solid var(--cafe); box-shadow: 5px 5px 0 var(--cafe);
+  background: var(--gris-claro); border: 3px solid var(--cafe); box-shadow: 5px 5px 0 var(--cafe); cursor: pointer;
 }
 
 .v2-idea-card { background: linear-gradient(135deg, #FFF3DC, #FCE6D2); border-radius: 16px; padding: 14px 15px; display: flex; gap: 11px; align-items: center; margin-top: 14px; }
@@ -339,6 +339,18 @@
 .v2-so-icono { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 17px; flex: 0 0 auto; }
 .v2-so-icono.wa { background: #e4f2e9; }
 .v2-so-icono.tel { background: var(--gris-claro); }
+
+/* ---- hoja del carrito (ver/quitar productos reales) ---- */
+.v2-carrito-lista { max-height: 46vh; overflow-y: auto; margin-bottom: 4px; }
+.v2-carrito-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--crema-oscura); }
+.v2-carrito-item:last-child { border-bottom: none; }
+.v2-carrito-item img { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; flex-shrink: 0; background: var(--gris-claro); }
+.v2-carrito-item-nombre { font-family: var(--font-title); font-weight: 700; font-size: 13px; color: var(--texto); }
+.v2-carrito-item-detalle { font-size: 11.5px; color: var(--texto-suave); margin-top: 2px; }
+.v2-carrito-item-precio { font-size: 12.5px; font-weight: 700; color: var(--texto); white-space: nowrap; flex: 0 0 auto; }
+.v2-carrito-item-quitar { flex: 0 0 auto; border: none; background: var(--gris-claro); color: var(--texto-suave); width: 26px; height: 26px; border-radius: 50%; font-size: 12px; cursor: pointer; }
+.v2-carrito-total { display: flex; align-items: center; justify-content: space-between; padding: 14px 0 0; margin-top: 8px; border-top: 1.5px solid var(--gris-claro); font-family: var(--font-title); font-size: 14px; color: var(--texto); }
+.v2-carrito-total b { font-size: 17px; }
 .v2-so-nombre { font-family: var(--font-title); font-weight: 700; font-size: 13px; color: var(--texto); }
 .v2-so-detalle { font-size: 11px; color: var(--texto-suave); }
 

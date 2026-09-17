@@ -169,6 +169,7 @@ export default function HomeV2Preview() {
   const [recogidaSel, setRecogidaSel] = useState('crudo')
   const [agregadoSel, setAgregadoSel] = useState(false)
   const [mostrarAvisoSel, setMostrarAvisoSel] = useState(false)
+  const [mostrarCarrito, setMostrarCarrito] = useState(false)
   const [asistente, setAsistente] = useState({
     abierto: false, paso: 1, personas: 2, categoria: null, producto: null,
     gramos: 300, cantidad: 1, recogida: 'crudo', complementos: {},
@@ -263,7 +264,7 @@ export default function HomeV2Preview() {
     {
       badge: 'BOWLS', titulo: 'Arma tu Bowl', desc: 'Base + marinado + tu toque, listo en minutos.',
       cta: 'Empezar', imagen: bowlImg,
-      accion: () => mostrarToast('Esto abriría el flujo de Bowls: base → marinado → carrito'),
+      accion: () => abrirBowlDirecto(),
     },
     marinadosImg[2] && {
       badge: 'TEMPORADA', titulo: 'Marinados listos para la sartén', desc: 'Sazonados en casa, cocina en minutos.',
@@ -361,6 +362,20 @@ export default function HomeV2Preview() {
 
   function cerrarAsistente() {
     patchAsistente({ abierto: false })
+  }
+
+  // Accesos directos a "Arma tu Bowl" fuera del asistente (Home, banda
+  // verde, CTA de Productos) abren el asistente ya posicionado en el
+  // paso 3 de bowls, igual que si el usuario hubiera entrado por
+  // "Crear pedido" → "Arma tu Bowl".
+  function abrirBowlDirecto() {
+    setAsistente({
+      abierto: true, paso: 3, personas: 2, categoria: 'bowls', producto: null,
+      gramos: 300, cantidad: 1, recogida: 'crudo', complementos: {},
+      bowlBaseId: '', bowlMarinadoId: '', bowlMarinadoCat: '', bowlExtraBase: 0, bowlExtraMarinado: 0,
+      hora: null, asap: false, nombre: '', telefono: '', numeroOrden: null,
+      agregado: false, mostrarAviso: false, confirmado: false,
+    })
   }
 
   // Bowl tiene su propia sección desde el arranque (paso 0): arma todo
@@ -622,7 +637,7 @@ export default function HomeV2Preview() {
         </div>
         <div className="v2-tb-derecha">
           <button className="v2-tb-btn" onClick={() => { cambiarTab('productos'); mostrarToast('Buscador enfocado') }}>🔍</button>
-          <button className="v2-tb-btn" onClick={() => mostrarToast(`${carrito.length} producto${carrito.length === 1 ? '' : 's'} en tu carrito`)}>
+          <button className="v2-tb-btn" onClick={() => setMostrarCarrito(true)}>
             🛒{carrito.length > 0 && <span className="v2-tb-badge">{carrito.length}</span>}
           </button>
         </div>
@@ -677,13 +692,13 @@ export default function HomeV2Preview() {
             {bowlGrande && (
               <div className="v2-banda v2-banda-verde" data-color="#2a7a4b">
                 <div className="v2-seccion-titulo">Arma tu Bowl</div>
-                <div className="v2-bowl-hibrido" onClick={() => mostrarToast('Esto abriría el flujo de Bowls: base → marinado → carrito')}>
+                <div className="v2-bowl-hibrido" onClick={() => abrirBowlDirecto()}>
                   <div className="v2-bowl-hibrido-foto"><img src={img(bowlGrande)} alt={bowlGrande.name} /></div>
                   <div className="v2-bowl-hibrido-panel">
                     <div className="v2-promo-badge">BOWLS</div>
                     <h3>Arma tu Bowl</h3>
                     <div className="v2-promo-fila">
-                      <button className="v2-promo-cta" onClick={(e) => { e.stopPropagation(); mostrarToast('Esto abriría el flujo de Bowls: base → marinado → carrito') }}>Empezar</button>
+                      <button className="v2-promo-cta" onClick={(e) => { e.stopPropagation(); abrirBowlDirecto() }}>Empezar</button>
                       <span className="v2-ts-precio-pill">Desde ${Number(sucursalActiva.bowl_price || 120)}</span>
                     </div>
                   </div>
@@ -696,13 +711,13 @@ export default function HomeV2Preview() {
                 <div className="v2-seccion-titulo">Preparados para lucirte</div>
                 <div className="v2-strip-grandes">
                   {preparadosImg.slice(0, 6).map(p => (
-                    <div key={p.id} className="v2-tarjeta-grande-strip">
+                    <div key={p.id} className="v2-tarjeta-grande-strip" onClick={() => abrirSeleccion(p)}>
                       <div className="v2-card-foto"><img src={img(p)} alt={p.name} /></div>
                       <div className="v2-card-barra">
                         <div className="v2-card-barra-nombre">{p.name}</div>
                         <div className="v2-ts-precio-pill">${Number(p.price)}</div>
                       </div>
-                      <button className="v2-ts-add" onClick={(e) => { e.stopPropagation(); mostrarToast(`${p.name} agregado al carrito`) }}>+</button>
+                      <button className="v2-ts-add" onClick={(e) => { e.stopPropagation(); abrirSeleccion(p) }}>+</button>
                     </div>
                   ))}
                 </div>
@@ -716,13 +731,13 @@ export default function HomeV2Preview() {
             <div className="v2-pills">
               <div className="v2-pill-fondo" style={{ transform: `translateX(${CATEGORIAS.findIndex(c => c.key === categoria) * 100}%)` }} />
               {CATEGORIAS.map(c => (
-                <div key={c.key} className={`v2-pill${categoria === c.key ? ' on' : ''}`} onClick={() => setCategoria(c.key)}>
+                <div key={c.key} className={`v2-pill${categoria === c.key ? ' on' : ''}`} onClick={() => { setCategoria(c.key); setSeleccionProducto(null) }}>
                   {c.label}
                 </div>
               ))}
             </div>
 
-            <div className="v2-bowls-cta" onClick={() => mostrarToast('Esto abriría el flujo de Bowls: base → marinado → carrito')}>
+            <div className="v2-bowls-cta" onClick={() => abrirBowlDirecto()}>
               <div className="v2-bowls-emoji">🥗</div>
               <div className="v2-bowls-txt">
                 <strong>¿Poco tiempo? Pide un Bowl</strong>
@@ -852,7 +867,7 @@ export default function HomeV2Preview() {
                       <div className="v2-ts-nombre">{p.name}</div>
                       <button
                         className="v2-ts-add-inline"
-                        onClick={() => esMarinado ? abrirSeleccion(p) : mostrarToast(`${p.name} agregado al carrito`)}
+                        onClick={() => abrirSeleccion(p)}
                       >
                         +
                       </button>
@@ -893,7 +908,13 @@ export default function HomeV2Preview() {
                   <div className="v2-sc-nombre">{s.name}</div>
                   <div className="v2-sc-dir">{s.address}</div>
                   <div className="v2-sc-btns3">
-                    <button className="v2-sc-btn v2-sc-btn-pedido" onClick={() => s.id === sucursalActiva.id ? mostrarToast(`Ya estás pidiendo en ${s.name}`) : mostrarToast(`Esto llevaría al catálogo de ${s.name}`)}>
+                    <button
+                      className="v2-sc-btn v2-sc-btn-pedido"
+                      onClick={() => {
+                        if (s.id !== sucursalActiva.id) { setSucursalActiva(s); mostrarToast(`Ahora pidiendo en ${s.name}`) }
+                        cambiarTab('productos')
+                      }}
+                    >
                       <span>🛒</span>Pedido
                     </button>
                     {mapaHref
@@ -948,11 +969,14 @@ export default function HomeV2Preview() {
         </div>
       )}
 
-      {/* Popup de "agregar al carrito" para los destacados del Home
-          (Marinados más pedidos): mismo estado/lógica que la tarjeta
-          expandida de Productos (gramos, crudo/cocinado, agregar), pero
-          como hoja inferior en vez de expandirse dentro del grid. */}
-      {tab === 'home' && seleccionProducto && (
+      {/* Popup de "agregar al carrito": mismo estado/lógica que la
+          tarjeta expandida de Marinados en Productos (gramos,
+          crudo/cocinado, agregar), pero como hoja inferior. Cubre todo
+          Home (donde no hay grid para expandir en línea) y, en
+          Productos, Preparados/Fresco (Marinados ahí sigue usando su
+          propia tarjeta expandida con foto grande, así que se excluye
+          para no mostrar los dos a la vez). */}
+      {seleccionProducto && (tab === 'home' || (tab === 'productos' && categoria !== 'marinados')) && (
         <div className="v2-sheet-overlay on" onClick={(e) => { if (e.target === e.currentTarget) setSeleccionProducto(null) }}>
           <div className="v2-sheet">
             <div className="v2-sheet-handle" />
@@ -1005,6 +1029,52 @@ export default function HomeV2Preview() {
               onClick={handleAgregarSel}
             >
               {agregadoSel ? '✓ Agregado' : `Agregar ${gramosSel}g · $${precioTotalSel.toFixed(2)}`}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {mostrarCarrito && (
+        <div className="v2-sheet-overlay on" onClick={(e) => { if (e.target === e.currentTarget) setMostrarCarrito(false) }}>
+          <div className="v2-sheet">
+            <div className="v2-sheet-handle" />
+            <div className="v2-sheet-titulo">Tu carrito</div>
+
+            {carrito.length === 0 ? (
+              <p className="v2-sheet-sub">Todavía no agregas nada.</p>
+            ) : (
+              <>
+                <div className="v2-carrito-lista">
+                  {carrito.map(item => {
+                    const alPesar = item.tipo === 'pieza' || item.tipo === 'preparado' || item.tipo === 'milanesa'
+                    const precio = parseFloat(item.precioTotal || item.precio || 0)
+                    return (
+                      <div key={item.id} className="v2-carrito-item">
+                        {item.imagen_url && <img src={item.imagen_url} alt="" />}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div className="v2-carrito-item-nombre">{item.nombre}</div>
+                          {item.resumen && <div className="v2-carrito-item-detalle">{item.resumen}</div>}
+                        </div>
+                        <div className="v2-carrito-item-precio">{alPesar ? 'Al pesar' : `$${precio.toFixed(2)}`}</div>
+                        <button className="v2-carrito-item-quitar" onClick={() => eliminarDelCarrito(item.id)} aria-label={`Quitar ${item.nombre}`}>✕</button>
+                      </div>
+                    )
+                  })}
+                </div>
+                <div className="v2-carrito-total">
+                  <span>Total estimado</span>
+                  <b>
+                    ${carrito.reduce((sum, item) => {
+                      if (item.tipo === 'pieza' || item.tipo === 'preparado' || item.tipo === 'milanesa') return sum
+                      return sum + parseFloat(item.precioTotal || item.precio || 0)
+                    }, 0).toFixed(2)}
+                  </b>
+                </div>
+              </>
+            )}
+
+            <button className="btn-primario" style={{ marginTop: 16 }} onClick={() => setMostrarCarrito(false)}>
+              {carrito.length === 0 ? 'Ver el menú' : 'Seguir pidiendo'}
             </button>
           </div>
         </div>
