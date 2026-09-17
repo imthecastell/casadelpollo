@@ -450,9 +450,11 @@
 .v2-asistente-bowl-head { display: flex; align-items: center; justify-content: space-between; font-family: var(--font-title); font-weight: 800; font-size: 13px; color: var(--texto); margin-bottom: 10px; }
 .v2-asistente-bowl-opciones { display: flex; flex-wrap: wrap; gap: 8px; }
 .v2-asistente-bowl-opcion {
-  padding: 8px 14px; border-radius: 999px; border: 1.5px solid var(--gris); background: var(--crema);
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 14px 6px 6px; border-radius: 999px; border: 1.5px solid var(--gris); background: var(--crema);
   color: var(--texto); font-family: var(--font-body); font-size: 13px; cursor: pointer;
 }
+.v2-asistente-bowl-opcion img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex-shrink: 0; background: var(--gris-claro); }
 .v2-asistente-bowl-opcion.on { border-color: var(--rojo); background: #fff5f5; color: var(--rojo); font-weight: 700; }
 .v2-asistente-bowl-seleccionado {
   display: flex; align-items: center; gap: 10px; padding: 8px 10px;
@@ -471,9 +473,10 @@
 .v2-asistente-bowl-grupo-head.on { border-color: var(--rojo); }
 .v2-asistente-bowl-grupo-lista { border: 1.5px solid var(--gris-claro); border-top: none; border-radius: 0 0 10px 10px; overflow: hidden; }
 .v2-asistente-bowl-grupo-lista button {
-  display: block; width: 100%; text-align: left; padding: 10px 12px; background: var(--card-bg);
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 8px 12px; background: var(--card-bg);
   border: none; border-bottom: 1px solid var(--gris-claro); font-size: 13px; color: var(--texto); cursor: pointer;
 }
+.v2-asistente-bowl-grupo-lista button img { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; flex-shrink: 0; background: var(--gris-claro); }
 .v2-asistente-bowl-grupo-lista button:last-child { border-bottom: none; }
 
 /* ---- Ruleta de horario (carrusel con scroll-snap) ---- */

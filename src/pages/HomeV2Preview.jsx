@@ -1044,6 +1044,7 @@ export default function HomeV2Preview() {
                         className={`v2-asistente-bowl-opcion${asistente.bowlBaseId === String(producto.id) ? ' on' : ''}`}
                         onClick={() => patchAsistente({ bowlBaseId: String(producto.id) })}
                       >
+                        <img src={img(producto)} alt="" />
                         {etiqueta}
                       </button>
                     ))}
@@ -1082,6 +1083,7 @@ export default function HomeV2Preview() {
                             <div className="v2-asistente-bowl-grupo-lista">
                               {items.map(item => (
                                 <button key={item.id} onClick={() => patchAsistente({ bowlMarinadoId: String(item.id), bowlMarinadoCat: '' })}>
+                                  <img src={img(item)} alt="" />
                                   {item.name}{catName === 'Milanesas' ? ' · 1 pz' : ''}
                                 </button>
                               ))}
