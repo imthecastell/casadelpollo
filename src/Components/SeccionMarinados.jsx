@@ -26,7 +26,7 @@ export function rawCrop(url, size = 320) {
   return buildSideUrl(url, 0.0, size)
 }
 
-function MarimadoImg({ imageUrl, imageCookedUrl, isSelected, recogida }) {
+export function MarimadoImg({ imageUrl, imageCookedUrl, isSelected, recogida }) {
   const rawSrc    = imageUrl ? rawCrop(imageUrl) : null
   const cookedSrc = (imageCookedUrl || imageUrl) ? cookedCrop(imageCookedUrl || imageUrl) : null
   const showCooked = !!(isSelected && recogida === 'cocinado' && cookedSrc)

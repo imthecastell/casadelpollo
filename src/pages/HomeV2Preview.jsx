@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import LogoSlot from '../Components/LogoSlot.jsx'
 import AvisoAirfryer from '../Components/AvisoAirfryer.jsx'
-import { rawCrop, cookedCrop } from '../Components/SeccionMarinados.jsx'
+import { MarimadoImg } from '../Components/SeccionMarinados.jsx'
 import { generarHorariosDisponibles, ventanaPreparacion, obtenerCocFinEfectivo } from '../data/slots.js'
 import '../styles/homeV2.css'
 import '../styles/menu.css'
@@ -537,9 +537,6 @@ export default function HomeV2Preview() {
                   // del color del configurador para que quede conectado,
                   // en vez de un hueco en blanco.
                   const dejaHueco = index % 2 === 1
-                  const miniaturaSrc = (recogidaSel === 'cocinado' && p.se_puede_cocinar)
-                    ? cookedCrop(p.image_cooked_url || p.image_url)
-                    : rawCrop(p.image_url)
 
                   const bloques = []
                   if (dejaHueco) {
@@ -557,7 +554,7 @@ export default function HomeV2Preview() {
                   bloques.push(
                     <div key={p.id} style={{ gridColumn: '1 / -1' }}>
                       <button className="card-marinado card-marinado-activo" onClick={() => setSeleccionProducto(null)}>
-                        <img src={miniaturaSrc} alt={p.name} style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'cover', flexShrink: 0 }} />
+                        <MarimadoImg imageUrl={p.image_url} imageCookedUrl={p.image_cooked_url} isSelected recogida={recogidaSel} />
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div className="producto-nombre">{p.name}</div>
                           <div className="producto-precio">${p.price}/kg</div>
