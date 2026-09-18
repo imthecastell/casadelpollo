@@ -159,7 +159,9 @@ export function AppProvider({ children }) {
   }, [diseno])
 
   const agregarAlCarrito = (item) => {
-    setCarrito(prev => [...prev, { ...item, id: Date.now() + Math.random() }])
+    const id = Date.now() + Math.random()
+    setCarrito(prev => [...prev, { ...item, id }])
+    return id
   }
 
   const eliminarDelCarrito = (id) => {
