@@ -126,37 +126,39 @@ const CATEGORIAS = [
 ]
 
 // Descripciones de prueba para poder armar y probar el buscador ya
-// mismo — en el catálogo real este texto vendría del backend
-// (campo description, todavía no existe) y se cargaría desde el admin.
-// Escritas para cubrir palabras por las que alguien buscaría: sabor,
-// nivel de picor, ingredientes, ocasión.
+// mismo — en el catálogo real este texto vendría del backend (campo
+// description, todavía no existe) y se cargaría desde el admin. Punto
+// de partida genérico y apetitoso: "deliciosos trozos de pollo
+// [bañados/acompañados] en/de nuestra salsa/marinada X con sus
+// ingredientes", igual para todos — se puede afinar producto por
+// producto más adelante.
 const DESCRIPCIONES_PRUEBA = {
-  'A la mexicana': 'Marinado clásico mexicano con jitomate, cebolla y chile — sabor casero, término medio de picor.',
-  'Adobado': 'Marinado rojo tradicional con chiles secos y especias, sabor intenso y ligeramente picante.',
-  'Agridulce (a la naranja)': 'Marinado agridulce cítrico con naranja, ideal si buscas algo dulce y refrescante, muy suave.',
-  'Al pastor': 'Marinado inspirado en el trompo, con achiote y piña — sabor dulce-ahumado, para toda la familia.',
-  'Al pesto': 'Marinado con albahaca, ajo y aceite de oliva, sabor herbal e italiano, muy suave.',
-  'Almendrado': 'Marinado cremoso con almendra y especias suaves, sabor delicado y suave.',
-  'Hoisin': 'Marinado asiático dulce y salado con salsa hoisin y ajonjolí, ideal para wok o sartén.',
-  'Mostaza miel': 'Marinado dulce con mostaza y miel, sabor suave, muy popular con niños.',
-  'Parmesano con cilantro': 'Marinado cremoso con queso parmesano y cilantro fresco, sabor suave y aromático.',
-  'Tailandés': 'Marinado picante-dulce con especias tailandesas, curry suave y toque de coco.',
-  'Teriyaki': 'Marinado japonés dulce y salado con soya y jengibre, listo para sartén o parrilla.',
-  'Albóndigas': 'Bolitas de pollo sazonadas, listas para air fryer — práctico para una comida rápida.',
-  'Chiles rellenos': 'Chile relleno empanizado, con queso, para hornear o air fryer — sabor tradicional mexicano.',
-  'Empanada de brócoli coliflor y queso': 'Empanada vegetariana rellena de brócoli, coliflor y queso — la única opción vegetariana del menú.',
-  'Empanada de jamón y queso': 'Empanada clásica de jamón y queso, ideal para niños y como snack rápido.',
-  'Hamburguesa': 'Hamburguesa de pollo lista para air fryer o sartén — rápida y sin complicaciones.',
-  'Medallón con tocino': 'Medallón de pollo envuelto en tocino, sabor ahumado, para una comida más contundente.',
-  'Nuggets caseros': 'Nuggets de pollo empanizados estilo casero, favoritos de los niños.',
-  'Nuggets de Dinosaurio': 'Nuggets con forma de dinosaurio, empanizados, pensados para los más pequeños.',
-  'Nuggets tempura': 'Nuggets con empanizado tipo tempura, más crujiente, ideal para bowls.',
-  'Pechuga rellena de Verdura': 'Pechuga rellena de verduras, opción más ligera y balanceada.',
-  'pechuga rellena Jamón y queso': 'Pechuga rellena de jamón y queso derretido, sabor clásico y contundente.',
-  'Pechuga rellena Pesto, mozzarella y espinacas': 'Pechuga rellena de pesto, mozzarella y espinacas, sabor italiano con verduras.',
-  'Rollo Relleno': 'Rollo de pollo relleno, para hornear o air fryer, buena opción para compartir.',
-  'Tenders': 'Tiras de pollo empanizadas, crujientes, clásico favorito de toda la familia.',
-  'Trozos de pollo': 'Trozos de pollo empanizados estilo boneless, sin salsa, ideal para bowls o botana.',
+  'A la mexicana': 'Deliciosos trozos de pollo bañados en nuestra salsa a la mexicana con jitomate, cebolla y chile.',
+  'Adobado': 'Deliciosos trozos de pollo bañados en nuestro adobo de chiles secos y especias.',
+  'Agridulce (a la naranja)': 'Deliciosos trozos de pollo bañados en nuestra salsa agridulce de naranja.',
+  'Al pastor': 'Deliciosos trozos de pollo bañados en nuestra marinada al pastor con achiote y piña.',
+  'Al pesto': 'Deliciosos trozos de pollo bañados en nuestra salsa pesto con albahaca, ajo y aceite de oliva.',
+  'Almendrado': 'Deliciosos trozos de pollo bañados en nuestra salsa almendrada con especias suaves.',
+  'Hoisin': 'Deliciosos trozos de pollo bañados en nuestra salsa hoisin con ajonjolí.',
+  'Mostaza miel': 'Deliciosos trozos de pollo bañados en nuestra salsa de mostaza y miel.',
+  'Parmesano con cilantro': 'Deliciosos trozos de pollo bañados en nuestra salsa cremosa de parmesano y cilantro fresco.',
+  'Tailandés': 'Deliciosos trozos de pollo bañados en nuestra salsa tailandesa con especias y un toque de coco.',
+  'Teriyaki': 'Deliciosos trozos de pollo acompañados de nuestra salsa teriyaki con morrón, cebolla y zanahoria.',
+  'Albóndigas': 'Deliciosas albóndigas de pollo sazonadas, listas para preparar en air fryer.',
+  'Chiles rellenos': 'Delicioso chile relleno de queso, empanizado y listo para hornear o air fryer.',
+  'Empanada de brócoli coliflor y queso': 'Deliciosa empanada rellena de brócoli, coliflor y queso.',
+  'Empanada de jamón y queso': 'Deliciosa empanada rellena de jamón y queso.',
+  'Hamburguesa': 'Deliciosa hamburguesa de pollo, lista para preparar en air fryer o sartén.',
+  'Medallón con tocino': 'Delicioso medallón de pollo envuelto en tocino.',
+  'Nuggets caseros': 'Deliciosos nuggets de pollo empanizados estilo casero.',
+  'Nuggets de Dinosaurio': 'Deliciosos nuggets de pollo con forma de dinosaurio, empanizados.',
+  'Nuggets tempura': 'Deliciosos nuggets de pollo con empanizado estilo tempura, más crujiente.',
+  'Pechuga rellena de Verdura': 'Deliciosa pechuga de pollo rellena de verduras.',
+  'pechuga rellena Jamón y queso': 'Deliciosa pechuga de pollo rellena de jamón y queso.',
+  'Pechuga rellena Pesto, mozzarella y espinacas': 'Deliciosa pechuga de pollo rellena de pesto, mozzarella y espinacas.',
+  'Rollo Relleno': 'Delicioso rollo de pollo relleno, listo para hornear o air fryer.',
+  'Tenders': 'Deliciosas tiras de pollo empanizadas y crujientes.',
+  'Trozos de pollo': 'Deliciosos trozos de pollo empanizados estilo boneless.',
 }
 function descripcionProducto(p) {
   return DESCRIPCIONES_PRUEBA[p.name] || ''
