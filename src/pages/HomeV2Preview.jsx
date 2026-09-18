@@ -119,6 +119,11 @@ function payloadQRLealtad({ codigoCliente, nombre, apellido, telefono }) {
 
 const API_URL = 'https://casadelpollo-backend.onrender.com'
 
+// A diferencia del flujo real (que siempre pide elegir sucursal al entrar),
+// aquí se recuerda en este dispositivo — se pide una sola vez y las
+// siguientes visitas entran directo a Home con la misma sucursal.
+const SUCURSAL_CLAVE = 'cdp_v2_sucursal'
+
 const CATEGORIAS = [
   { key: 'marinados', label: 'Marinados', match: 'Marinados', emoji: '⚡', antojo: 'Algo rápido', desc: 'Ya sazonado, listo para cocinar en minutos' },
   { key: 'preparados', label: 'Preparados', match: 'Preparados', emoji: '😋', antojo: 'Algo delicioso', desc: 'Nuggets, empanizadas, milanesas y más' },
@@ -307,11 +312,15 @@ export default function HomeV2Preview() {
   const topbarRef = useRef(null)
   const contenidoRef = useRef(null)
 
+  // Restaura la sucursal guardada de una visita anterior. Si no hay
+  // ninguna (o ya no existe/está activa), sucursalActiva se queda en null
+  // y el render de abajo muestra la pantalla de "elige tu sucursal".
   useEffect(() => {
-    if (!sucursalActiva && sucursales.length) {
-      const vinedos = sucursales.find(s => s.name === 'Viñedos' && s.active) || sucursales.find(s => s.active)
-      if (vinedos) setSucursalActiva(vinedos)
-    }
+    if (sucursalActiva || !sucursales.length) return
+    let guardadaId = null
+    try { guardadaId = localStorage.getItem(SUCURSAL_CLAVE) } catch { /* modo privado */ }
+    const guardada = guardadaId && sucursales.find(s => String(s.id) === guardadaId && s.active)
+    if (guardada) setSucursalActiva(guardada)
   }, [sucursales, sucursalActiva, setSucursalActiva])
 
   useEffect(() => {
@@ -490,6 +499,11 @@ export default function HomeV2Preview() {
     setTab(t)
   }
 
+  function elegirSucursal(s) {
+    setSucursalActiva(s)
+    try { localStorage.setItem(SUCURSAL_CLAVE, String(s.id)) } catch { /* modo privado */ }
+  }
+
   const linkDe = (nombre) => links?.branches?.find(b => b.name === nombre)
 
   const marinadosImg = productos.filter(p => p.category_name === 'Marinados' && img(p))
@@ -532,8 +546,51 @@ export default function HomeV2Preview() {
     return () => clearInterval(timerRef.current)
   }, [promos.length])
 
-  if (cargando || !sucursalActiva) {
-    return <div className="v2-cargando">Cargando catálogo real de Viñedos…</div>
+  if (cargando) {
+    return (
+      <div className="v2-shell-root">
+        <div className="v2-cargando">Cargando…</div>
+      </div>
+    )
+  }
+
+  if (!sucursalActiva) {
+    const activas = sucursales.filter(s => s.active)
+    const inactivas = sucursales.filter(s => !s.active)
+    return (
+      <div className="v2-shell-root">
+        <div className="v2-selector-inicial">
+          <div className="v2-selector-inicial-logo">
+            <LogoSlot
+              type="logotipo"
+              src={diseno?.logo_original_url || diseno?.logo_url}
+              mode="original"
+              alt="Casa del Pollo"
+              width={220} height={60}
+            />
+          </div>
+          <div className="v2-selector-inicial-titulo">¿Dónde vas a pedir?</div>
+          <div className="v2-selector-inicial-sub">Elige tu sucursal — lo recordamos para tu próxima visita</div>
+          <div className="v2-selector-inicial-lista">
+            {activas.length === 0 && inactivas.length === 0 && (
+              <div className="v2-selector-inicial-vacio">No pudimos cargar las sucursales. Intenta de nuevo en un momento.</div>
+            )}
+            {activas.map(s => (
+              <button key={s.id} className="v2-sheet-opcion v2-sheet-opcion-btn" onClick={() => elegirSucursal(s)}>
+                <div className="v2-so-icono tel">📍</div>
+                <div><div className="v2-so-nombre">{s.name}</div><div className="v2-so-detalle">{s.address}</div></div>
+              </button>
+            ))}
+            {inactivas.map(s => (
+              <div key={s.id} className="v2-sheet-opcion v2-selector-inicial-inactiva">
+                <div className="v2-so-icono tel">📍</div>
+                <div><div className="v2-so-nombre">{s.name}</div><div className="v2-so-detalle">Próximamente</div></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
   }
 
   const catDef = CATEGORIAS.find(c => c.key === categoria)
@@ -1222,7 +1279,7 @@ export default function HomeV2Preview() {
             <div className="v2-sheet-titulo">Cambiar de sucursal</div>
             <div className="v2-sheet-sub">Vas a ver el catálogo y precios de la sucursal que elijas</div>
             {sucursales.map(s => (
-              <button key={s.id} className="v2-sheet-opcion v2-sheet-opcion-btn" onClick={() => { setSucursalActiva(s); setSelectorSucursalAbierto(false); mostrarToast(`Ahora pidiendo en ${s.name}`) }}>
+              <button key={s.id} className="v2-sheet-opcion v2-sheet-opcion-btn" onClick={() => { elegirSucursal(s); setSelectorSucursalAbierto(false); mostrarToast(`Ahora pidiendo en ${s.name}`) }}>
                 <div className="v2-so-icono tel">📍</div>
                 <div><div className="v2-so-nombre">{s.name}</div><div className="v2-so-detalle">{s.address}</div></div>
                 {s.id === sucursalActiva.id && <span className="v2-sheet-check">✓</span>}
