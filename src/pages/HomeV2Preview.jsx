@@ -881,7 +881,14 @@ export default function HomeV2Preview() {
   }
 
   return (
-    <>
+    // v2-shell-root en vez de un Fragment: envuelve tanto .v2-shell (el
+    // shell con position:fixed) como los overlays que son sus hermanos
+    // (asistente, popups, buscador — movidos fuera de .v2-shell antes por
+    // el bug de z-index del banner de "Instalar app"). Solo declara los
+    // tokens de marca reescalados de la Propuesta 3 (paleta intensificada);
+    // al no tener position/opacity/transform no crea un stacking context
+    // nuevo, así que no reintroduce ese bug.
+    <div className="v2-shell-root">
     <div className="v2-shell">
 
       <div className="v2-topbar" ref={topbarRef} style={colorTopbar ? { background: colorTopbar } : undefined}>
@@ -1885,6 +1892,6 @@ export default function HomeV2Preview() {
         </div>
       )}
 
-    </>
+    </div>
   )
 }

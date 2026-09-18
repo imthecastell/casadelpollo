@@ -1,6 +1,25 @@
 /* Preview oculto de navegación V2 — reutiliza las variables de :root
    definidas en global.css (colores, fuentes de marca). Ruta /preview-v2. */
 
+/* Propuesta 3 "Marca oficial intensificada" (paleta aprobada) — misma
+   familia de colores de la marca, versión más saturada/con más
+   contraste. Sobrescribe los tokens SOLO dentro de .v2-shell-root, sin
+   tocar :root de global.css, así que no afecta nada de producción
+   (MenuPrincipal, Carrito, SelectorSucursal, etc. siguen con los
+   colores originales). Cualquier var(--rojo)/var(--dorado)/var(--crema)
+   usado dentro de este preview — venga de homeV2.css o reutilizando
+   clases/estilos inline de global.css — recoge estos valores porque
+   las custom properties se resuelven en cascada según el elemento
+   donde se usan, no donde se definieron. */
+.v2-shell-root {
+  --rojo: #C62A1B;
+  --rojo-oscuro: #4A1210;
+  --rojo-claro: #E85A3F;
+  --dorado: #F0A020;
+  --dorado-claro: #F7B84D;
+  --crema: #FFF7EA;
+}
+
 .v2-cargando {
   min-height: 100vh; display: flex; align-items: center; justify-content: center;
   font-family: var(--font-body), sans-serif; color: var(--texto-suave); font-size: 14px;
