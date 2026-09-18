@@ -27,17 +27,36 @@
 
 /* ---- pantalla inicial: elegir sucursal (solo se ve una vez por dispositivo) ---- */
 .v2-selector-inicial {
-  min-height: 100vh; max-width: 480px; margin: 0 auto;
-  background: var(--crema); display: flex; flex-direction: column;
-  padding: calc(env(safe-area-inset-top, 0) + 48px) 24px calc(env(safe-area-inset-bottom, 0) + 32px);
+  position: relative; min-height: 100vh; max-width: 480px; margin: 0 auto;
+  background: var(--crema); overflow: hidden;
   font-family: var(--font-body), sans-serif;
+}
+/* Fondo: fotos de producto cocinado rotando como slideshow (destacadosDelDia
+   elige el subconjunto del día, un setInterval las va cruzando con fade). */
+.v2-selector-inicial-fondo { position: absolute; inset: 0; z-index: 0; }
+.v2-selector-inicial-fondo-img {
+  position: absolute; inset: 0; background-size: cover; background-position: center;
+  opacity: 0; transition: opacity 1.4s ease;
+}
+.v2-selector-inicial-fondo-img.on { opacity: 1; }
+.v2-selector-inicial-fondo-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(20,8,6,.6) 0%, rgba(20,8,6,.4) 32%, rgba(20,8,6,.15) 55%, var(--crema) 82%);
+}
+.v2-selector-inicial-contenido {
+  position: relative; z-index: 1;
+  min-height: 100vh; display: flex; flex-direction: column; justify-content: space-between;
+  padding: calc(env(safe-area-inset-top, 0) + 48px) 24px calc(env(safe-area-inset-bottom, 0) + 32px);
 }
 .v2-selector-inicial-logo { display: flex; justify-content: center; margin-bottom: 28px; }
 .v2-selector-inicial-titulo {
-  font-family: var(--font-title), sans-serif; font-weight: 800; font-size: 22px; color: var(--texto);
-  text-align: center; letter-spacing: -0.3px;
+  font-family: var(--font-title), sans-serif; font-weight: 800; font-size: 24px; color: #fff;
+  text-align: center; letter-spacing: -0.3px; text-shadow: 0 2px 12px rgba(0,0,0,.4);
 }
-.v2-selector-inicial-sub { font-size: 13px; color: var(--texto-suave); text-align: center; margin-top: 6px; margin-bottom: 28px; }
+.v2-selector-inicial-sub {
+  font-size: 13px; color: rgba(255,255,255,.9); text-align: center; margin-top: 6px;
+  text-shadow: 0 1px 8px rgba(0,0,0,.35);
+}
 .v2-selector-inicial-lista {
   background: var(--card-bg); border-radius: var(--radio-lg); padding: 4px 18px;
   box-shadow: var(--sombra-lg);

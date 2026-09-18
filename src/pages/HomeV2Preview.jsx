@@ -124,6 +124,30 @@ const API_URL = 'https://casadelpollo-backend.onrender.com'
 // siguientes visitas entran directo a Home con la misma sucursal.
 const SUCURSAL_CLAVE = 'cdp_v2_sucursal'
 
+// Fondo de la pantalla de elegir sucursal: fotos de producto ya cocinado
+// (mismo recorte/CDN que usa el selector real, SelectorSucursal.jsx) — no
+// se puede usar el catálogo real aquí porque todavía no hay sucursal
+// elegida, así que no hay `productos` cargados. El día elige un subconjunto
+// estable (destacadosDelDia) y ese subconjunto rota como slideshow.
+const CDN_HERO = 'https://res.cloudinary.com/do4juvxio/image/upload'
+const COOK_HERO = (f) => `${CDN_HERO}/c_crop,fl_relative,x_0.50,y_0.00,w_0.50,h_1.00/ar_4:3,c_fill,w_960/${f}`
+const HERO_ITEMS_SUCURSAL = [
+  COOK_HERO('marinados/teriyaki.png'),
+  COOK_HERO('marinados/adobado.png'),
+  COOK_HERO('marinados/pollo%20al%20pastor.png'),
+  COOK_HERO('marinados/almendrado.png'),
+  COOK_HERO('marinados/hoisin.png'),
+  COOK_HERO('marinados/mostaza%20miel.png'),
+  COOK_HERO('marinados/pollo%20al%20parmesano.png'),
+  COOK_HERO('marinados/tailndes.png'),
+  COOK_HERO('marinados/fajitas%20a%20la%20mexicana.png'),
+  COOK_HERO('preparados/pechuga_rellena.png'),
+  COOK_HERO('preparados/chiles_rellenos.png'),
+  COOK_HERO('preparados/hamburguesa.png'),
+  COOK_HERO('preparados/medalones.png'),
+  COOK_HERO('preparados/nuggets.png'),
+]
+
 const CATEGORIAS = [
   { key: 'marinados', label: 'Marinados', match: 'Marinados', emoji: '⚡', antojo: 'Algo rápido', desc: 'Ya sazonado, listo para cocinar en minutos' },
   { key: 'preparados', label: 'Preparados', match: 'Preparados', emoji: '😋', antojo: 'Algo delicioso', desc: 'Nuggets, empanizadas, milanesas y más' },
@@ -308,9 +332,21 @@ export default function HomeV2Preview() {
   const [links, setLinks] = useState(null)
   const [heroIdx, setHeroIdx] = useState(0)
   const [colorTopbar, setColorTopbar] = useState(null)
+  // Subconjunto del día para el fondo del selector de sucursal — estable
+  // mientras dure el día, cambia solo a la medianoche.
+  const [heroSeleccionSucursal] = useState(() => destacadosDelDia(HERO_ITEMS_SUCURSAL, 6))
+  const [heroIdxSucursal, setHeroIdxSucursal] = useState(0)
   const timerRef = useRef(null)
   const topbarRef = useRef(null)
   const contenidoRef = useRef(null)
+
+  // Slideshow del fondo del selector de sucursal — solo corre mientras esa
+  // pantalla está en juego (sin sucursal elegida todavía).
+  useEffect(() => {
+    if (sucursalActiva || heroSeleccionSucursal.length < 2) return
+    const t = setInterval(() => setHeroIdxSucursal(i => (i + 1) % heroSeleccionSucursal.length), 4500)
+    return () => clearInterval(t)
+  }, [sucursalActiva, heroSeleccionSucursal.length])
 
   // Restaura la sucursal guardada de una visita anterior. Si no hay
   // ninguna (o ya no existe/está activa), sucursalActiva se queda en null
@@ -560,33 +596,47 @@ export default function HomeV2Preview() {
     return (
       <div className="v2-shell-root">
         <div className="v2-selector-inicial">
-          <div className="v2-selector-inicial-logo">
-            <LogoSlot
-              type="logotipo"
-              src={diseno?.logo_original_url || diseno?.logo_url}
-              mode="original"
-              alt="Casa del Pollo"
-              width={220} height={60}
-            />
+          <div className="v2-selector-inicial-fondo">
+            {heroSeleccionSucursal.map((src, i) => (
+              <div
+                key={src}
+                className={`v2-selector-inicial-fondo-img${i === heroIdxSucursal ? ' on' : ''}`}
+                style={{ backgroundImage: `url(${src})` }}
+              />
+            ))}
+            <div className="v2-selector-inicial-fondo-overlay" />
           </div>
-          <div className="v2-selector-inicial-titulo">¿Dónde vas a pedir?</div>
-          <div className="v2-selector-inicial-sub">Elige tu sucursal — lo recordamos para tu próxima visita</div>
-          <div className="v2-selector-inicial-lista">
-            {activas.length === 0 && inactivas.length === 0 && (
-              <div className="v2-selector-inicial-vacio">No pudimos cargar las sucursales. Intenta de nuevo en un momento.</div>
-            )}
-            {activas.map(s => (
-              <button key={s.id} className="v2-sheet-opcion v2-sheet-opcion-btn" onClick={() => elegirSucursal(s)}>
-                <div className="v2-so-icono tel">📍</div>
-                <div><div className="v2-so-nombre">{s.name}</div><div className="v2-so-detalle">{s.address}</div></div>
-              </button>
-            ))}
-            {inactivas.map(s => (
-              <div key={s.id} className="v2-sheet-opcion v2-selector-inicial-inactiva">
-                <div className="v2-so-icono tel">📍</div>
-                <div><div className="v2-so-nombre">{s.name}</div><div className="v2-so-detalle">Próximamente</div></div>
+          <div className="v2-selector-inicial-contenido">
+            <div className="v2-selector-inicial-encabezado">
+              <div className="v2-selector-inicial-logo">
+                <LogoSlot
+                  type="logotipo"
+                  src={diseno?.logo_original_url || diseno?.logo_url}
+                  mode="blanco"
+                  alt="Casa del Pollo"
+                  width={220} height={60}
+                />
               </div>
-            ))}
+              <div className="v2-selector-inicial-titulo">¿Dónde vas a pedir?</div>
+              <div className="v2-selector-inicial-sub">Elige tu sucursal — lo recordamos para tu próxima visita</div>
+            </div>
+            <div className="v2-selector-inicial-lista">
+              {activas.length === 0 && inactivas.length === 0 && (
+                <div className="v2-selector-inicial-vacio">No pudimos cargar las sucursales. Intenta de nuevo en un momento.</div>
+              )}
+              {activas.map(s => (
+                <button key={s.id} className="v2-sheet-opcion v2-sheet-opcion-btn" onClick={() => elegirSucursal(s)}>
+                  <div className="v2-so-icono tel">📍</div>
+                  <div><div className="v2-so-nombre">{s.name}</div><div className="v2-so-detalle">{s.address}</div></div>
+                </button>
+              ))}
+              {inactivas.map(s => (
+                <div key={s.id} className="v2-sheet-opcion v2-selector-inicial-inactiva">
+                  <div className="v2-so-icono tel">📍</div>
+                  <div><div className="v2-so-nombre">{s.name}</div><div className="v2-so-detalle">Próximamente</div></div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
