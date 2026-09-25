@@ -362,9 +362,6 @@
   color: var(--rojo); font-family: var(--font-body); font-size: 12.5px; font-weight: 700;
   text-decoration: underline; cursor: pointer; margin-top: 16px; padding: 6px;
 }
-.v2-lealtad-recuperar { background: var(--gris-claro); border-radius: 12px; padding: 14px; margin-top: 8px; }
-.v2-lealtad-recuperar .v2-lealtad-input { margin-top: 0; }
-.v2-lealtad-recuperar .v2-lealtad-nota { margin: 10px 0 12px; }
 .v2-lealtad-tarjeta {
   background: linear-gradient(135deg, var(--rojo), var(--rojo-oscuro)); border-radius: var(--radio-lg);
   padding: 22px; text-align: center; color: #fff; margin-bottom: 14px; box-shadow: var(--sombra-lg);
@@ -380,10 +377,6 @@
 .v2-lealtad-barra > div { height: 100%; background: var(--rojo); border-radius: 4px; transition: width .3s ease; }
 .v2-lealtad-msg { font-size: 12.5px; color: var(--texto-suave); margin: 0 0 12px; }
 .v2-lealtad-msg b { color: var(--texto); }
-.v2-lealtad-dev { margin-top: 18px; border: 1.5px dashed var(--gris); border-radius: 12px; padding: 12px; }
-.v2-lealtad-dev p { font-size: 11px; color: var(--texto-suave); margin: 0 0 8px; }
-.v2-lealtad-dev-btns { display: flex; gap: 8px; }
-.v2-lealtad-dev-btns .v2-sc-btn { flex: 1; padding: 10px 4px; }
 
 /* ---- barra inferior ---- */
 .v2-tabbar {
@@ -551,6 +544,10 @@
 .v2-asistente-recibo-hora span:last-child { font-family: var(--font-title); font-weight: 800; font-size: 18px; color: var(--texto); }
 .v2-asistente-recibo-pago { font-size: 10px; color: var(--gris); margin: 8px 0 0; }
 .v2-asistente-confirmado-nota { font-size: 11px; color: var(--texto-suave); max-width: 300px; line-height: 1.5; }
+.v2-asistente-whatsapp { width: 100%; max-width: 320px; text-align: left; font-size: 12px; color: var(--texto-suave); }
+.v2-asistente-whatsapp summary { cursor: pointer; line-height: 1.4; }
+.v2-asistente-whatsapp pre { white-space: pre-wrap; word-break: break-word; font-family: var(--font-body), sans-serif; font-size: 12px; color: var(--texto); background: #e7f7ec; border-radius: 10px; padding: 10px 12px; margin: 8px 0 0; }
+.v2-asistente-error { font-size: 13px; color: var(--rojo); background: #fdecec; border-radius: 10px; padding: 10px 12px; margin: 0 0 12px; }
 
 /* ---- Bowls dentro del asistente (mismas reglas que SeccionBowls real) ---- */
 .v2-asistente-bowl-card { background: var(--card-bg); border-radius: var(--radio-lg); box-shadow: var(--sombra); padding: 16px; }

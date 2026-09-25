@@ -5,6 +5,8 @@ import LogoSlot from '../Components/LogoSlot.jsx'
 import AvisoAirfryer from '../Components/AvisoAirfryer.jsx'
 import { MarimadoImg } from '../Components/SeccionMarinados.jsx'
 import { generarHorariosDisponibles, ventanaPreparacion, obtenerCocFinEfectivo } from '../data/slots.js'
+import { armarMensajeWhatsapp } from '../data/pedidoWhatsapp.js'
+import { codificarQR } from '../data/lealtadQR.js'
 import '../styles/homeV2.css'
 import '../styles/menu.css'
 
@@ -58,66 +60,32 @@ function precioExtraBowlAsistente(producto, gramosExtra) {
   return (gramosExtra / 1000) * precioKg
 }
 
-// ── Programa de lealtad (preview) ──────────────────────────────────────
-// La tarjeta vive solo en este dispositivo (localStorage) — no hay
-// backend real todavía. El plan acordado: 2 visitas de regalo al crear
-// la tarjeta y 1 por cada visita real (la registraría el admin al
-// escanear, cuando exista esa pieza); de la visita 10 a la 14 se puede
-// canjear 10% una vez, de la 15 en adelante 15% una vez; canjear
-// cualquiera de los dos reinicia el contador a 0.
+// ── Programa de lealtad ──────────────────────────────────────────────────
+// La tarjeta (nombre, código, QR) vive en este celular (localStorage). El
+// registro solo existe en el servidor desde que la escanean por primera vez
+// en caja (2 visitas de regalo); de ahí, 1 visita por día, 10% de 10 a 14
+// visitas y 15% desde 15. El canje y la recuperación se hacen en caja. Aquí
+// solo se consultan las visitas reales por código — nunca se manda el nombre.
 const LEALTAD_CLAVE = 'cdp_lealtad'
 const LEALTAD_VISITAS_REGALO = 2
 const LEALTAD_META_10 = 10
 const LEALTAD_META_15 = 15
-// Simula lo que sabría el backend real una vez que exista el lector del
-// admin: solo {codigoCliente, telefono, visitas} — nunca nombre/apellido,
-// que quedan solo en el dispositivo que creó la tarjeta. Se llena la
-// primera vez que se "escanea" (por ahora, el botón de prueba), y NO se
-// borra con "Borrar tarjeta" (que solo simula perder la copia local) —
-// así se puede probar de verdad el flujo de recuperar por teléfono.
-const LEALTAD_BACKEND_SIM_CLAVE = 'cdp_lealtad_backend_sim'
-
-function leerRegistroBackendSim() {
-  try {
-    const guardado = localStorage.getItem(LEALTAD_BACKEND_SIM_CLAVE)
-    return guardado ? JSON.parse(guardado) : null
-  } catch { return null }
-}
-function guardarRegistroBackendSim(registro) {
-  try { localStorage.setItem(LEALTAD_BACKEND_SIM_CLAVE, JSON.stringify(registro)) } catch { /* modo privado */ }
-}
-
-function descuentoLealtad(visitas) {
-  if (visitas >= LEALTAD_META_15) return 15
-  if (visitas >= LEALTAD_META_10) return 10
-  return 0
-}
 
 function generarCodigoCliente() {
   return Math.floor(100000 + Math.random() * 900000).toString()
 }
 
-// El QR no muestra el teléfono en claro — codifica un payload simple que
-// el lector del admin (cuando se construya) podrá decodificar para
-// buscar/crear el registro. Esto es solo una ofuscación básica (base64),
-// no cifrado real; cuando se conecte al backend de verdad se define el
-// esquema definitivo ahí. base64 vía TextEncoder para que nombres con
-// acentos/ñ no rompan btoa (que solo acepta Latin-1).
-function payloadQRLealtad({ codigoCliente, nombre, apellido, telefono }) {
-  const contenido = JSON.stringify({ c: codigoCliente, n: nombre, a: apellido, t: telefono })
-  const binario = String.fromCharCode(...new TextEncoder().encode(contenido))
-  return `CDP1:${btoa(binario)}`
-}
-
-/* Preview oculto de la navegación V2 (Home + tab bar). Ruta secreta
-   /preview-v2, fuera del flujo de `vista` normal — no afecta nada de
-   producción. Usa datos reales (sucursales, catálogo, WhatsApp, /api/links)
-   para que el comportamiento en el celular real sea representativo; los
-   botones de agregar/pedido siguen siendo decorativos (toast) para no
-   tocar el carrito real, pero Cómo-llegar/WhatsApp/Instagram en Sucursales
-   ya usan los hipervínculos reales de /api/links. */
+/* V2 de la tienda (Home + tab bar), en la ruta /preview-v2 mientras no es
+   pública — fuera del flujo de `vista` actual. Usa datos y carrito reales,
+   manda pedidos reales marcados como prueba (PEDIDOS_DE_PRUEBA) y la
+   tarjeta de lealtad consulta sus visitas en el servidor. */
 
 const API_URL = 'https://casadelpollo-backend.onrender.com'
+
+// Mientras la V2 no sea pública, cada pedido llega al admin marcado como
+// prueba: numeración aparte (PA01…), oculto por defecto en Pedidos y nunca
+// se imprime solo. Al publicar la V2, esto pasa a false.
+const PEDIDOS_DE_PRUEBA = true
 
 // A diferencia del flujo real (que siempre pide elegir sucursal al entrar),
 // aquí se recuerda en este dispositivo — se pide una sola vez y las
@@ -295,7 +263,7 @@ function RuletaHoras({ horas, valor, onCambiar }) {
 }
 
 export default function HomeV2Preview() {
-  const { sucursales, sucursalActiva, setSucursalActiva, productos, carrito, agregarAlCarrito, eliminarDelCarrito, cargando, diseno, schedule, cocInicio, cocFin, cocFinSabado } = useApp()
+  const { sucursales, sucursalActiva, setSucursalActiva, productos, carrito, agregarAlCarrito, eliminarDelCarrito, limpiarCarrito, registrarPedido, cargando, diseno, schedule, cocInicio, cocFin, cocFinSabado } = useApp()
   const [tab, setTab] = useState('home')
   const [categoria, setCategoria] = useState('marinados')
   const [seleccionProducto, setSeleccionProducto] = useState(null)
@@ -314,8 +282,10 @@ export default function HomeV2Preview() {
   const [apellidoLealtad, setApellidoLealtad] = useState('')
   const [telefonoLealtad, setTelefonoLealtad] = useState('')
   const [qrLealtad, setQrLealtad] = useState('')
-  const [mostrarRecuperarLealtad, setMostrarRecuperarLealtad] = useState(false)
-  const [telefonoRecuperar, setTelefonoRecuperar] = useState('')
+  // Visitas reales según el servidor: null = sin consultar; { registrada:
+  // false } = aún no la escanean en caja; { error: true } = sin conexión.
+  const [estadoLealtad, setEstadoLealtad] = useState(null)
+  const [consultaLealtad, setConsultaLealtad] = useState(0)
   const canvasLealtadRef = useRef(null)
   const [mostrarBuscador, setMostrarBuscador] = useState(false)
   const [consultaBusqueda, setConsultaBusqueda] = useState('')
@@ -379,11 +349,27 @@ export default function HomeV2Preview() {
   useEffect(() => {
     if (!lealtad) return
     let vivo = true
-    QRCode.toDataURL(payloadQRLealtad(lealtad), { margin: 1, width: 220 })
+    QRCode.toDataURL(codificarQR(lealtad.codigoCliente, lealtad.telefono), { margin: 1, width: 220 })
       .then(url => { if (vivo) setQrLealtad(url) })
       .catch(() => { if (vivo) setQrLealtad('') })
     return () => { vivo = false }
   }, [lealtad])
+
+  // Consulta las visitas reales al abrir la pestaña (y al pedir actualizar),
+  // así lo que registró la caja se ve sin recargar la página.
+  useEffect(() => {
+    if (tab !== 'lealtad' || !lealtad?.codigoCliente) return
+    let vivo = true
+    fetch(`${API_URL}/api/lealtad/publico/${lealtad.codigoCliente}`)
+      .then(r => {
+        if (r.status === 404) return { registrada: false }
+        if (!r.ok) throw new Error(`HTTP ${r.status}`)
+        return r.json().then(d => ({ registrada: true, ...d }))
+      })
+      .then(d => { if (vivo) setEstadoLealtad(d) })
+      .catch(() => { if (vivo) setEstadoLealtad({ error: true }) })
+    return () => { vivo = false }
+  }, [tab, lealtad?.codigoCliente, consultaLealtad])
 
   function guardarLealtad(siguiente) {
     setLealtad(siguiente)
@@ -395,21 +381,13 @@ export default function HomeV2Preview() {
     const nombre = nombreLealtad.trim()
     const apellido = apellidoLealtad.trim()
     if (!nombre || !apellido || telefono.length !== 10) return
-    guardarLealtad({ codigoCliente: generarCodigoCliente(), nombre, apellido, telefono, visitas: LEALTAD_VISITAS_REGALO })
+    setEstadoLealtad(null)
+    guardarLealtad({ codigoCliente: generarCodigoCliente(), nombre, apellido, telefono })
     setNombreLealtad('')
     setApellidoLealtad('')
     setTelefonoLealtad('')
   }
 
-  function canjearDescuentoLealtad() {
-    const descuento = descuentoLealtad(lealtad?.visitas || 0)
-    if (!descuento) return
-    guardarLealtad({ ...lealtad, visitas: 0 })
-    // El canje pasaría por el admin en la vida real, así que también
-    // actualiza lo que "sabe" el backend simulado.
-    guardarRegistroBackendSim({ codigoCliente: lealtad.codigoCliente, telefono: lealtad.telefono, visitas: 0 })
-    mostrarToast(`🎉 ${descuento}% de descuento aplicado a tu próxima orden`)
-  }
 
   // Compone la tarjeta (QR + nombre + datos) como una sola imagen PNG en
   // un canvas oculto, y dispara la descarga — así el cliente la guarda
@@ -471,34 +449,13 @@ export default function HomeV2Preview() {
     qrImg.src = qrLealtad
   }
 
-  // Controles solo para probar el flujo mientras no existe el lector del
-  // admin — simulan lo que haría un escaneo real en la sucursal: suma
-  // una visita Y, como sería la primera vez que el admin ve esa tarjeta,
-  // deja constancia en el "backend simulado" (buscable luego por teléfono).
-  function simularVisitaLealtad() {
-    const visitas = (lealtad?.visitas || 0) + 1
-    guardarLealtad({ ...lealtad, visitas })
-    guardarRegistroBackendSim({ codigoCliente: lealtad.codigoCliente, telefono: lealtad.telefono, visitas })
-  }
-  // Solo borra la copia local — simula perder el celular o borrar datos
-  // del navegador. El registro simulado del "backend" sigue existiendo,
-  // así se puede probar de verdad "Recuperar mi tarjeta" por teléfono.
-  function reiniciarTarjetaLealtad() {
+  // Solo borra la tarjeta de este celular; si ya la escanearon en caja, el
+  // registro sigue ahí y se recupera dando el número en tienda.
+  function borrarTarjetaLealtad() {
+    if (!window.confirm('¿Borrar la tarjeta de este celular? Si ya la escanearon en tienda, tus visitas no se pierden: se recupera dando tu número en caja.')) return
+    setEstadoLealtad(null)
     guardarLealtad(null)
     try { localStorage.removeItem(LEALTAD_CLAVE) } catch { /* modo privado */ }
-  }
-
-  function recuperarTarjetaLealtad() {
-    const telefono = digitosLocales(telefonoRecuperar)
-    if (telefono.length !== 10) return
-    const registro = leerRegistroBackendSim()
-    if (!registro || registro.telefono !== telefono) {
-      mostrarToast('❌ No encontramos ninguna tarjeta escaneada con ese teléfono')
-      return
-    }
-    guardarLealtad({ codigoCliente: registro.codigoCliente, telefono: registro.telefono, visitas: registro.visitas, nombre: '', apellido: '' })
-    setTelefonoRecuperar('')
-    mostrarToast(`✅ Tarjeta recuperada — ${registro.visitas} visitas`)
   }
 
   // La barra superior "absorbe" el color de la banda que queda justo
@@ -545,6 +502,9 @@ export default function HomeV2Preview() {
   const marinadosImg = productos.filter(p => p.category_name === 'Marinados' && img(p))
   const preparadosImg = productos.filter(p => p.category_name === 'Preparados' && img(p))
   const nuevoProducto = productos.find(p => p.is_nuevo && img(p))
+  // Igual que MenuPrincipal: sucursales sin bowls (diseno.bowls_enabled =
+  // false, ej. El Parque) no muestran ningún acceso a "Arma tu Bowl".
+  const bowlsActivo = diseno?.bowls_enabled !== false
   const ensalada = productos.find(p => p.name === 'Ensalada')
   const bowlImg = img(ensalada) || img(marinadosImg[0])
   const bowlGrande = marinadosImg[1] || marinadosImg[0]
@@ -563,7 +523,7 @@ export default function HomeV2Preview() {
       cta: 'Ver marinados', imagen: img(nuevoProducto),
       accion: () => { cambiarTab('productos'); setCategoria('marinados') },
     },
-    {
+    bowlsActivo && {
       badge: 'BOWLS', titulo: 'Arma tu Bowl', desc: 'Base + marinado + tu toque, listo en minutos.',
       cta: 'Empezar', imagen: bowlImg,
       accion: () => abrirBowlDirecto(),
@@ -698,10 +658,9 @@ export default function HomeV2Preview() {
   // antoja? (rápido=Marinados, delicioso=Preparados, tengo tiempo=Fresco)
   // → 3) producto → 4) configuración (pre-llenada con la recomendación) →
   // 5) sugerencia de acompañamiento (arroz/pasta/ensalada) → 6) horario →
-  // 7) confirmar. Agrega al carrito real en cada paso que corresponde; el
-  // paso final de "confirmar" es decorativo a propósito (no llama al
-  // confirmarPedido real) para no crear pedidos de verdad desde este
-  // preview oculto — solo muestra el mismo resumen que vería el cliente.
+  // 7) confirmar. Agrega al carrito real en cada paso que corresponde, y el
+  // paso final registra el pedido en el sistema (marcado como prueba
+  // mientras PEDIDOS_DE_PRUEBA esté activo).
   const GRAMOS_POR_PERSONA_MIN = 250
   const GRAMOS_POR_PERSONA_MAX = 300
 
@@ -721,6 +680,19 @@ export default function HomeV2Preview() {
 
   function cerrarAsistente() {
     patchAsistente({ abierto: false })
+  }
+
+  // "Hacer pedido" desde el carrito: entra directo al horario con lo que ya
+  // se agregó (Home, Productos, buscador), sin pasar por el asistente.
+  function abrirCheckout() {
+    setMostrarCarrito(false)
+    setAsistente({
+      abierto: true, paso: 6, personas: 2, categoria: null, producto: null,
+      gramos: 300, cantidad: 1, recogida: 'crudo', complementos: {},
+      bowlBaseId: '', bowlMarinadoId: '', bowlMarinadoCat: '', bowlExtraBase: 0, bowlExtraMarinado: 0,
+      hora: null, asap: false, nombre: '', telefono: '', numeroOrden: null,
+      agregado: false, mostrarAviso: false, confirmado: false, desdeCarrito: true,
+    })
   }
 
   // Bowl arranca con 200g de arroz + 200g del primer marinado ya
@@ -761,6 +733,7 @@ export default function HomeV2Preview() {
 
   function pasoAtrasAsistente() {
     if (asistente.paso <= 0) { cerrarAsistente(); return }
+    if (asistente.desdeCarrito && asistente.paso === 6) { cerrarAsistente(); setMostrarCarrito(true); return }
     if (asistente.paso === 1) { patchAsistente({ paso: 0 }); return }
     // Bowl entra directo al paso 3 desde el paso 0 (sin personas/antojo) y
     // salta el 5 (acompañamiento, redundante con su propia base) yendo del
@@ -978,13 +951,24 @@ export default function HomeV2Preview() {
 
   const puedeConfirmarAsistente = asistente.nombre.trim().length > 0 && (asistente.hora || asistente.asap)
 
-  function confirmarAsistente() {
-    if (!puedeConfirmarAsistente) return
-    // Decorativo a propósito: genera un número de orden simulado en vez de
-    // llamar al confirmarPedido real, para no crear pedidos de verdad desde
-    // este preview oculto.
-    const numeroOrden = Math.floor(1000 + Math.random() * 9000)
-    patchAsistente({ confirmado: true, numeroOrden, paso: 8 })
+  async function confirmarAsistente() {
+    if (!puedeConfirmarAsistente || asistente.enviando) return
+    patchAsistente({ enviando: true, errorEnvio: '' })
+    const datosCliente = { nombre: asistente.nombre.trim(), telefono: asistente.telefono.trim() }
+    // Sucursales sin pedidos en línea reciben el pedido por WhatsApp; en modo
+    // prueba igual se registra en el sistema (no se abre WhatsApp, para no
+    // mandarle nada real a la tienda) y se muestra el mensaje que llegaría.
+    const porWhatsapp = sucursalActiva?.pedidos_en_linea === false
+    const mensajeWhatsapp = porWhatsapp
+      ? armarMensajeWhatsapp({ carrito, sucursal: sucursalActiva, horaEntrega: asistente.hora, datosCliente, asap: asistente.asap })
+      : ''
+    try {
+      const orden = await registrarPedido({ horaEntrega: asistente.hora, datosCliente, asap: asistente.asap, esPrueba: PEDIDOS_DE_PRUEBA })
+      limpiarCarrito()
+      patchAsistente({ enviando: false, confirmado: true, numeroOrden: orden.order_number, mensajeWhatsapp, paso: 8 })
+    } catch {
+      patchAsistente({ enviando: false, errorEnvio: 'No pudimos registrar tu pedido. Revisa tu conexión e intenta de nuevo.' })
+    }
   }
 
   return (
@@ -1068,7 +1052,7 @@ export default function HomeV2Preview() {
               </div>
             )}
 
-            {bowlGrande && (
+            {bowlsActivo && bowlGrande && (
               <div className="v2-banda v2-banda-verde" data-color="#2a7a4b">
                 <div className="v2-seccion-titulo">Arma tu Bowl</div>
                 <div className="v2-bowl-hibrido" onClick={() => abrirBowlDirecto()}>
@@ -1116,14 +1100,14 @@ export default function HomeV2Preview() {
               ))}
             </div>
 
-            <div className="v2-bowls-cta" onClick={() => abrirBowlDirecto()}>
+            {bowlsActivo && <div className="v2-bowls-cta" onClick={() => abrirBowlDirecto()}>
               <div className="v2-bowls-emoji">🥗</div>
               <div className="v2-bowls-txt">
                 <strong>¿Poco tiempo? Pide un Bowl</strong>
                 <span>Base + marinado + tu toque, listo en minutos</span>
               </div>
               <div className="v2-bowls-precio">Desde ${Number(sucursalActiva.bowl_price || 120)}</div>
-            </div>
+            </div>}
 
             <div className="v2-grid-simple">
               {productosCategoria.map(p => (
@@ -1200,7 +1184,7 @@ export default function HomeV2Preview() {
                 <div className="v2-lealtad-intro">
                   <div className="v2-lealtad-intro-emoji">🎁</div>
                   <h3>Únete al programa de lealtad</h3>
-                  <p>Recibe 2 visitas de regalo al crear tu tarjeta y 1 visita más por cada pedido en sucursal.</p>
+                  <p>Crea tu tarjeta y muéstrala en caja: empiezas con 2 visitas de regalo y sumas 1 cada día que nos visites.</p>
                   <div className="v2-lealtad-metas">
                     <div><b>10 visitas</b><span>10% de descuento</span></div>
                     <div><b>15 visitas</b><span>15% de descuento</span></div>
@@ -1237,7 +1221,7 @@ export default function HomeV2Preview() {
                   value={telefonoLealtad}
                   onChange={e => setTelefonoLealtad(e.target.value)}
                 />
-                <p className="v2-lealtad-nota">Estos datos no se guardan en ningún servidor — solo se usan para generar la imagen de tu tarjeta, que tú mismo guardas en tu celular.</p>
+                <p className="v2-lealtad-nota">Tu nombre nunca sale de tu celular: solo aparece en tu tarjeta. Tu número y tu código se registran hasta que escanean tu tarjeta en tienda, para contar tus visitas.</p>
                 <button
                   className="btn-primario"
                   style={{ marginTop: 6 }}
@@ -1247,34 +1231,16 @@ export default function HomeV2Preview() {
                   Crear mi tarjeta
                 </button>
 
-                <button className="v2-lealtad-link" onClick={() => setMostrarRecuperarLealtad(v => !v)}>
-                  ¿Ya tienes una tarjeta? Recuperarla con tu teléfono
-                </button>
-                {mostrarRecuperarLealtad && (
-                  <div className="v2-lealtad-recuperar">
-                    <input
-                      className="v2-lealtad-input"
-                      type="tel"
-                      inputMode="numeric"
-                      placeholder="Tu teléfono (10 dígitos)"
-                      value={telefonoRecuperar}
-                      onChange={e => setTelefonoRecuperar(e.target.value)}
-                    />
-                    <p className="v2-lealtad-nota">Solo se puede recuperar una tarjeta que ya haya sido escaneada al menos una vez en sucursal. Si nunca la escanearon, no hay forma de validarla — tendrás que crear una nueva.</p>
-                    <button
-                      className="btn-primario"
-                      disabled={digitosLocales(telefonoRecuperar).length !== 10}
-                      onClick={recuperarTarjetaLealtad}
-                    >
-                      Buscar mi tarjeta
-                    </button>
-                  </div>
-                )}
+                <p className="v2-lealtad-nota" style={{ marginTop: 14 }}>
+                  <b>¿Ya tenías tarjeta y la perdiste?</b> Si ya la escanearon en tienda, da tu número en caja y seguirás sumando tus visitas.
+                </p>
               </>
             ) : (() => {
-              const descuento = descuentoLealtad(lealtad.visitas)
-              const meta = lealtad.visitas < LEALTAD_META_10 ? LEALTAD_META_10 : LEALTAD_META_15
-              const progreso = Math.min(100, Math.round((lealtad.visitas / meta) * 100))
+              const registrada = estadoLealtad?.registrada === true
+              const visitas = registrada ? estadoLealtad.visitas : LEALTAD_VISITAS_REGALO
+              const descuento = registrada ? estadoLealtad.descuento : 0
+              const meta = visitas < LEALTAD_META_10 ? LEALTAD_META_10 : LEALTAD_META_15
+              const progreso = Math.min(100, Math.round((visitas / meta) * 100))
               return (
                 <>
                   <div className="v2-lealtad-tarjeta">
@@ -1289,29 +1255,38 @@ export default function HomeV2Preview() {
                   <canvas ref={canvasLealtadRef} width={720} height={960} style={{ display: 'none' }} />
 
                   <div className="v2-lealtad-progreso-card">
-                    <div className="v2-lealtad-visitas">
-                      <b>{lealtad.visitas}</b> {lealtad.visitas === 1 ? 'visita' : 'visitas'}
-                    </div>
-                    {descuento > 0 ? (
+                    {estadoLealtad === null ? (
+                      <p className="v2-lealtad-msg">Consultando tus visitas…</p>
+                    ) : estadoLealtad.error ? (
                       <>
-                        <p className="v2-lealtad-msg">🎉 Tienes <b>{descuento}%</b> de descuento disponible</p>
-                        <button className="btn-primario" onClick={canjearDescuentoLealtad}>Canjear {descuento}%</button>
+                        <p className="v2-lealtad-msg">No pudimos consultar tus visitas. Revisa tu conexión.</p>
+                        <button className="v2-lealtad-link" onClick={() => setConsultaLealtad(n => n + 1)}>Intentar de nuevo</button>
+                      </>
+                    ) : !registrada ? (
+                      <>
+                        <div className="v2-lealtad-visitas"><b>{LEALTAD_VISITAS_REGALO}</b> visitas de regalo</div>
+                        <p className="v2-lealtad-msg">Se activan en tu primera visita: <b>muéstrale este QR al cajero</b>.</p>
                       </>
                     ) : (
                       <>
-                        <div className="v2-lealtad-barra"><div style={{ width: `${progreso}%` }} /></div>
-                        <p className="v2-lealtad-msg">Te faltan <b>{meta - lealtad.visitas}</b> {meta - lealtad.visitas === 1 ? 'visita' : 'visitas'} para tu {meta === LEALTAD_META_10 ? '10%' : '15%'} de descuento</p>
+                        <div className="v2-lealtad-visitas">
+                          <b>{visitas}</b> {visitas === 1 ? 'visita' : 'visitas'}
+                        </div>
+                        {descuento > 0 ? (
+                          <p className="v2-lealtad-msg">🎉 Tienes <b>{descuento}%</b> de descuento. Muestra tu QR en caja para usarlo en tu compra.</p>
+                        ) : (
+                          <>
+                            <div className="v2-lealtad-barra"><div style={{ width: `${progreso}%` }} /></div>
+                            <p className="v2-lealtad-msg">Te faltan <b>{meta - visitas}</b> {meta - visitas === 1 ? 'visita' : 'visitas'} para tu {meta === LEALTAD_META_10 ? '10%' : '15%'} de descuento</p>
+                          </>
+                        )}
+                        {estadoLealtad.visitada_hoy && <p className="v2-lealtad-msg">✓ Tu visita de hoy ya está registrada</p>}
                       </>
                     )}
                   </div>
 
-                  <div className="v2-lealtad-dev">
-                    <p>🧪 Pruebas — todavía no existe el lector del admin</p>
-                    <div className="v2-lealtad-dev-btns">
-                      <button className="v2-sc-btn v2-sc-btn-mapa" onClick={simularVisitaLealtad}>+1 visita (simular escaneo)</button>
-                      <button className="v2-sc-btn v2-sc-btn-mapa" onClick={reiniciarTarjetaLealtad}>Borrar tarjeta</button>
-                    </div>
-                  </div>
+                  <button className="v2-lealtad-link" onClick={() => setConsultaLealtad(n => n + 1)}>Actualizar mis visitas</button>
+                  <button className="v2-lealtad-link" onClick={borrarTarjetaLealtad}>Borrar tarjeta de este celular</button>
                 </>
               )
             })()}
@@ -1501,7 +1476,12 @@ export default function HomeV2Preview() {
               </>
             )}
 
-            <button className="btn-primario" style={{ marginTop: 16 }} onClick={() => setMostrarCarrito(false)}>
+            {carrito.length > 0 && (
+              <button className="btn-primario" style={{ marginTop: 16 }} onClick={abrirCheckout}>
+                Hacer pedido →
+              </button>
+            )}
+            <button className={carrito.length > 0 ? 'btn-secundario' : 'btn-primario'} style={{ marginTop: carrito.length > 0 ? 8 : 16 }} onClick={() => setMostrarCarrito(false)}>
               {carrito.length === 0 ? 'Ver el menú' : 'Seguir pidiendo'}
             </button>
           </div>
@@ -1532,14 +1512,14 @@ export default function HomeV2Preview() {
           <div className="v2-asistente-contenido">
             <div className="v2-asistente-titulo">¿Qué quieres pedir hoy?</div>
             <div className="v2-asistente-cats">
-              <button className="v2-asistente-cat" onClick={elegirBowlAsistente}>
+              {bowlsActivo && <button className="v2-asistente-cat" onClick={elegirBowlAsistente}>
                 <span className="v2-asistente-cat-emoji">🥗</span>
                 <div>
                   <div className="v2-asistente-cat-nombre">Arma tu Bowl</div>
                   <div className="v2-asistente-cat-desc">Base + marinado cocinado, es individual — listo en minutos</div>
                 </div>
                 <span className="v2-asistente-cat-flecha">›</span>
-              </button>
+              </button>}
               <button className="v2-asistente-cat" onClick={elegirAsistenteGuiadoAsistente}>
                 <span className="v2-asistente-cat-emoji">🍗</span>
                 <div>
@@ -1573,9 +1553,17 @@ export default function HomeV2Preview() {
               <p className="v2-asistente-recibo-pago">Pago en el local al recoger</p>
             </div>
 
-            <p className="v2-asistente-confirmado-nota">
-              Vista previa — esto llamaría a confirmarPedido en producción y generaría un número de orden real.
-            </p>
+            {PEDIDOS_DE_PRUEBA && (
+              <p className="v2-asistente-confirmado-nota">
+                🧪 Pedido de prueba — llegó al admin marcado como prueba (no se prepara ni se imprime solo).
+              </p>
+            )}
+            {asistente.mensajeWhatsapp && (
+              <details className="v2-asistente-whatsapp">
+                <summary>Esta sucursal recibe pedidos por WhatsApp — ver el mensaje que le llegaría</summary>
+                <pre>{asistente.mensajeWhatsapp}</pre>
+              </details>
+            )}
 
             <button className="btn-primario" onClick={cerrarAsistente}>Cerrar</button>
           </div>
@@ -1951,7 +1939,11 @@ export default function HomeV2Preview() {
                   )}
                 </div>
 
-                <button className="btn-primario" disabled={!asistente.hora && !asistente.asap} onClick={() => patchAsistente({ paso: 7 })}>
+                {/* La ruleta muestra la primera hora como elegida aunque no se
+                    haya movido (sin scroll no dispara onCambiar) — si no se
+                    tocó, esa es la hora que se usa. */}
+                <button className="btn-primario" disabled={!asistente.hora && !asistente.asap && horariosAsistente.length === 0}
+                  onClick={() => patchAsistente({ paso: 7, ...(!asistente.hora && !asistente.asap ? { hora: horariosAsistente[0] } : {}) })}>
                   Continuar →
                 </button>
               </>
@@ -1990,8 +1982,9 @@ export default function HomeV2Preview() {
                   </div>
                 </div>
 
-                <button className="btn-primario" disabled={!puedeConfirmarAsistente} onClick={confirmarAsistente}>
-                  Confirmar pedido →
+                {asistente.errorEnvio && <p className="v2-asistente-error">{asistente.errorEnvio}</p>}
+                <button className="btn-primario" disabled={!puedeConfirmarAsistente || asistente.enviando} onClick={confirmarAsistente}>
+                  {asistente.enviando ? 'Enviando pedido…' : 'Confirmar pedido →'}
                 </button>
               </>
             )}
