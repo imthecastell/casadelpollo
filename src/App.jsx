@@ -1,4 +1,4 @@
-import { AppProvider, useApp } from './data/AppContext.jsx'
+﻿import { AppProvider, useApp } from './data/AppContext.jsx'
 import SelectorSucursal from './pages/SelectorSucursal.jsx'
 import MenuPrincipal from './pages/MenuPrincipal.jsx'
 import Carrito from './pages/Carrito.jsx'
@@ -23,21 +23,9 @@ function Contenido() {
 export default function App() {
   if (window.location.pathname === '/links') return <LinksPage />
 
-  // Preview oculto de la navegación V2 — no es parte del flujo real,
-  // solo para ver el diseño en un celular de verdad. Nadie llega aquí
-  // navegando la app normal.
-  if (window.location.pathname === '/preview-v2') {
-    return (
-      <AppProvider>
-        <HomeV2Preview />
-        <InstalarApp />
-      </AppProvider>
-    )
-  }
-
   return (
     <AppProvider>
-      <Contenido />
+      <HomeV2Preview />
       <InstalarApp />
     </AppProvider>
   )
