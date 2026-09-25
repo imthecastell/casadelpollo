@@ -1,34 +1,11 @@
 import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import AvisoAirfryer from './AvisoAirfryer.jsx'
-
-/* ── extrae la ruta del archivo ignorando transformaciones previas ── */
-function getFilePath(url) {
-  if (!url || !url.includes('cloudinary.com')) return null
-  // Elimina segmentos de transformación (contienen coma) y versión (v1234...)
-  const m = url.match(/\/upload\/(?:v\d+\/)?(?:[^/]*,[^/]*\/)*(.+)$/)
-  return m ? m[1] : null
-}
-
-const CDN = 'https://res.cloudinary.com/do4juvxio/image/upload'
-
-function buildSideUrl(url, xStart, size = 320) {
-  const path = getFilePath(url)
-  if (!path) return url
-  return `${CDN}/c_crop,fl_relative,x_${xStart.toFixed(2)},y_0.00,w_0.50,h_1.00/ar_4:3,c_fill,w_${size}/${path}`
-}
-
-export function cookedCrop(url, size = 320) {
-  return buildSideUrl(url, 0.5, size)
-}
-
-export function rawCrop(url, size = 320) {
-  return buildSideUrl(url, 0.0, size)
-}
+import { fotoCruda, fotoCocinada } from '../data/fotos.js'
 
 function MarimadoImg({ imageUrl, imageCookedUrl, isSelected, recogida }) {
-  const rawSrc    = imageUrl ? rawCrop(imageUrl) : null
-  const cookedSrc = (imageCookedUrl || imageUrl) ? cookedCrop(imageCookedUrl || imageUrl) : null
+  const rawSrc    = fotoCruda(imageUrl, imageCookedUrl)
+  const cookedSrc = fotoCocinada(imageUrl, imageCookedUrl)
   const showCooked = !!(isSelected && recogida === 'cocinado' && cookedSrc)
   const size = isSelected ? 90 : 72
   const dur  = '0.38s cubic-bezier(.34,1.56,.64,1)'
@@ -107,8 +84,8 @@ export default function SeccionMarinados() {
       precio: seleccion.price,
       precioTotal,
       imagen_url: recogida === 'cocinado'
-        ? cookedCrop(seleccion.image_cooked_url || seleccion.image_url)
-        : rawCrop(seleccion.image_url),
+        ? fotoCocinada(seleccion.image_url, seleccion.image_cooked_url)
+        : fotoCruda(seleccion.image_url, seleccion.image_cooked_url),
       resumen: `${seleccion.name} ${gramos}g · ${recogida === 'crudo' ? 'Crudo' : `Cocinado ~${tiempoEstimado} min`} · $${precioTotal.toFixed(2)}`
     })
     setAgregado(true)
