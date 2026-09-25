@@ -7,6 +7,7 @@ import { MarimadoImg } from '../Components/SeccionMarinados.jsx'
 import { generarHorariosDisponibles, ventanaPreparacion, obtenerCocFinEfectivo } from '../data/slots.js'
 import { armarMensajeWhatsapp } from '../data/pedidoWhatsapp.js'
 import { codificarQR } from '../data/lealtadQR.js'
+import { fotoCruda, fotoCocinada } from '../data/fotos.js'
 import '../styles/homeV2.css'
 import '../styles/menu.css'
 
@@ -185,10 +186,18 @@ const TIPS_ASISTENTE = {
   bowls: { texto: 'Tu bowl ya trae base y marinado, pero una sopa nunca sobra.', sugerido: 'Sopa Fan Si' },
 }
 
-// image_cooked_url solo es una foto real cuando el producto se puede cocinar
-// (se_puede_cocinar) — en productos que no, el campo trae un recorte basura
-// (ej. Ensalada/Arroz: un 10% sobrante de la imagen) que no debe usarse.
-const img = (p) => (p?.se_puede_cocinar && p?.image_cooked_url) || p?.image_url || ''
+// Foto de tarjeta: la cocinada si el producto se puede cocinar, si no la
+// cruda, con la misma lógica de formatos que la tienda actual (fotos.js).
+// Complementos tienen una sola foto aunque esté en ambos campos, así que se
+// usa completa en vez de partirla.
+const img = (p) => {
+  if (!p) return ''
+  if (p.category_name === 'Complementos') return p.image_url || ''
+  const opciones = { w: 800 }
+  return (p.se_puede_cocinar && p.image_cooked_url
+    ? fotoCocinada(p.image_url, p.image_cooked_url, opciones)
+    : fotoCruda(p.image_url, p.image_cooked_url, opciones)) || ''
+}
 
 // Normaliza a 10 dígitos locales (México) sin importar si venía con "+52",
 // espacios o el "52" ya pegado — para que tel:/wa.me siempre reciban un
