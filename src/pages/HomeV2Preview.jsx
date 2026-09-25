@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+﻿import { useState, useEffect, useRef } from 'react'
 import QRCode from 'qrcode'
 import { useApp } from '../data/AppContext.jsx'
 import LogoSlot from '../Components/LogoSlot.jsx'
@@ -186,17 +186,35 @@ const TIPS_ASISTENTE = {
   bowls: { texto: 'Tu bowl ya trae base y marinado, pero una sopa nunca sobra.', sugerido: 'Sopa Fan Si' },
 }
 
-// Foto de tarjeta: la cocinada si el producto se puede cocinar, si no la
-// cruda, con la misma lógica de formatos que la tienda actual (fotos.js).
-// Complementos tienen una sola foto aunque esté en ambos campos, así que se
-// usa completa en vez de partirla.
+// Normaliza texto para matching de nombres poster-producto
+function normalizarNombre(s) {
+  return (s || '').toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]/g, ' ').replace(/ +/g, ' ').trim()
+}
+
+const PLACEHOLDER_COLOR = {
+  Marinados: '#C8841A', Preparados: '#922B21',
+  Milanesas: '#5D4037', 'Pollo Fresco': '#2a7a4b',
+  Complementos: '#546E7A', Bowls: '#1B5E20',
+}
+
+const imgV2 = (p, postersMap) => {
+  if (!p) return null
+  const opciones = { w: 800 }
+  if (p.category_name === 'Complementos') return p.image_url || null
+  if (p.image_cooked_url)
+    return fotoCocinada(p.image_url, p.image_cooked_url, opciones) || null
+  const key = normalizarNombre(p.name)
+  if (postersMap && postersMap[key]) return postersMap[key]
+  return null
+}
+
 const img = (p) => {
   if (!p) return ''
   if (p.category_name === 'Complementos') return p.image_url || ''
   const opciones = { w: 800 }
-  return (p.se_puede_cocinar && p.image_cooked_url
-    ? fotoCocinada(p.image_url, p.image_cooked_url, opciones)
-    : fotoCruda(p.image_url, p.image_cooked_url, opciones)) || ''
+  return fotoCocinada(p.image_url, p.image_cooked_url, opciones) || ''
 }
 
 // Normaliza a 10 dígitos locales (México) sin importar si venía con "+52",
@@ -310,6 +328,7 @@ export default function HomeV2Preview() {
   const [selectorSucursalAbierto, setSelectorSucursalAbierto] = useState(false)
   const [links, setLinks] = useState(null)
   const [heroIdx, setHeroIdx] = useState(0)
+  const [postersMap, setPostersMap] = useState({})
   const [colorTopbar, setColorTopbar] = useState(null)
   // Subconjunto del día para el fondo del selector de sucursal — estable
   // mientras dure el día, cambia solo a la medianoche.
@@ -343,6 +362,17 @@ export default function HomeV2Preview() {
       .then(r => r.json())
       .then(data => setLinks(data))
       .catch(() => setLinks({ branches: [] }))
+  }, [])
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/media?categoria=posters`)
+      .then(r => r.json())
+      .then(items => {
+        const map = {}
+        items.forEach(item => { map[normalizarNombre(item.nombre)] = item.url })
+        setPostersMap(map)
+      })
+      .catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -1050,7 +1080,7 @@ export default function HomeV2Preview() {
                   {destacadosHoy.map(p => (
                     <div key={p.id} className="v2-tile-mini2" onClick={() => abrirSeleccion(p)}>
                       <div className="v2-card-foto">
-                        <img src={img(p)} alt={p.name} />
+                        {imgV2(p, postersMap) ? <img src={imgV2(p, postersMap)} alt={p.name} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[p.category_name] || '#888' }} />}
                       </div>
                       <div className="v2-card-barra">
                         <div className="v2-card-barra-nombre">{p.name}</div>
@@ -1084,7 +1114,7 @@ export default function HomeV2Preview() {
                 <div className="v2-strip-grandes">
                   {preparadosImg.slice(0, 6).map(p => (
                     <div key={p.id} className="v2-tarjeta-grande-strip" onClick={() => abrirSeleccion(p)}>
-                      <div className="v2-card-foto"><img src={img(p)} alt={p.name} /></div>
+                      <div className="v2-card-foto">{imgV2(p, postersMap) ? <img src={imgV2(p, postersMap)} alt={p.name} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[p.category_name] || '#888' }} />}</div>
                       <div className="v2-card-barra">
                         <div className="v2-card-barra-nombre">{p.name}</div>
                         <div className="v2-ts-precio-pill">${Number(p.price)}</div>
@@ -1121,7 +1151,7 @@ export default function HomeV2Preview() {
             <div className="v2-grid-simple">
               {productosCategoria.map(p => (
                 <div key={p.id} className="v2-tarjeta-simple" onClick={() => abrirSeleccion(p)}>
-                  <img src={img(p)} alt={p.name} />
+                  {imgV2(p, postersMap) ? <img src={imgV2(p, postersMap)} alt={p.name} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[p.category_name] || '#888', position: 'absolute', inset: 0 }} />}
                   <div className="v2-ts-scrim" />
                   <div className="v2-ts-precio-top">${Number(p.price)}{categoria === 'marinados' ? '/kg' : ''}</div>
                   <div className="v2-ts-overlay">
@@ -1369,7 +1399,7 @@ export default function HomeV2Preview() {
               <div className="v2-grid-simple">
                 {resultadosBusqueda.map(p => (
                   <div key={p.id} className="v2-tarjeta-simple" onClick={() => { abrirSeleccion(p); setMostrarBuscador(false) }}>
-                    <img src={img(p)} alt={p.name} />
+                    {imgV2(p, postersMap) ? <img src={imgV2(p, postersMap)} alt={p.name} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[p.category_name] || '#888', position: 'absolute', inset: 0 }} />}
                     <div className="v2-ts-scrim" />
                     <div className="v2-ts-precio-top">${Number(p.price)}{p.category_name === 'Marinados' ? '/kg' : ''}</div>
                     <div className="v2-ts-overlay">

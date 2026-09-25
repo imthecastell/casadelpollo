@@ -610,3 +610,10 @@
   border-top: 1.5px solid var(--gris); border-bottom: 1.5px solid var(--gris);
   pointer-events: none; z-index: 1;
 }
+
+/* Placeholder de color para productos sin foto cocinada ni poster */
+.v2-foto-placeholder {
+  width: 100%; height: 100%;
+  border-radius: inherit;
+  opacity: 0.85;
+}
