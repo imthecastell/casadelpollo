@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useApp } from '../data/AppContext.jsx'
+import { fotoCocinada } from '../data/fotos.js'
 
 const TIEMPO_BOWL = 20
 // Respaldo si la sucursal aún no tiene bowl_price configurado (columna nueva).
@@ -8,21 +9,8 @@ const GRAMOS_BASE = 200
 const PASO_EXTRA = 50
 const MAX_EXTRA = 400
 
-/* ── Crop helpers para imágenes de bowl ── */
+/* ── Imágenes de bowl ── */
 const CDN = 'https://res.cloudinary.com/do4juvxio/image/upload'
-
-function getFilePath(url) {
-  if (!url || !url.includes('cloudinary.com')) return null
-  const m = url.match(/\/upload\/(?:v\d+\/)?(?:[^/]*,[^/]*\/)*(.+)$/)
-  return m ? m[1] : null
-}
-
-/* Lado cocinado (derecho) en formato 16:9 para el hero */
-function cookedHero(url, w = 900) {
-  const path = getFilePath(url)
-  if (!path) return url
-  return `${CDN}/c_crop,fl_relative,x_0.50,y_0.00,w_0.50,h_1.00/ar_16:9,c_fill,w_${w}/${path}`
-}
 
 /* Imagen de portada de la sección bowls */
 const BOWL_DEFAULT = `${CDN}/ar_16:9,c_fill,w_900/design/fqcs5srwvt8ksqezoqqu.png`
@@ -59,9 +47,7 @@ function BaseImg({ nombre, imageUrl }) {
 /* ── Hero image del bowl ── */
 function BowlHero({ marinado, base, defaultImg }) {
   const heroImg = useMemo(() => {
-    if (marinado?.image_cooked_url || marinado?.image_url)
-      return cookedHero(marinado.image_cooked_url || marinado.image_url)
-    return null
+    return fotoCocinada(marinado?.image_url, marinado?.image_cooked_url, { ar: '16:9', w: 900 })
   }, [marinado])
 
   const showBase = !heroImg && !!base
