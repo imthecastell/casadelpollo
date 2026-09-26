@@ -21,6 +21,8 @@ function calcularTiempoMarinado(gramos) {
   return gramos <= 300 ? base : base + extra
 }
 
+const BOWL_PORTADA_CDN = 'https://res.cloudinary.com/do4juvxio/image/upload/ar_4:3,c_fill,w_800/design/bowl_portada.webp'
+
 // Elige `cantidad` productos "al azar" pero estables durante todo el día:
 // la semilla sale de la fecha (YYYY-MM-DD), así que todos ven los mismos
 // destacados hasta la medianoche, y al día siguiente cambian solos.
@@ -205,6 +207,14 @@ const imgV2 = (p, postersMap) => {
   if (p.category_name === 'Complementos') return p.image_url || null
   if (p.category_name === 'Pollo Fresco') return fotoCruda(p.image_url, p.image_cooked_url, opciones) || null
   if (p.category_name === 'Preparados') {
+    if (!postersMap) return null
+    const key = normalizarNombre(p.name)
+    if (postersMap[key]) return postersMap[key]
+    const keyNoDe = key.replace(/de /g, '').replace(/ +/g, ' ').trim()
+    if (postersMap[keyNoDe]) return postersMap[keyNoDe]
+    const match = Object.keys(postersMap).find(k => key.startsWith(k + ' '))
+    return match ? postersMap[match] : null
+  }
     const key = normalizarNombre(p.name)
     return (postersMap && postersMap[key]) ? postersMap[key] : null
   }
@@ -374,7 +384,12 @@ export default function HomeV2Preview() {
       .then(r => r.json())
       .then(items => {
         const map = {}
-        items.forEach(item => { map[normalizarNombre(item.nombre)] = item.url })
+        items.forEach(item => {
+          const k = normalizarNombre(item.nombre)
+          map[k] = item.url
+          const kNoDe = k.replace(/de /g, '').replace(/ +/g, ' ').trim()
+          if (kNoDe !== k) map[kNoDe] = item.url
+        })
         setPostersMap(map)
       })
       .catch(() => {})
@@ -550,7 +565,7 @@ export default function HomeV2Preview() {
   // false, ej. El Parque) no muestran ningún acceso a "Arma tu Bowl".
   const bowlsActivo = diseno?.bowls_enabled !== false
   const ensalada = productos.find(p => p.name === 'Ensalada')
-  const bowlImg = img(ensalada) || img(marinadosImg[0])
+  const bowlImg = BOWL_PORTADA_CDN
   const bowlGrande = marinadosImg[1] || marinadosImg[0]
   // "Más pedidos" del Home: 6 productos al azar (marinados o preparados)
   // que cambian una vez al día, para no mostrar siempre los mismos.
@@ -1096,11 +1111,11 @@ export default function HomeV2Preview() {
               </div>
             )}
 
-            {bowlsActivo && bowlGrande && (
+            {bowlsActivo && (
               <div className="v2-banda v2-banda-verde" data-color="#2a7a4b">
                 <div className="v2-seccion-titulo">Arma tu Bowl</div>
                 <div className="v2-bowl-hibrido" onClick={() => abrirBowlDirecto()}>
-                  <div className="v2-bowl-hibrido-foto"><img src={img(bowlGrande)} alt={bowlGrande.name} /></div>
+                  <div className="v2-bowl-hibrido-foto"><img src={BOWL_PORTADA_CDN} alt="Bowl" /></div>
                   <div className="v2-bowl-hibrido-panel">
                     <div className="v2-promo-badge">BOWLS</div>
                     <h3>Arma tu Bowl</h3>
