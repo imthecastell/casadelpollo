@@ -207,16 +207,15 @@ const imgV2 = (p, postersMap) => {
   if (p.category_name === 'Complementos') return p.image_url || null
   if (p.category_name === 'Pollo Fresco') return fotoCruda(p.image_url, p.image_cooked_url, opciones) || null
   if (p.category_name === 'Preparados') {
-    if (!postersMap) return null
-    const key = normalizarNombre(p.name)
-    if (postersMap[key]) return postersMap[key]
-    const keyNoDe = key.replace(/de /g, '').replace(/ +/g, ' ').trim()
-    if (postersMap[keyNoDe]) return postersMap[keyNoDe]
-    const match = Object.keys(postersMap).find(k => key.startsWith(k + ' '))
-    return match ? postersMap[match] : null
-  }
-    const key = normalizarNombre(p.name)
-    return (postersMap && postersMap[key]) ? postersMap[key] : null
+    if (postersMap) {
+      const key = normalizarNombre(p.name)
+      if (postersMap[key]) return postersMap[key]
+      const keyNoDe = key.replace(/de /g, '').replace(/ +/g, ' ').trim()
+      if (postersMap[keyNoDe]) return postersMap[keyNoDe]
+      const match = Object.keys(postersMap).find(k => key.startsWith(k + ' '))
+      if (match) return postersMap[match]
+    }
+    return fotoCocinada(p.image_url, p.image_cooked_url, opciones) || null
   }
   if (p.image_cooked_url)
     return fotoCocinada(p.image_url, p.image_cooked_url, opciones) || null
@@ -224,7 +223,6 @@ const imgV2 = (p, postersMap) => {
   if (postersMap && postersMap[key]) return postersMap[key]
   return null
 }
-
 const img = (p) => {
   if (!p) return ''
   if (p.category_name === 'Complementos') return p.image_url || ''
