@@ -201,6 +201,46 @@ const PLACEHOLDER_COLOR = {
   Complementos: '#546E7A', Bowls: '#1B5E20',
 }
 
+const GRUPOS_PREPARADOS = [
+  {
+    id: 'empanadas',
+    nombre: 'Empanadas',
+    desc: 'Elige tu relleno',
+    match: p => /empanada/i.test(p.name),
+    shortName: p => p.name.replace(/^empanada de /i, ''),
+  },
+  {
+    id: 'pechugas',
+    nombre: 'Pechuga Rellena',
+    desc: 'Jugosa, con tu relleno favorito',
+    match: p => /pechuga rellena/i.test(p.name),
+    shortName: p => p.name.replace(/^pechuga rellena (de )?/i, ''),
+  },
+  {
+    id: 'nuggets',
+    nombre: 'Nuggets & Bocadillos',
+    desc: 'Crujientes para toda la familia',
+    match: p => /nuggets?|tenders|trozos de pollo|palomitas/i.test(p.name),
+    shortName: p => p.name,
+  },
+]
+
+function agruparPreparados(lista) {
+  const asignados = new Set()
+  const grupos = []
+  GRUPOS_PREPARADOS.forEach(g => {
+    const miembros = lista.filter(g.match)
+    if (miembros.length >= 2) {
+      grupos.push({ ...g, productos: miembros })
+      miembros.forEach(p => asignados.add(p.id))
+    }
+  })
+  return {
+    grupos,
+    individuales: lista.filter(p => !asignados.has(p.id)),
+  }
+}
+
 const imgV2 = (p, postersMap) => {
   if (!p) return null
   const opciones = { w: 800 }
@@ -342,6 +382,7 @@ export default function HomeV2Preview() {
   const [links, setLinks] = useState(null)
   const [heroIdx, setHeroIdx] = useState(0)
   const [postersMap, setPostersMap] = useState({})
+  const [grupoAbierto, setGrupoAbierto] = useState(null)
   const [colorTopbar, setColorTopbar] = useState(null)
   // Subconjunto del día para el fondo del selector de sucursal — estable
   // mientras dure el día, cambia solo a la medianoche.
@@ -558,6 +599,9 @@ export default function HomeV2Preview() {
 
   const marinadosImg = productos.filter(p => p.category_name === 'Marinados' && img(p))
   const preparadosImg = productos.filter(p => p.category_name === 'Preparados' && img(p))
+  const preparadosItems = agruparPreparados(
+    productos.filter(p => p.category_name === 'Preparados' && p.active !== false)
+  )
   const nuevoProducto = productos.find(p => p.is_nuevo && img(p))
   // Igual que MenuPrincipal: sucursales sin bowls (diseno.bowls_enabled =
   // false, ej. El Parque) no muestran ningún acceso a "Arma tu Bowl".
@@ -1126,18 +1170,32 @@ export default function HomeV2Preview() {
               </div>
             )}
 
-            {preparadosImg.length > 0 && (
+            {(preparadosImg.length > 0 || preparadosItems.grupos.length > 0) && (
               <div className="v2-banda v2-banda-rojo" data-color="#922B21">
                 <div className="v2-seccion-titulo">Preparados para lucirte</div>
                 <div className="v2-strip-grandes">
-                  {preparadosImg.slice(0, 6).map(p => (
-                    <div key={p.id} className="v2-tarjeta-grande-strip" onClick={() => abrirSeleccion(p)}>
-                      <div className="v2-card-foto">{imgV2(p, postersMap) ? <img src={imgV2(p, postersMap)} alt={p.name} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[p.category_name] || '#888' }} />}</div>
-                      <div className="v2-card-barra">
-                        <div className="v2-card-barra-nombre">{p.name}</div>
-                        <div className="v2-ts-precio-pill">${Number(p.price)}</div>
+                  {[
+                    ...preparadosItems.grupos.map(g => ({ _tipo: 'grupo', ...g })),
+                    ...preparadosItems.individuales.filter(img),
+                  ].slice(0, 6).map(item => item._tipo === 'grupo' ? (
+                    <div key={item.id} className="v2-tarjeta-grande-strip v2-tarjeta-grupo" onClick={() => setGrupoAbierto(item)}>
+                      <div className="v2-card-foto">
+                        {(() => { const src = item.productos.map(p => imgV2(p, postersMap)).find(Boolean); return src ? <img src={src} alt={item.nombre} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR['Preparados'] || '#888' }} /> })()}
+                        <span className="v2-grupo-indicador">&#9660; {item.productos.length} variantes</span>
                       </div>
-                      <button className="v2-ts-add" onClick={(e) => { e.stopPropagation(); abrirSeleccion(p) }}>+</button>
+                      <div className="v2-card-barra">
+                        <div className="v2-card-barra-nombre">{item.nombre}</div>
+                        <div className="v2-ts-precio-pill">Desde ${Math.min(...item.productos.map(p => Number(p.price)))}</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div key={item.id} className="v2-tarjeta-grande-strip" onClick={() => abrirSeleccion(item)}>
+                      <div className="v2-card-foto">{imgV2(item, postersMap) ? <img src={imgV2(item, postersMap)} alt={item.name} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[item.category_name] || '#888' }} />}</div>
+                      <div className="v2-card-barra">
+                        <div className="v2-card-barra-nombre">{item.name}</div>
+                        <div className="v2-ts-precio-pill">${Number(item.price)}</div>
+                      </div>
+                      <button className="v2-ts-add" onClick={(e) => { e.stopPropagation(); abrirSeleccion(item) }}>+</button>
                     </div>
                   ))}
                 </div>
@@ -1166,18 +1224,46 @@ export default function HomeV2Preview() {
               <div className="v2-bowls-precio">Desde ${Number(sucursalActiva.bowl_price || 120)}</div>
             </div>}
 
-            <div className="v2-grid-simple">
-              {productosCategoria.map(p => (
-                <div key={p.id} className="v2-tarjeta-simple" onClick={() => abrirSeleccion(p)}>
-                  {imgV2(p, postersMap) ? <img src={imgV2(p, postersMap)} alt={p.name} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[p.category_name] || '#888', position: 'absolute', inset: 0 }} />}
-                  <div className="v2-ts-scrim" />
-                  <div className="v2-ts-precio-top">${Number(p.price)}{categoria === 'marinados' ? '/kg' : ''}</div>
-                  <div className="v2-ts-overlay">
-                    <div className="v2-ts-nombre">{p.name}</div>
+            {categoria === 'preparados' ? (
+              <div className="v2-grid-simple">
+                {[
+                  ...preparadosItems.grupos.map(g => ({ _tipo: 'grupo', ...g })),
+                  ...preparadosItems.individuales,
+                ].map(item => item._tipo === 'grupo' ? (
+                  <div key={item.id} className="v2-tarjeta-simple v2-tarjeta-grupo" onClick={() => setGrupoAbierto(item)}>
+                    {(() => { const src = item.productos.map(p => imgV2(p, postersMap)).find(Boolean); return src ? <img src={src} alt={item.nombre} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR['Preparados'] || '#888', position: 'absolute', inset: 0 }} /> })()}
+                    <div className="v2-ts-scrim" />
+                    <div className="v2-ts-precio-top">Desde ${Math.min(...item.productos.map(p => Number(p.price)))}</div>
+                    <div className="v2-ts-overlay">
+                      <div className="v2-ts-nombre">{item.nombre}</div>
+                    </div>
+                    <span className="v2-grupo-indicador-grid">&#9660;</span>
                   </div>
-                </div>
-              ))}
-            </div>
+                ) : (
+                  <div key={item.id} className="v2-tarjeta-simple" onClick={() => abrirSeleccion(item)}>
+                    {imgV2(item, postersMap) ? <img src={imgV2(item, postersMap)} alt={item.name} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[item.category_name] || '#888', position: 'absolute', inset: 0 }} />}
+                    <div className="v2-ts-scrim" />
+                    <div className="v2-ts-precio-top">${Number(item.price)}</div>
+                    <div className="v2-ts-overlay">
+                      <div className="v2-ts-nombre">{item.name}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="v2-grid-simple">
+                {productosCategoria.map(p => (
+                  <div key={p.id} className="v2-tarjeta-simple" onClick={() => abrirSeleccion(p)}>
+                    {imgV2(p, postersMap) ? <img src={imgV2(p, postersMap)} alt={p.name} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[p.category_name] || '#888', position: 'absolute', inset: 0 }} />}
+                    <div className="v2-ts-scrim" />
+                    <div className="v2-ts-precio-top">${Number(p.price)}{categoria === 'marinados' ? '/kg' : ''}</div>
+                    <div className="v2-ts-overlay">
+                      <div className="v2-ts-nombre">{p.name}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {categoria === 'fresco' && (
               <div className="v2-idea-card">
@@ -2049,6 +2135,34 @@ export default function HomeV2Preview() {
         </div>
       )}
 
+      {grupoAbierto && (
+        <div className="v2-grupo-overlay" onClick={() => setGrupoAbierto(null)}>
+          <div className="v2-grupo-sheet" onClick={e => e.stopPropagation()}>
+            <div className="v2-grupo-sheet-header">
+              <div>
+                <div className="v2-grupo-sheet-titulo">{grupoAbierto.nombre}</div>
+                <div className="v2-grupo-sheet-desc">{grupoAbierto.desc}</div>
+              </div>
+              <button className="v2-grupo-sheet-cerrar" onClick={() => setGrupoAbierto(null)}>&#x2715;</button>
+            </div>
+            <div className="v2-grupo-variantes">
+              {grupoAbierto.productos.map(p => (
+                <div key={p.id} className="v2-variante-card" onClick={() => { abrirSeleccion(p); setGrupoAbierto(null) }}>
+                  <div className="v2-variante-foto">
+                    {imgV2(p, postersMap)
+                      ? <img src={imgV2(p, postersMap)} alt={p.name} />
+                      : <div className="v2-variante-foto-placeholder" style={{ background: PLACEHOLDER_COLOR['Preparados'] }} />}
+                  </div>
+                  <div className="v2-variante-info">
+                    <div className="v2-variante-nombre">{grupoAbierto.shortName(p)}</div>
+                    <div className="v2-variante-precio">${Number(p.price)}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
