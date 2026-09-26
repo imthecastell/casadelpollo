@@ -203,6 +203,11 @@ const imgV2 = (p, postersMap) => {
   if (!p) return null
   const opciones = { w: 800 }
   if (p.category_name === 'Complementos') return p.image_url || null
+  if (p.category_name === 'Pollo Fresco') return fotoCruda(p.image_url, p.image_cooked_url, opciones) || null
+  if (p.category_name === 'Preparados') {
+    const key = normalizarNombre(p.name)
+    return (postersMap && postersMap[key]) ? postersMap[key] : null
+  }
   if (p.image_cooked_url)
     return fotoCocinada(p.image_url, p.image_cooked_url, opciones) || null
   const key = normalizarNombre(p.name)
