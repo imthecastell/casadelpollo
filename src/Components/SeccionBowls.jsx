@@ -13,7 +13,7 @@ const MAX_EXTRA = 400
 const CDN = 'https://res.cloudinary.com/do4juvxio/image/upload'
 
 /* Imagen de portada de la sección bowls */
-const BOWL_DEFAULT = `${CDN}/ar_16:9,c_fill,w_900/design/fqcs5srwvt8ksqezoqqu.png`
+const BOWL_DEFAULT = `${CDN}/ar_16:9,c_fill,w_900/design/bowl_portada.webp`
 
 function calcularLugares(numBowls) {
   return Math.ceil(numBowls / 2)
