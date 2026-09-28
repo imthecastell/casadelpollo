@@ -1,8 +1,8 @@
 import { useApp } from '../data/AppContext.jsx'
 
 const FALLBACK = {
-  titulo: 'Cocinado en Air Fryer',
-  descripcion: 'Nuestros marinados y preparados se cocinan en air fryer sin grasas añadidas. El tiempo estimado de cocción se agrega automáticamente a tu pedido.',
+  titulo: 'Air Fryer, sin grasas',
+  descripcion: 'Sin aceite añadido. El tiempo de cocción se suma a tu pedido.',
 }
 
 export default function AvisoAirfryer({ onCerrar }) {
@@ -68,7 +68,7 @@ export default function AvisoAirfryer({ onCerrar }) {
           fontFamily: 'DM Sans, sans-serif', fontSize: 14,
           color: 'rgba(255,255,255,0.8)', lineHeight: 1.6,
         }}>
-          {aviso.descripcion || 'Nuestros preparados y marinados se cocinan en air fryer sin grasas añadidas.'}
+          {aviso.descripcion || 'Sin aceite añadido. El tiempo de cocción se suma a tu pedido.'}
         </p>
 
         <button
