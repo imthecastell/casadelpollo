@@ -1541,7 +1541,7 @@ export default function HomeV2Preview() {
               <MarimadoImg imageUrl={seleccionProducto.image_url} imageCookedUrl={seleccionProducto.image_cooked_url} isSelected recogida={recogidaSel} />
               <div className="v2-sel-info">
                 <span className="v2-sel-nombre">{seleccionProducto.name}</span>
-                <span className="v2-sel-pill">Listo para cocinar</span>
+                <span className={`v2-sel-pill${recogidaSel === 'cocinado' ? ' v2-sel-pill-servir' : ''}`}>{recogidaSel === 'cocinado' ? 'Listo para servir' : 'Listo para cocinar'}</span>
               </div>
             </div>
 
