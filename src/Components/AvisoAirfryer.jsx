@@ -2,7 +2,7 @@ import { useApp } from '../data/AppContext.jsx'
 
 const FALLBACK = {
   titulo: 'Air Fryer, sin grasas',
-  descripcion: 'Sin aceite añadido. El tiempo de cocción se suma a tu pedido.',
+  descripcion: 'Sin aceite añadido. Se cocina al momento, tarda un poco más.',
 }
 
 export default function AvisoAirfryer({ onCerrar }) {
@@ -68,7 +68,7 @@ export default function AvisoAirfryer({ onCerrar }) {
           fontFamily: 'DM Sans, sans-serif', fontSize: 14,
           color: 'rgba(255,255,255,0.8)', lineHeight: 1.6,
         }}>
-          {aviso.descripcion || 'Sin aceite añadido. El tiempo de cocción se suma a tu pedido.'}
+          {aviso.descripcion || 'Sin aceite añadido. Se cocina al momento, tarda un poco más.'}
         </p>
 
         <button
