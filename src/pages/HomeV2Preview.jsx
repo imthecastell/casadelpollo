@@ -1545,7 +1545,12 @@ export default function HomeV2Preview() {
               </div>
             </div>
 
-            <label className="config-label">Cantidad</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+              <label className="config-label" style={{ marginBottom: 0 }}>Cantidad</label>
+              <span style={{ fontSize: 11, color: 'var(--texto-suave)' }}>
+                {esPorPiezasSel ? 'charola estándar 20 pz' : 'sugerido 300 g por persona'}
+              </span>
+            </div>
             <div className="cantidad-ctrl">
               <button className="cantidad-btn" onClick={() => cambiarGramosSel(esPorPiezasSel ? -PZ_PASO : -MARINADO_PASO)} disabled={gramosSel <= (esPorPiezasSel ? PZ_MIN : MARINADO_MIN)}>−</button>
               <span className="cantidad-num" style={{ fontSize: 20, minWidth: 60, textAlign: 'center' }}>{gramosSel}{esPorPiezasSel ? ' pz' : 'g'}</span>
