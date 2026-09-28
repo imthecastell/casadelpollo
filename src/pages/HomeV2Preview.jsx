@@ -1670,10 +1670,12 @@ export default function HomeV2Preview() {
                     )
                   })}
                 </div>
-                <button className="btn-primario" onClick={agregarComplementosYCerrar} style={{ marginBottom: 10 }}>
-                  {complementosSel.length > 0 ? `Agregar complemento${complementosSel.length > 1 ? 's' : ''} y continuar` : 'Agregar a la orden'}
-                </button>
-                <button className="v2-comp-saltar" onClick={cerrarModal}>No gracias</button>
+                {complementosSel.length > 0
+                  ? <button className="v2-comp-btn-agregar" onClick={agregarComplementosYCerrar}>
+                      Agregar complemento{complementosSel.length > 1 ? 's' : ''} y continuar
+                    </button>
+                  : <button className="v2-comp-saltar" onClick={cerrarModal}>No gracias</button>
+                }
               </div>
             )}
           </div>

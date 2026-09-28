@@ -747,3 +747,11 @@
 @media (prefers-color-scheme: dark) {
   .v2-comp-sel { background: rgba(146,43,33,.18); }
 }
+
+.v2-comp-btn-agregar {
+  width: 100%; padding: 15px; border: none; border-radius: 14px;
+  background: #2e7d32; color: #fff;
+  font-family: var(--font-title); font-weight: 800; font-size: 16px;
+  cursor: pointer; transition: background .15s;
+}
+.v2-comp-btn-agregar:active { background: #1b5e20; }
