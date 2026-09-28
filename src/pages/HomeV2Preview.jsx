@@ -737,6 +737,8 @@ export default function HomeV2Preview() {
     setGramosSel(esPorPiezas(p) ? 20 : esPreparado(p) ? 1 : 300)
     setRecogidaSel('crudo')
     setAgregadoSel(false)
+    setStepComplementos(false)
+    setComplementosSel([])
   }
 
   function cerrarModal() {
@@ -1557,7 +1559,7 @@ export default function HomeV2Preview() {
           </div>
           <div className="v2-asistente-contenido">
             {!consultaBusqueda.trim() ? (
-              <p className="v2-sheet-sub">Prueba con algo como "picante", "para niños", "dulce" o "sin salsa".</p>
+              <p className="v2-sheet-sub">Prueba con "empanada", "marinado" o el nombre del producto.</p>
             ) : resultadosBusqueda.length === 0 ? (
               <p className="v2-sheet-sub">No encontramos productos con esas palabras.</p>
             ) : (
@@ -1584,7 +1586,7 @@ export default function HomeV2Preview() {
           foto grande en línea para Marinados y este popup se ve mejor,
           así que se unificó todo aquí. */}
       {seleccionProducto && (
-        <div className="v2-sheet-overlay on" onClick={(e) => { if (e.target === e.currentTarget) setSeleccionProducto(null) }}>
+        <div className="v2-sheet-overlay on" onClick={(e) => { if (e.target === e.currentTarget) cerrarModal() }}>
           <div className="v2-sheet">
             <div className="v2-sheet-handle" />
             {!stepComplementos ? (<>
@@ -1984,7 +1986,7 @@ export default function HomeV2Preview() {
 
             {asistente.paso === 3 && asistente.categoria !== 'bowls' && (
               <>
-                <div className="v2-asistente-titulo">Elige tu {CATEGORIAS.find(c => c.key === asistente.categoria)?.label.toLowerCase()}</div>
+                <div className="v2-asistente-titulo">Elige tus {CATEGORIAS.find(c => c.key === asistente.categoria)?.label.toLowerCase()}</div>
                 <div className="v2-grid-simple">
                   {productosAsistente.map(p => (
                     <button key={p.id} className="v2-tarjeta-simple v2-asistente-producto" onClick={() => elegirProductoAsistente(p)}>
