@@ -387,6 +387,8 @@ export default function HomeV2Preview() {
   const [heroIdx, setHeroIdx] = useState(0)
   const [postersMap, setPostersMap] = useState({})
   const [grupoAbierto, setGrupoAbierto] = useState(null)
+  const [stepComplementos, setStepComplementos] = useState(false)
+  const [complementosSel, setComplementosSel] = useState([])
   const [colorTopbar, setColorTopbar] = useState(null)
   // Subconjunto del día para el fondo del selector de sucursal — estable
   // mientras dure el día, cambia solo a la medianoche.
@@ -603,6 +605,7 @@ export default function HomeV2Preview() {
 
   const marinadosImg = productos.filter(p => p.category_name === 'Marinados' && img(p))
   const preparadosImg = productos.filter(p => p.category_name === 'Preparados' && img(p))
+  const complementosDisp = productos.filter(p => p.category_name === 'Complementos' && p.active !== false)
   const preparadosItems = agruparPreparados(
     productos.filter(p => p.category_name === 'Preparados' && p.active !== false)
   )
@@ -728,6 +731,38 @@ export default function HomeV2Preview() {
     setAgregadoSel(false)
   }
 
+  function cerrarModal() {
+    setSeleccionProducto(null)
+    setGramosSel(300)
+    setRecogidaSel('crudo')
+    setStepComplementos(false)
+    setComplementosSel([])
+  }
+
+  function toggleComplemento(comp) {
+    setComplementosSel(prev =>
+      prev.some(c => c.id === comp.id) ? prev.filter(c => c.id !== comp.id) : [...prev, comp]
+    )
+  }
+
+  function agregarComplementosYCerrar() {
+    complementosSel.forEach(comp => {
+      agregarAlCarrito({
+        tipo: 'complemento',
+        nombre: comp.name,
+        gramos: 1,
+        recogida: recogidaSel,
+        tiempoEstimado: recogidaSel === 'cocinado' ? tiempoEstimadoSel : null,
+        necesitaHora: true,
+        precio: comp.price,
+        precioTotal: parseFloat(comp.price || 0),
+        imagen_url: img(comp),
+        resumen: `${comp.name} · $${parseFloat(comp.price || 0).toFixed(2)}`,
+      })
+    })
+    cerrarModal()
+  }
+
   function cambiarGramosSel(delta) {
     const min = esPorPiezasSel ? PZ_MIN : MARINADO_MIN
     const max = esPorPiezasSel ? PZ_MAX : MARINADO_MAX
@@ -758,10 +793,14 @@ export default function HomeV2Preview() {
     setAgregadoSel(true)
     setTimeout(() => {
       setAgregadoSel(false)
-      setSeleccionProducto(null)
-      setGramosSel(300)
-      setRecogidaSel('crudo')
-    }, 1200)
+      if (complementosDisp.length > 0) {
+        setStepComplementos(true)
+      } else {
+        setSeleccionProducto(null)
+        setGramosSel(300)
+        setRecogidaSel('crudo')
+      }
+    }, 900)
   }
 
   // ───────────────── Asistente de pedido (botón central "Crear pedido") ─────────────────
@@ -1537,6 +1576,7 @@ export default function HomeV2Preview() {
         <div className="v2-sheet-overlay on" onClick={(e) => { if (e.target === e.currentTarget) setSeleccionProducto(null) }}>
           <div className="v2-sheet">
             <div className="v2-sheet-handle" />
+            {!stepComplementos ? (<>
             <div className="v2-asistente-bowl-seleccionado" style={{ marginBottom: 16 }}>
               <MarimadoImg imageUrl={seleccionProducto.image_url} imageCookedUrl={seleccionProducto.image_cooked_url} isSelected recogida={recogidaSel} />
               <div className="v2-sel-info">
@@ -1596,6 +1636,30 @@ export default function HomeV2Preview() {
             >
               {agregadoSel ? '✓ Agregado' : `Agregar ${gramosSel}${esPorPiezasSel ? ' pz' : 'g'} · $${precioTotalSel.toFixed(2)}`}
             </button>
+            </>) : (
+              <div className="v2-comp-paso">
+                <p className="v2-comp-titulo">¿Agregar algún complemento?</p>
+                <div className="v2-comp-grid">
+                  {complementosDisp.map(comp => {
+                    const sel = complementosSel.some(c => c.id === comp.id)
+                    return (
+                      <div key={comp.id} className={`v2-comp-card${sel ? ' v2-comp-sel' : ''}`} onClick={() => toggleComplemento(comp)}>
+                        <div className="v2-comp-foto">
+                          {img(comp) ? <img src={img(comp)} alt={comp.name} /> : <div className="v2-comp-foto-ph" />}
+                          {sel && <span className="v2-comp-check">✓</span>}
+                        </div>
+                        <span className="v2-comp-nombre">{comp.name}</span>
+                        <span className="v2-comp-precio">${Number(comp.price).toFixed(0)}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+                <button className="btn-primario" onClick={agregarComplementosYCerrar} style={{ marginBottom: 10 }}>
+                  {complementosSel.length > 0 ? `Agregar complemento${complementosSel.length > 1 ? 's' : ''} y continuar` : 'Agregar a la orden'}
+                </button>
+                <button className="v2-comp-saltar" onClick={cerrarModal}>No gracias</button>
+              </div>
+            )}
           </div>
         </div>
       )}

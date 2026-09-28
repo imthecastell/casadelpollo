@@ -715,3 +715,35 @@
 @media (prefers-color-scheme: dark) { .v2-variante-nombre { color: #f0f0f0; } }
 
 .v2-variante-precio { font-size: 14px; font-weight: 700; color: #922B21; margin-top: 2px; }
+
+/* ─── Paso complementos en el sheet ─── */
+.v2-comp-paso { display: flex; flex-direction: column; padding-top: 4px; }
+.v2-comp-titulo { font-family: var(--font-title); font-weight: 800; font-size: 17px; color: var(--texto); margin: 0 0 16px; }
+.v2-comp-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 18px; }
+.v2-comp-card {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  background: var(--gris-claro); border: 2px solid transparent;
+  border-radius: 12px; padding: 10px 8px; cursor: pointer;
+  transition: border-color .15s, background .15s; text-align: center;
+}
+.v2-comp-card:active { opacity: .85; }
+.v2-comp-sel { border-color: var(--rojo); background: #fff5f5; }
+.v2-comp-foto { position: relative; width: 100%; aspect-ratio: 4/3; border-radius: 8px; overflow: hidden; background: var(--gris-medio, #ddd); }
+.v2-comp-foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.v2-comp-foto-ph { position: absolute; inset: 0; background: var(--gris-medio, #ccc); }
+.v2-comp-check {
+  position: absolute; top: 5px; right: 5px;
+  background: var(--rojo); color: #fff;
+  font-size: 11px; font-weight: 800;
+  width: 20px; height: 20px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.v2-comp-nombre { font-weight: 700; font-size: 12px; color: var(--texto); line-height: 1.2; }
+.v2-comp-precio { font-size: 11px; color: var(--rojo); font-weight: 700; }
+.v2-comp-saltar {
+  background: none; border: none; color: var(--texto-suave);
+  font-size: 14px; cursor: pointer; padding: 6px; width: 100%; text-align: center;
+}
+@media (prefers-color-scheme: dark) {
+  .v2-comp-sel { background: rgba(146,43,33,.18); }
+}
