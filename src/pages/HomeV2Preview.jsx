@@ -1548,7 +1548,7 @@ export default function HomeV2Preview() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
               <label className="config-label" style={{ marginBottom: 0 }}>Cantidad</label>
               <span style={{ fontSize: 11, color: 'var(--texto-suave)' }}>
-                {esPorPiezasSel ? 'charola estándar 20 pz' : 'sugerido 300 g por persona'}
+                {esPorPiezasSel ? 'charola 20 pz' : 'sugerido 300 g por persona'}
               </span>
             </div>
             <div className="cantidad-ctrl">
