@@ -17,7 +17,11 @@ const MARINADO_PASO = 50
 const PZ_MIN = 10
 const PZ_MAX = 200
 const PZ_PASO = 10
+const PREP_MIN = 1
+const PREP_MAX = 10
+const PREP_PASO = 1
 const esPorPiezas = p => /alb[oó]ndigas/i.test(p?.name || '')
+const esPreparado = p => p?.category_name === 'Preparados' && !esPorPiezas(p)
 
 function calcularTiempoMarinado(gramos) {
   const base = 20
@@ -718,15 +722,19 @@ export default function HomeV2Preview() {
   // usa el mismo estimado fijo que ya usa el asistente para esa categoría.
   const tiempoEstimadoSel = seleccionProducto?.category_name === 'Marinados' ? calcularTiempoMarinado(gramosSel) : 20
   const esPorPiezasSel = esPorPiezas(seleccionProducto)
+  const esPreparadoSel = esPreparado(seleccionProducto)
+  const usaPiezasSel   = esPorPiezasSel || esPreparadoSel
   const precioTotalSel = seleccionProducto
     ? esPorPiezasSel
       ? gramosSel * parseFloat(seleccionProducto.price || 0)
-      : (gramosSel / 1000) * parseFloat(seleccionProducto.price || 0)
+      : esPreparadoSel
+        ? null
+        : (gramosSel / 1000) * parseFloat(seleccionProducto.price || 0)
     : 0
 
   function abrirSeleccion(p) {
     setSeleccionProducto(p)
-    setGramosSel(esPorPiezas(p) ? 20 : 300)
+    setGramosSel(esPorPiezas(p) ? 20 : esPreparado(p) ? 1 : 300)
     setRecogidaSel('crudo')
     setAgregadoSel(false)
   }
@@ -764,8 +772,8 @@ export default function HomeV2Preview() {
   }
 
   function cambiarGramosSel(delta) {
-    const min = esPorPiezasSel ? PZ_MIN : MARINADO_MIN
-    const max = esPorPiezasSel ? PZ_MAX : MARINADO_MAX
+    const min = esPorPiezasSel ? PZ_MIN : esPreparadoSel ? PREP_MIN : MARINADO_MIN
+    const max = esPorPiezasSel ? PZ_MAX : esPreparadoSel ? PREP_MAX : MARINADO_MAX
     setGramosSel(prev => Math.min(max, Math.max(min, prev + delta)))
   }
 
@@ -788,7 +796,10 @@ export default function HomeV2Preview() {
       precio: seleccionProducto.price,
       precioTotal: precioTotalSel,
       imagen_url: img(seleccionProducto),
-      resumen: `${seleccionProducto.name} ${gramosSel}${esPorPiezas(seleccionProducto) ? ' pz' : 'g'} · ${recogidaSel === 'crudo' ? 'Crudo' : `Cocinado ~${tiempoEstimadoSel} min`} · $${precioTotalSel.toFixed(2)}`,
+      resumen: esPreparado(seleccionProducto)
+        ? `${seleccionProducto.name} ${gramosSel} pz · $${seleccionProducto.price}/kg · precio al pesar`
+        : `${seleccionProducto.name} ${gramosSel}${esPorPiezas(seleccionProducto) ? ' pz' : 'g'} · ${recogidaSel === 'crudo' ? 'Crudo' : `Cocinado ~${tiempoEstimadoSel} min`} · $${precioTotalSel?.toFixed(2)}`,
+     
     })
     setAgregadoSel(true)
     setTimeout(() => {
@@ -1243,7 +1254,7 @@ export default function HomeV2Preview() {
                       <div className="v2-card-foto">{imgV2(item, postersMap) ? <img src={imgV2(item, postersMap)} alt={item.name} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[item.category_name] || '#888' }} />}</div>
                       <div className="v2-card-barra">
                         <div className="v2-card-barra-nombre">{item.name}</div>
-                        <div className="v2-ts-precio-pill">${Number(item.price)}</div>
+                        <div className="v2-ts-precio-pill">${item.category_name === 'Preparados' ? `$${Number(item.price)}/kg` : `$${Number(item.price)}`}</div>
                       </div>
                       <button className="v2-ts-add" onClick={(e) => { e.stopPropagation(); abrirSeleccion(item) }}>+</button>
                     </div>
@@ -1588,18 +1599,20 @@ export default function HomeV2Preview() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
               <label className="config-label" style={{ marginBottom: 0 }}>Cantidad</label>
               <span style={{ fontSize: 11, color: 'var(--texto-suave)' }}>
-                {esPorPiezasSel ? 'charola 20 pz' : 'sugerido 300 g por persona'}
+                {esPorPiezasSel ? 'charola 20 pz' : esPreparadoSel ? '1 pz por persona' : 'sugerido 300 g por persona'}
               </span>
             </div>
             <div className="cantidad-ctrl">
-              <button className="cantidad-btn" onClick={() => cambiarGramosSel(esPorPiezasSel ? -PZ_PASO : -MARINADO_PASO)} disabled={gramosSel <= (esPorPiezasSel ? PZ_MIN : MARINADO_MIN)}>−</button>
-              <span className="cantidad-num" style={{ fontSize: 20, minWidth: 60, textAlign: 'center' }}>{gramosSel}{esPorPiezasSel ? ' pz' : 'g'}</span>
-              <button className="cantidad-btn" onClick={() => cambiarGramosSel(esPorPiezasSel ? PZ_PASO : MARINADO_PASO)} disabled={gramosSel >= (esPorPiezasSel ? PZ_MAX : MARINADO_MAX)}>+</button>
+              <button className="cantidad-btn" onClick={() => cambiarGramosSel(usaPiezasSel ? -(esPorPiezasSel ? PZ_PASO : PREP_PASO) : -MARINADO_PASO)} disabled={gramosSel <= (esPorPiezasSel ? PZ_MIN : esPreparadoSel ? PREP_MIN : MARINADO_MIN)}>−</button>
+              <span className="cantidad-num" style={{ fontSize: 20, minWidth: 60, textAlign: 'center' }}>{gramosSel}{usaPiezasSel ? ' pz' : 'g'}</span>
+              <button className="cantidad-btn" onClick={() => cambiarGramosSel(usaPiezasSel ? (esPorPiezasSel ? PZ_PASO : PREP_PASO) : MARINADO_PASO)} disabled={gramosSel >= (esPorPiezasSel ? PZ_MAX : esPreparadoSel ? PREP_MAX : MARINADO_MAX)}>+</button>
             </div>
             <div style={{ fontSize: 12, color: 'var(--texto-suave)', margin: '6px 0 16px' }}>
               {esPorPiezasSel
-                ? `Mín. ${PZ_MIN} pz · charola estándar ${PZ_PASO * 2} pz · de ${PZ_PASO} en ${PZ_PASO}`
-                : `${MARINADO_MIN}g — ${MARINADO_MAX}g · intervalos de ${MARINADO_PASO}g`}
+                ? `Mín. ${PZ_MIN} pz · charola ${PZ_PASO * 2} pz · de ${PZ_PASO} en ${PZ_PASO}`
+                : esPreparadoSel
+                  ? 'De 1 en 1 · precio final al pesar'
+                  : `${MARINADO_MIN}g — ${MARINADO_MAX}g · intervalos de ${MARINADO_PASO}g`}
             </div>
 
             {seleccionProducto.se_puede_cocinar && sucursalActiva?.servicio_cocinado !== false && (
@@ -1634,7 +1647,10 @@ export default function HomeV2Preview() {
               className={`btn-primario ${agregadoSel ? 'btn-agregado' : ''}`}
               onClick={handleAgregarSel}
             >
-              {agregadoSel ? '✓ Agregado' : `Agregar ${gramosSel}${esPorPiezasSel ? ' pz' : 'g'} · $${precioTotalSel.toFixed(2)}`}
+              {agregadoSel ? '✓ Agregado'
+                : esPreparadoSel
+                  ? `Agregar ${gramosSel} pz · $${seleccionProducto?.price}/kg`
+                  : `Agregar ${gramosSel}${esPorPiezasSel ? ' pz' : 'g'} · $${precioTotalSel?.toFixed(2)}`}
             </button>
             </>) : (
               <div className="v2-comp-paso">
