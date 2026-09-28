@@ -755,3 +755,21 @@
   cursor: pointer; transition: background .15s;
 }
 .v2-comp-btn-agregar:active { background: #1b5e20; }
+
+/* ─── Tags de ingredientes en el modal ─── */
+.v2-tags-row {
+  display: flex; flex-wrap: wrap; gap: 5px;
+  margin-top: 8px;
+}
+.v2-tag {
+  font-size: 11px; font-weight: 600;
+  color: var(--texto-suave);
+  background: var(--gris-claro, #f2f2f2);
+  border-radius: 20px;
+  padding: 3px 9px;
+  white-space: nowrap;
+  text-transform: lowercase;
+}
+@media (prefers-color-scheme: dark) {
+  .v2-tag { background: rgba(255,255,255,.08); }
+}

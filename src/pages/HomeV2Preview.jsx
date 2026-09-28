@@ -3,6 +3,7 @@ import QRCode from 'qrcode'
 import { useApp } from '../data/AppContext.jsx'
 import LogoSlot from '../Components/LogoSlot.jsx'
 import AvisoAirfryer from '../Components/AvisoAirfryer.jsx'
+import { PRODUCT_TAGS } from '../data/productTags'
 import { MarimadoImg } from '../Components/SeccionMarinados.jsx'
 import { generarHorariosDisponibles, ventanaPreparacion, obtenerCocFinEfectivo } from '../data/slots.js'
 import { armarMensajeWhatsapp } from '../data/pedidoWhatsapp.js'
@@ -182,7 +183,8 @@ function normalizarTexto(txt) {
 function coincideBusqueda(producto, consulta) {
   const palabras = normalizarTexto(consulta).split(/\s+/).filter(Boolean)
   if (palabras.length === 0) return false
-  const indice = normalizarTexto(`${producto.name} ${descripcionProducto(producto)} ${producto.category_name || ''}`)
+  const tagsStr = (PRODUCT_TAGS[producto.id] || []).join(' ')
+  const indice = normalizarTexto(`${producto.name} ${descripcionProducto(producto)} ${producto.category_name || ''} ${tagsStr}`)
   return palabras.every(palabra => indice.includes(palabra))
 }
 
@@ -723,6 +725,7 @@ export default function HomeV2Preview() {
   const tiempoEstimadoSel = seleccionProducto?.category_name === 'Marinados' ? calcularTiempoMarinado(gramosSel) : 20
   const esPorPiezasSel = esPorPiezas(seleccionProducto)
   const esPreparadoSel = esPreparado(seleccionProducto)
+  const tagsSelP = seleccionProducto ? (PRODUCT_TAGS[seleccionProducto.id] || []) : []
   const usaPiezasSel   = esPorPiezasSel || esPreparadoSel
   const precioTotalSel = seleccionProducto
     ? esPorPiezasSel
@@ -1595,6 +1598,11 @@ export default function HomeV2Preview() {
               <div className="v2-sel-info">
                 <span className="v2-sel-nombre">{seleccionProducto.name}</span>
                 <span className={`v2-sel-pill${recogidaSel === 'cocinado' ? ' v2-sel-pill-servir' : ''}`}>{recogidaSel === 'cocinado' ? 'Listo para servir' : 'Listo para cocinar'}</span>
+          {tagsSelP.length > 0 && (
+            <div className="v2-tags-row">
+              {tagsSelP.map(t => <span key={t} className="v2-tag">{t}</span>)}
+            </div>
+          )}
               </div>
             </div>
 
