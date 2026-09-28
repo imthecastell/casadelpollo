@@ -14,6 +14,10 @@ import '../styles/menu.css'
 const MARINADO_MIN = 200
 const MARINADO_MAX = 2000
 const MARINADO_PASO = 50
+const PZ_MIN = 10
+const PZ_MAX = 200
+const PZ_PASO = 10
+const esPorPiezas = p => /alb[oó]ndigas/i.test(p?.name || '')
 
 function calcularTiempoMarinado(gramos) {
   const base = 20
@@ -710,17 +714,24 @@ export default function HomeV2Preview() {
   // Solo Marinados escala el tiempo de cocción con el peso — Preparados
   // usa el mismo estimado fijo que ya usa el asistente para esa categoría.
   const tiempoEstimadoSel = seleccionProducto?.category_name === 'Marinados' ? calcularTiempoMarinado(gramosSel) : 20
-  const precioTotalSel = seleccionProducto ? (gramosSel / 1000) * parseFloat(seleccionProducto.price || 0) : 0
+  const esPorPiezasSel = esPorPiezas(seleccionProducto)
+  const precioTotalSel = seleccionProducto
+    ? esPorPiezasSel
+      ? gramosSel * parseFloat(seleccionProducto.price || 0)
+      : (gramosSel / 1000) * parseFloat(seleccionProducto.price || 0)
+    : 0
 
   function abrirSeleccion(p) {
     setSeleccionProducto(p)
-    setGramosSel(300)
+    setGramosSel(esPorPiezas(p) ? 20 : 300)
     setRecogidaSel('crudo')
     setAgregadoSel(false)
   }
 
   function cambiarGramosSel(delta) {
-    setGramosSel(prev => Math.min(MARINADO_MAX, Math.max(MARINADO_MIN, prev + delta)))
+    const min = esPorPiezasSel ? PZ_MIN : MARINADO_MIN
+    const max = esPorPiezasSel ? PZ_MAX : MARINADO_MAX
+    setGramosSel(prev => Math.min(max, Math.max(min, prev + delta)))
   }
 
   function elegirRecogidaSel(modo) {
@@ -742,7 +753,7 @@ export default function HomeV2Preview() {
       precio: seleccionProducto.price,
       precioTotal: precioTotalSel,
       imagen_url: img(seleccionProducto),
-      resumen: `${seleccionProducto.name} ${gramosSel}g · ${recogidaSel === 'crudo' ? 'Crudo' : `Cocinado ~${tiempoEstimadoSel} min`} · $${precioTotalSel.toFixed(2)}`,
+      resumen: `${seleccionProducto.name} ${gramosSel}${esPorPiezas(seleccionProducto) ? ' pz' : 'g'} · ${recogidaSel === 'crudo' ? 'Crudo' : `Cocinado ~${tiempoEstimadoSel} min`} · $${precioTotalSel.toFixed(2)}`,
     })
     setAgregadoSel(true)
     setTimeout(() => {
@@ -1534,12 +1545,14 @@ export default function HomeV2Preview() {
 
             <label className="config-label">Cantidad</label>
             <div className="cantidad-ctrl">
-              <button className="cantidad-btn" onClick={() => cambiarGramosSel(-MARINADO_PASO)} disabled={gramosSel <= MARINADO_MIN}>−</button>
-              <span className="cantidad-num" style={{ fontSize: 20, minWidth: 60, textAlign: 'center' }}>{gramosSel}g</span>
-              <button className="cantidad-btn" onClick={() => cambiarGramosSel(MARINADO_PASO)} disabled={gramosSel >= MARINADO_MAX}>+</button>
+              <button className="cantidad-btn" onClick={() => cambiarGramosSel(esPorPiezasSel ? -PZ_PASO : -MARINADO_PASO)} disabled={gramosSel <= (esPorPiezasSel ? PZ_MIN : MARINADO_MIN)}>−</button>
+              <span className="cantidad-num" style={{ fontSize: 20, minWidth: 60, textAlign: 'center' }}>{gramosSel}{esPorPiezasSel ? ' pz' : 'g'}</span>
+              <button className="cantidad-btn" onClick={() => cambiarGramosSel(esPorPiezasSel ? PZ_PASO : MARINADO_PASO)} disabled={gramosSel >= (esPorPiezasSel ? PZ_MAX : MARINADO_MAX)}>+</button>
             </div>
             <div style={{ fontSize: 12, color: 'var(--texto-suave)', margin: '6px 0 16px' }}>
-              {MARINADO_MIN}g — {MARINADO_MAX}g · intervalos de {MARINADO_PASO}g
+              {esPorPiezasSel
+                ? `Mín. ${PZ_MIN} pz · charola estándar ${PZ_PASO * 2} pz · de ${PZ_PASO} en ${PZ_PASO}`
+                : `${MARINADO_MIN}g — ${MARINADO_MAX}g · intervalos de ${MARINADO_PASO}g`}
             </div>
 
             {seleccionProducto.se_puede_cocinar && sucursalActiva?.servicio_cocinado !== false && (
@@ -1574,7 +1587,7 @@ export default function HomeV2Preview() {
               className={`btn-primario ${agregadoSel ? 'btn-agregado' : ''}`}
               onClick={handleAgregarSel}
             >
-              {agregadoSel ? '✓ Agregado' : `Agregar ${gramosSel}g · $${precioTotalSel.toFixed(2)}`}
+              {agregadoSel ? '✓ Agregado' : `Agregar ${gramosSel}${esPorPiezasSel ? ' pz' : 'g'} · $${precioTotalSel.toFixed(2)}`}
             </button>
           </div>
         </div>
