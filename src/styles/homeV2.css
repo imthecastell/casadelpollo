@@ -268,8 +268,8 @@
   border: 3px solid var(--cafe); box-shadow: 6px 6px 0 var(--cafe);
   display: flex; flex-direction: column;
 }
-.v2-bowl-hibrido-foto { flex: none; width: 100%; aspect-ratio: 16 / 9; background: var(--gris-claro); position: relative; overflow: hidden; }
-.v2-bowl-hibrido-foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.v2-bowl-hibrido-foto { flex: none; width: 100%; aspect-ratio: 4 / 3; background: var(--gris-claro); position: relative; overflow: hidden; }
+.v2-bowl-hibrido-foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: bottom center; display: block; }
 .v2-bowl-hibrido-panel { flex: 1; padding: 18px 18px 20px; display: flex; flex-direction: column; }
 .v2-bowl-hibrido-panel .v2-promo-badge { align-self: flex-start; }
 .v2-bowl-hibrido-panel h3 { font-family: var(--font-title); font-weight: 800; font-size: 21px; color: #fff; margin: 0; line-height: 1.1; text-shadow: 0 1px 3px rgba(0,0,0,.15); }
@@ -561,12 +561,13 @@
 .v2-asistente-bowl-opcion img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; flex-shrink: 0; background: var(--gris-claro); }
 .v2-asistente-bowl-opcion.on { border-color: var(--rojo); background: #fff5f5; color: var(--rojo); font-weight: 700; }
 .v2-asistente-bowl-seleccionado {
-  display: flex; align-items: center; gap: 12px; padding: 8px 10px;
-  background: var(--gris-claro); border: 1.5px solid var(--rojo); border-radius: 10px;
+  display: flex; align-items: center; gap: 14px; padding: 10px 12px;
+  background: var(--gris-claro); border: 1.5px solid var(--rojo); border-radius: 12px;
 }
-.v2-asistente-bowl-seleccionado img { width: 64px; height: 52px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
-.v2-asistente-bowl-seleccionado span { flex: 1; font-weight: 700; font-size: 13px; color: var(--texto); }
-.v2-asistente-bowl-seleccionado button { background: none; border: none; color: var(--texto-suave); font-size: 12px; cursor: pointer; }
+.v2-asistente-bowl-seleccionado img { width: 90px; height: 76px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
+.v2-sel-info { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.v2-sel-nombre { font-weight: 800; font-size: 17px; color: var(--texto); line-height: 1.2; }
+.v2-sel-pill { display: inline-block; align-self: flex-start; background: #e8f5e9; color: #2e7d32; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; letter-spacing: .02em; }
 .v2-asistente-bowl-grupo { margin-bottom: 6px; }
 .v2-asistente-bowl-grupo-head {
   width: 100%; display: flex; justify-content: space-between; align-items: center; text-align: left;

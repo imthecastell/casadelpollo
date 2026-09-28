@@ -25,7 +25,7 @@ function calcularTiempoMarinado(gramos) {
   return gramos <= 300 ? base : base + extra
 }
 
-const BOWL_PORTADA_CDN = 'https://res.cloudinary.com/do4juvxio/image/upload/ar_4:3,c_fill,w_800/design/bowl_portada.webp'
+const BOWL_PORTADA_CDN = 'https://res.cloudinary.com/do4juvxio/image/upload/c_limit,w_900/design/bowl_portada.webp'
 
 // Elige `cantidad` productos "al azar" pero estables durante todo el día:
 // la semilla sale de la fecha (YYYY-MM-DD), así que todos ven los mismos
@@ -630,7 +630,7 @@ export default function HomeV2Preview() {
     },
     bowlsActivo && {
       badge: 'BOWLS', titulo: 'Arma tu Bowl', desc: 'Base + marinado + tu toque, listo en minutos.',
-      cta: 'Empezar', imagen: bowlImg,
+      cta: 'Empezar', imagen: bowlImg, objectPos: 'bottom center',
       accion: () => abrirBowlDirecto(),
     },
     marinadosImg[2] && {
@@ -1539,8 +1539,10 @@ export default function HomeV2Preview() {
             <div className="v2-sheet-handle" />
             <div className="v2-asistente-bowl-seleccionado" style={{ marginBottom: 16 }}>
               <MarimadoImg imageUrl={seleccionProducto.image_url} imageCookedUrl={seleccionProducto.image_cooked_url} isSelected recogida={recogidaSel} />
-              <span>{seleccionProducto.name}</span>
-              <button onClick={() => setSeleccionProducto(null)}>cerrar ✕</button>
+              <div className="v2-sel-info">
+                <span className="v2-sel-nombre">{seleccionProducto.name}</span>
+                <span className="v2-sel-pill">Listo para cocinar</span>
+              </div>
             </div>
 
             <label className="config-label">Cantidad</label>
