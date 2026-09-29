@@ -49,10 +49,10 @@ function aleatorioConSemilla(semilla) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296
   }
 }
-function destacadosDelDia(lista, cantidad) {
+function destacadosDelDia(lista, cantidad, semilla) {
   if (lista.length <= cantidad) return lista
   const hoy = new Date().toISOString().slice(0, 10)
-  const azar = aleatorioConSemilla(semillaDesdeTexto(hoy))
+  const azar = aleatorioConSemilla(semilla ?? semillaDesdeTexto(hoy))
   const copia = [...lista]
   for (let i = copia.length - 1; i > 0; i--) {
     const j = Math.floor(azar() * (i + 1))
@@ -399,6 +399,7 @@ export default function HomeV2Preview() {
   // Subconjunto del día para el fondo del selector de sucursal — estable
   // mientras dure el día, cambia solo a la medianoche.
   const [heroSeleccionSucursal] = useState(() => destacadosDelDia(HERO_ITEMS_SUCURSAL, 6))
+  const [semillaCarga] = useState(() => Math.floor(Math.random() * 4294967296))
   const [heroIdxSucursal, setHeroIdxSucursal] = useState(0)
   const timerRef = useRef(null)
   const topbarRef = useRef(null)
@@ -622,9 +623,12 @@ export default function HomeV2Preview() {
   const ensalada = productos.find(p => p.name === 'Ensalada')
   const bowlImg = BOWL_PORTADA_CDN
   const bowlGrande = marinadosImg[1] || marinadosImg[0]
-  // "Más pedidos" del Home: 6 productos al azar (marinados o preparados)
-  // que cambian una vez al día, para no mostrar siempre los mismos.
-  const destacadosHoy = destacadosDelDia(marinadosImg, 6)
+  // Home: 6 marinados y 6 preparados al azar, distintos en cada carga.
+  const destacadosHoy = destacadosDelDia(marinadosImg, 6, semillaCarga)
+  const preparadosStrip = destacadosDelDia([
+    ...preparadosItems.grupos.map(g => ({ _tipo: 'grupo', ...g })),
+    ...preparadosItems.individuales.filter(img),
+  ], 6, semillaCarga + 1)
 
   const productosBuscables = productos.filter(p => CATEGORIAS.some(c => c.match === p.category_name) && img(p))
   const resultadosBusqueda = consultaBusqueda.trim()
@@ -1240,10 +1244,7 @@ export default function HomeV2Preview() {
               <div className="v2-banda v2-banda-rojo" data-color="#922B21">
                 <div className="v2-seccion-titulo">Preparados para lucirte</div>
                 <div className="v2-strip-grandes">
-                  {[
-                    ...preparadosItems.grupos.map(g => ({ _tipo: 'grupo', ...g })),
-                    ...preparadosItems.individuales.filter(img),
-                  ].slice(0, 6).map(item => item._tipo === 'grupo' ? (
+                  {preparadosStrip.map(item => item._tipo === 'grupo' ? (
                     <div key={item.id} className="v2-tarjeta-grande-strip v2-tarjeta-grupo" onClick={() => setGrupoAbierto(item)}>
                       <div className="v2-card-foto">
                         {(() => { const src = item.productos.map(p => imgV2(p, postersMap)).find(Boolean); return src ? <img src={src} alt={item.nombre} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR['Preparados'] || '#888' }} /> })()}
