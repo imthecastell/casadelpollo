@@ -1602,7 +1602,7 @@ export default function HomeV2Preview() {
             {!stepComplementos ? (<>
             <div className={`v2-asistente-bowl-seleccionado${verGuia ? ' gc-abierta' : ''}`} style={{ marginBottom: 16 }}>
               {verGuia ? (
-                <GuiaCocinaPanel producto={seleccionProducto} onVolver={() => setGuiaAbierta(false)} />
+                <GuiaCocinaPanel producto={seleccionProducto} imagenUrl={fotoCocinada(seleccionProducto.image_url, seleccionProducto.image_cooked_url, { ar: '1:1', w: 600 })} onVolver={() => setGuiaAbierta(false)} />
               ) : (<>
                 <MarimadoImg imageUrl={seleccionProducto.image_url} imageCookedUrl={seleccionProducto.image_cooked_url} isSelected recogida={recogidaSel} />
                 <div className="v2-sel-info">

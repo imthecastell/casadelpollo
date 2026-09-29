@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { guiaDe, guiaDisponible } from '../data/guiaCocina.js'
 import { generarImagenGuia, guardarImagen, nombreArchivoGuia } from '../data/guiaImagen.js'
-import { fotoCocinada } from '../data/fotos.js'
 import '../styles/guiaCocina.css'
 
 export { guiaDisponible }
 
 /* Panel "¿Cómo cocinar?": elige método (sartén / horno / airfryer) → pasos → guardar como imagen. */
-export function GuiaCocinaPanel({ producto, onVolver }) {
+export function GuiaCocinaPanel({ producto, imagenUrl, onVolver }) {
   const guia = guiaDe(producto)
   const [metodoId, setMetodoId] = useState(null)
   const [estado, setEstado] = useState('idle') // idle | guardando | listo | error
@@ -25,7 +24,7 @@ export function GuiaCocinaPanel({ producto, onVolver }) {
       resumen: metodo.resumen,
       pasos: metodo.pasos,
       notas: guia.notas,
-      imagenUrl: fotoCocinada(producto.image_url, producto.image_cooked_url, { ar: '1:1', w: 600 }),
+      imagenUrl: imagenUrl || producto.image_cooked_url || producto.image_url || null,
     }).then(blob => {
       if (imagen.current.clave === clave) imagen.current.blob = blob
       return blob
@@ -102,10 +101,10 @@ export function GuiaCocinaPanel({ producto, onVolver }) {
 }
 
 /* Versión autocontenida (v1): enlace discreto que se abre en un panel dentro del configurador. */
-export function GuiaCocinaInline({ producto, oculto = false }) {
+export function GuiaCocinaInline({ producto, imagenUrl, oculto = false }) {
   const [abierta, setAbierta] = useState(false)
   if (!guiaDisponible(producto) || oculto) return null
   return abierta
-    ? <div className="gc-inline"><GuiaCocinaPanel producto={producto} onVolver={() => setAbierta(false)} /></div>
+    ? <div className="gc-inline"><GuiaCocinaPanel producto={producto} imagenUrl={imagenUrl} onVolver={() => setAbierta(false)} /></div>
     : <button type="button" className="gc-link" onClick={() => setAbierta(true)}>¿Cómo cocinar? ›</button>
 }
