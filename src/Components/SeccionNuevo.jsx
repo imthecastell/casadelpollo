@@ -6,6 +6,7 @@
 import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import TagsChips from './TagsChips.jsx'
+import { GuiaCocinaInline } from './GuiaCocina.jsx'
 
 // unidad display según precio_tipo del producto
 const unidadDe = (p) => {
@@ -328,6 +329,7 @@ function NvCardExpandida({ p, recogida, gramos, precioTotal, agregado, onClose, 
           </div>
         </div>
         <TagsChips producto={p} />
+        <GuiaCocinaInline producto={p} oculto={recogida === 'cocinado'} />
 
         {/* Cantidad */}
         <div>

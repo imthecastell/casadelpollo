@@ -3,6 +3,7 @@ import { useApp } from '../data/AppContext.jsx'
 import { fotoCruda, fotoCocinada } from '../data/fotos.js'
 import AvisoDisponibilidad from './AvisoDisponibilidad.jsx'
 import TagsChips from './TagsChips.jsx'
+import { GuiaCocinaInline } from './GuiaCocina.jsx'
 
 // Milanesas simples (sin empanado ni empapelado)
 const ORDEN_SIMPLES = ['natural', 'aplanada']
@@ -99,6 +100,7 @@ function CardProducto({ producto, seleccion, cantidad, recogida, onSeleccionar, 
       {isActive && (
         <div className="configurador-card slide-up" style={{ marginTop: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0 }}>
           <TagsChips producto={producto} />
+          <GuiaCocinaInline producto={producto} oculto={recogida === 'cocinado'} />
 
           {/* Cantidad */}
           <div>

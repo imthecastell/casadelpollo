@@ -406,7 +406,7 @@
 
 /* ---- hoja/popover (WhatsApp: Llamar o Mensaje) ---- */
 .v2-sheet-overlay { position: fixed; inset: 0; max-width: 480px; margin: 0 auto; background: rgba(0,0,0,.42); z-index: 70; display: flex; align-items: flex-end; }
-.v2-sheet { background: var(--crema); width: 100%; border-radius: 26px 26px 0 0; padding: 10px 20px calc(env(safe-area-inset-bottom, 0) + 24px); animation: v2-sheet-in .3s ease; }
+.v2-sheet { background: var(--crema); width: 100%; border-radius: 26px 26px 0 0; padding: 10px 20px calc(env(safe-area-inset-bottom, 0) + 24px); animation: v2-sheet-in .3s ease; max-height: 92vh; max-height: 92dvh; overflow-y: auto; overscroll-behavior: contain; }
 @keyframes v2-sheet-in { from { transform: translateY(100%); } to { transform: translateY(0); } }
 .v2-sheet-handle { width: 36px; height: 4px; background: var(--gris); border-radius: 2px; margin: 6px auto 16px; }
 .v2-sheet-titulo { font-family: var(--font-title); font-weight: 800; font-size: 16px; color: var(--texto); margin-bottom: 2px; }

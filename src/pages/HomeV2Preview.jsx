@@ -5,6 +5,7 @@ import LogoSlot from '../Components/LogoSlot.jsx'
 import AvisoAirfryer from '../Components/AvisoAirfryer.jsx'
 import { tagsDe } from '../data/productTags'
 import { MarimadoImg } from '../Components/SeccionMarinados.jsx'
+import { GuiaCocinaPanel, guiaDisponible } from '../Components/GuiaCocina.jsx'
 import { generarHorariosDisponibles, ventanaPreparacion, obtenerCocFinEfectivo } from '../data/slots.js'
 import { armarMensajeWhatsapp } from '../data/pedidoWhatsapp.js'
 import { codificarQR } from '../data/lealtadQR.js'
@@ -395,6 +396,7 @@ export default function HomeV2Preview() {
   const [grupoAbierto, setGrupoAbierto] = useState(null)
   const [stepComplementos, setStepComplementos] = useState(false)
   const [complementosSel, setComplementosSel] = useState([])
+  const [guiaAbierta, setGuiaAbierta] = useState(false)
   const [colorTopbar, setColorTopbar] = useState(null)
   // Subconjunto del día para el fondo del selector de sucursal — estable
   // mientras dure el día, cambia solo a la medianoche.
@@ -730,6 +732,8 @@ export default function HomeV2Preview() {
   const esPorPiezasSel = esPorPiezas(seleccionProducto)
   const esPreparadoSel = esPreparado(seleccionProducto)
   const tagsSelP = tagsDe(seleccionProducto)
+  const tieneGuia = guiaDisponible(seleccionProducto) && recogidaSel !== 'cocinado'
+  const verGuia = tieneGuia && guiaAbierta
   const usaPiezasSel   = esPorPiezasSel || esPreparadoSel
   const precioTotalSel = seleccionProducto
     ? esPorPiezasSel
@@ -746,6 +750,7 @@ export default function HomeV2Preview() {
     setAgregadoSel(false)
     setStepComplementos(false)
     setComplementosSel([])
+    setGuiaAbierta(false)
   }
 
   function cerrarModal() {
@@ -754,6 +759,7 @@ export default function HomeV2Preview() {
     setRecogidaSel('crudo')
     setStepComplementos(false)
     setComplementosSel([])
+    setGuiaAbierta(false)
   }
 
   function toggleComplemento(comp) {
@@ -1594,17 +1600,22 @@ export default function HomeV2Preview() {
           <div className="v2-sheet">
             <div className="v2-sheet-handle" />
             {!stepComplementos ? (<>
-            <div className="v2-asistente-bowl-seleccionado" style={{ marginBottom: 16 }}>
-              <MarimadoImg imageUrl={seleccionProducto.image_url} imageCookedUrl={seleccionProducto.image_cooked_url} isSelected recogida={recogidaSel} />
-              <div className="v2-sel-info">
-                <span className="v2-sel-nombre">{seleccionProducto.name}</span>
-                <span className={`v2-sel-pill${recogidaSel === 'cocinado' ? ' v2-sel-pill-servir' : ''}`}>{recogidaSel === 'cocinado' ? 'Listo para servir' : 'Listo para cocinar'}</span>
-          {tagsSelP.length > 0 && (
-            <div className="v2-tags-row">
-              {tagsSelP.map(t => <span key={t} className="v2-tag">{t}</span>)}
-            </div>
-          )}
-              </div>
+            <div className={`v2-asistente-bowl-seleccionado${verGuia ? ' gc-abierta' : ''}`} style={{ marginBottom: 16 }}>
+              {verGuia ? (
+                <GuiaCocinaPanel producto={seleccionProducto} onVolver={() => setGuiaAbierta(false)} />
+              ) : (<>
+                <MarimadoImg imageUrl={seleccionProducto.image_url} imageCookedUrl={seleccionProducto.image_cooked_url} isSelected recogida={recogidaSel} />
+                <div className="v2-sel-info">
+                  <span className="v2-sel-nombre">{seleccionProducto.name}</span>
+                  <span className={`v2-sel-pill${recogidaSel === 'cocinado' ? ' v2-sel-pill-servir' : ''}`}>{recogidaSel === 'cocinado' ? 'Listo para servir' : 'Listo para cocinar'}</span>
+                  {tagsSelP.length > 0 && (
+                    <div className="v2-tags-row">
+                      {tagsSelP.map(t => <span key={t} className="v2-tag">{t}</span>)}
+                    </div>
+                  )}
+                  {tieneGuia && <button type="button" className="gc-link" onClick={() => setGuiaAbierta(true)}>¿Cómo cocinar? ›</button>}
+                </div>
+              </>)}
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
