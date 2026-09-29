@@ -761,19 +761,13 @@
 .v2-comp-btn-agregar:active { background: #1b5e20; }
 
 /* ─── Tags de ingredientes en el modal ─── */
-.v2-tags-row {
-  display: flex; flex-wrap: wrap; gap: 5px;
-  margin-top: 8px;
-}
+.v2-tags-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
 .v2-tag {
-  font-size: 11px; font-weight: 600;
-  color: var(--texto-suave);
-  background: var(--gris-claro, #f2f2f2);
-  border-radius: 20px;
-  padding: 3px 9px;
-  white-space: nowrap;
-  text-transform: lowercase;
+  display: inline-block; font-size: 12px; font-weight: 600; line-height: 1;
+  color: var(--cafe); background: #fff; border: 1px solid rgba(0,0,0,.09);
+  border-radius: 20px; padding: 5px 10px; white-space: nowrap;
 }
+.v2-tag::first-letter { text-transform: uppercase; }
 @media (prefers-color-scheme: dark) {
-  .v2-tag { background: rgba(255,255,255,.08); }
+  .v2-tag { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.14); color: inherit; }
 }
