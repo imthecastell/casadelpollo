@@ -152,6 +152,13 @@ const enCategoria = (p, cat) =>
   (cat.key === 'preparados' && esMilanesaOfrecida(p)) ||
   (cat.key === 'fresco' && esMilanesaNatural(p))
 
+// Lo que se cobra al pesar no entra al total estimado (el carrito y el resumen del pedido lo comparten).
+const esAlPesar = item => item.tipo === 'pieza' || item.tipo === 'preparado' || item.tipo === 'milanesa'
+const totalEstimado = lista =>
+  lista.reduce((sum, item) => (esAlPesar(item) ? sum : sum + parseFloat(item.precioTotal || item.precio || 0)), 0)
+const nombreItem = item => item.nombre || (item.tipo === 'bowl' ? 'Arma tu Bowl' : 'Producto')
+const EMOJI_ITEM = { bowl: '🥗', marinado: '🍯', complemento: '🫙' }
+
 // Descripciones de prueba para poder armar y probar el buscador ya
 // mismo — en el catálogo real este texto vendría del backend (campo
 // description, todavía no existe) y se cargaría desde el admin. Punto
@@ -423,6 +430,7 @@ export default function HomeV2Preview() {
   const [stepComplementos, setStepComplementos] = useState(false)
   const [complementosSel, setComplementosSel] = useState([])
   const [guiaAbierta, setGuiaAbierta] = useState(false)
+  const [confirmandoSalida, setConfirmandoSalida] = useState(false)
   const [colorTopbar, setColorTopbar] = useState(null)
   // Subconjunto del día para el fondo del selector de sucursal — estable
   // mientras dure el día, cambia solo a la medianoche.
@@ -897,7 +905,17 @@ export default function HomeV2Preview() {
   }
 
   function cerrarAsistente() {
+    setConfirmandoSalida(false)
     patchAsistente({ abierto: false })
+  }
+
+  // Desde que se eligió categoría/producto (paso 3) y hasta antes de enviar el pedido,
+  // salir con la ✕ descarta lo configurado en el asistente: se pide confirmación.
+  // Lo que ya está en el carrito se conserva.
+  const hayProgresoAsistente = asistente.abierto && asistente.paso >= 3 && asistente.paso < 8
+  function intentarCerrarAsistente() {
+    if (hayProgresoAsistente) setConfirmandoSalida(true)
+    else cerrarAsistente()
   }
 
   // "Hacer pedido" desde el carrito: entra directo al horario con lo que ya
@@ -1206,7 +1224,10 @@ export default function HomeV2Preview() {
       <div className="v2-topbar" ref={topbarRef} style={colorTopbar ? { background: colorTopbar } : undefined}>
         <div className="v2-tb-pill">
           <button className="v2-tb-pill-icono" onClick={() => mostrarToast('Menú con Ayuda, Recetas (próximamente) y Ajustes')}>☰</button>
-          <button className="v2-tb-pill-nombre" onClick={() => setSelectorSucursalAbierto(true)}>{sucursalActiva.name}</button>
+          <button className="v2-tb-pill-nombre" onClick={() => setSelectorSucursalAbierto(true)} aria-label={`Sucursal ${sucursalActiva.name}, cambiar`}>
+            <span className="v2-tb-pill-etiqueta">Sucursal</span>
+            <span className="v2-tb-pill-suc">{sucursalActiva.name}</span>
+          </button>
         </div>
         <div className="v2-tb-logo-wrap">
           <div className="v2-tb-logo-crop">
@@ -1220,9 +1241,14 @@ export default function HomeV2Preview() {
           </div>
         </div>
         <div className="v2-tb-derecha">
-          <button className="v2-tb-btn" onClick={() => setMostrarBuscador(true)}>🔍</button>
+          <button className="v2-tb-btn" onClick={() => setMostrarBuscador(true)}>
+            <span className="v2-tb-btn-icono" aria-hidden="true">🔍</span>
+            <span className="v2-tb-btn-etiqueta">Buscar</span>
+          </button>
           <button className="v2-tb-btn" onClick={() => setMostrarCarrito(true)}>
-            🛒{carrito.length > 0 && <span className="v2-tb-badge">{carrito.length}</span>}
+            <span className="v2-tb-btn-icono" aria-hidden="true">🛒</span>
+            <span className="v2-tb-btn-etiqueta">Carrito</span>
+            {carrito.length > 0 && <span className="v2-tb-badge">{carrito.length}</span>}
           </button>
         </div>
       </div>
@@ -1755,13 +1781,13 @@ export default function HomeV2Preview() {
               <>
                 <div className="v2-carrito-lista">
                   {carrito.map(item => {
-                    const alPesar = item.tipo === 'pieza' || item.tipo === 'preparado' || item.tipo === 'milanesa'
+                    const alPesar = esAlPesar(item)
                     const precio = parseFloat(item.precioTotal || item.precio || 0)
                     return (
                       <div key={item.id} className="v2-carrito-item">
                         {item.imagen_url && <img src={item.imagen_url} alt="" />}
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div className="v2-carrito-item-nombre">{item.nombre}</div>
+                          <div className="v2-carrito-item-nombre">{nombreItem(item)}</div>
                           {item.resumen && <div className="v2-carrito-item-detalle">{item.resumen}</div>}
                         </div>
                         <div className="v2-carrito-item-precio">{alPesar ? 'Al pesar' : `$${precio.toFixed(2)}`}</div>
@@ -1773,10 +1799,7 @@ export default function HomeV2Preview() {
                 <div className="v2-carrito-total">
                   <span>Total estimado</span>
                   <b>
-                    ${carrito.reduce((sum, item) => {
-                      if (item.tipo === 'pieza' || item.tipo === 'preparado' || item.tipo === 'milanesa') return sum
-                      return sum + parseFloat(item.precioTotal || item.precio || 0)
-                    }, 0).toFixed(2)}
+                    ${totalEstimado(carrito).toFixed(2)}
                   </b>
                 </div>
               </>
@@ -1813,7 +1836,7 @@ export default function HomeV2Preview() {
           <div className="v2-asistente-header">
             <div className="v2-asistente-atras" style={{ visibility: 'hidden' }} />
             <div className="v2-asistente-progreso" />
-            <button className="v2-asistente-cerrar" onClick={cerrarAsistente}>✕</button>
+            <button className="v2-asistente-cerrar" onClick={intentarCerrarAsistente} aria-label="Cerrar">✕</button>
           </div>
           <div className="v2-asistente-contenido">
             <div className="v2-asistente-titulo">¿Qué quieres pedir hoy?</div>
@@ -1885,7 +1908,7 @@ export default function HomeV2Preview() {
                 <div key={n} className={`v2-asistente-punto${asistente.paso >= n ? ' on' : ''}`} />
               ))}
             </div>
-            <button className="v2-asistente-cerrar" onClick={cerrarAsistente}>✕</button>
+            <button className="v2-asistente-cerrar" onClick={intentarCerrarAsistente} aria-label="Cerrar">✕</button>
           </div>
 
           <div className="v2-asistente-contenido">
@@ -2288,6 +2311,37 @@ export default function HomeV2Preview() {
                   </div>
                 </div>
 
+                <div className="v2-resumen">
+                  <div className="v2-resumen-cabecera">
+                    <div className="v2-resumen-titulo">Resumen de tu pedido</div>
+                    <button type="button" className="v2-resumen-editar" onClick={() => { cerrarAsistente(); setMostrarCarrito(true) }}>Editar</button>
+                  </div>
+                  <div className="v2-resumen-suc">Recoges en {sucursalActiva?.name}</div>
+                  <div className="v2-resumen-items">
+                  {carrito.map(item => (
+                    <div key={item.id} className="v2-carrito-item">
+                      {item.imagen_url
+                        ? <img src={item.imagen_url} alt="" />
+                        : <div className="v2-carrito-item-ph" aria-hidden="true">{EMOJI_ITEM[item.tipo] || '🍗'}</div>}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div className="v2-carrito-item-nombre">{nombreItem(item)}</div>
+                        {item.resumen && <div className="v2-carrito-item-detalle">{item.resumen}</div>}
+                      </div>
+                      <div className="v2-carrito-item-precio">
+                        {esAlPesar(item) ? 'Al pesar' : `$${parseFloat(item.precioTotal || item.precio || 0).toFixed(2)}`}
+                      </div>
+                    </div>
+                  ))}
+                  </div>
+                  <div className="v2-carrito-total">
+                    <span>Total estimado</span>
+                    <b>${totalEstimado(carrito).toFixed(2)}</b>
+                  </div>
+                  {carrito.some(esAlPesar) && (
+                    <p className="v2-resumen-nota">Los productos por kg se confirman al pesar en tienda.</p>
+                  )}
+                </div>
+
                 {asistente.errorEnvio && <p className="v2-asistente-error">{asistente.errorEnvio}</p>}
                 <button className="btn-primario" disabled={!puedeConfirmarAsistente || asistente.enviando} onClick={confirmarAsistente}>
                   {asistente.enviando ? 'Enviando pedido…' : 'Confirmar pedido →'}
@@ -2323,6 +2377,21 @@ export default function HomeV2Preview() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {confirmandoSalida && (
+        <div className="v2-confirmar-overlay" onClick={(e) => { if (e.target === e.currentTarget) setConfirmandoSalida(false) }}>
+          <div className="v2-confirmar" role="alertdialog" aria-modal="true" aria-labelledby="v2-confirmar-titulo">
+            <div className="v2-confirmar-titulo" id="v2-confirmar-titulo">¿Salir sin terminar tu pedido?</div>
+            <p className="v2-confirmar-texto">
+              {asistente.paso >= 6
+                ? 'Tu pedido todavía no se envía. Lo que agregaste al carrito se conserva.'
+                : 'Perderás lo que elegiste en este paso. Lo que ya agregaste al carrito se conserva.'}
+            </p>
+            <button className="btn-primario" onClick={() => setConfirmandoSalida(false)}>Seguir con mi pedido</button>
+            <button className="btn-secundario" style={{ marginTop: 8 }} onClick={cerrarAsistente}>Salir</button>
           </div>
         </div>
       )}
