@@ -165,7 +165,7 @@ function CardProducto({ producto, seleccion, cantidad, recogida, onSeleccionar, 
 }
 
 /* ── Fila expandible de grupo ── */
-function GrupoExpandible({ titulo, precio, unidad = '/kg', imagen, emoji, conteo, open, onToggle, guiaProducto, children }) {
+function GrupoExpandible({ titulo, precio, unidad = '/kg', imagen, emoji, conteo, open, onToggle, children }) {
   return (
     <div>
       <button
@@ -190,11 +190,6 @@ function GrupoExpandible({ titulo, precio, unidad = '/kg', imagen, emoji, conteo
       </button>
       {open && (
         <div className="configurador-card slide-up" style={{ marginTop: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0, gap: 8 }}>
-          {guiaProducto && (
-            <div className="gc-extras">
-              <GuiaCocinaInline producto={guiaProducto} titulo={titulo} imagenUrl={cookedCrop(guiaProducto.image_cooked_url || guiaProducto.image_url, 600)} />
-            </div>
-          )}
           {children}
         </div>
       )}
@@ -491,7 +486,6 @@ export default function SeccionPreparados() {
             imagen={nuggets[0]?.image_url || NUGGETS_IMG} emoji="🍗"
             conteo={nuggets.length}
             open={nuggetsOpen} onToggle={() => setNuggetsOpen(v => !v)}
-            guiaProducto={nuggets[0]}
           >
             {nuggets.map(p => (
               <FilaVariante
@@ -520,7 +514,6 @@ export default function SeccionPreparados() {
             emoji="🥟"
             conteo={empanadas.length}
             open={empanadasOpen} onToggle={() => setEmpanadasOpen(v => !v)}
-            guiaProducto={empanadas[0]}
           >
             {empanadas.map(p => (
               <FilaVariante
@@ -548,7 +541,6 @@ export default function SeccionPreparados() {
             emoji="🍗"
             conteo={pechugasRell.length}
             open={pechugasOpen} onToggle={() => setPechugasOpen(v => !v)}
-            guiaProducto={pechugasRell[0]}
           >
             {pechugasRell.map(p => (
               <FilaVariante
@@ -587,7 +579,6 @@ export default function SeccionPreparados() {
               imagen={EMPANIZADAS_IMG} emoji="🥩"
               conteo={milEmpanizadas.length}
               open={empanizadasOpen} onToggle={() => setEmpanizadasOpen(v => !v)}
-              guiaProducto={milEmpanizadas[0]}
             >
               {milEmpanizadas.map(m => (
                 <FilaVariante
@@ -610,7 +601,6 @@ export default function SeccionPreparados() {
               imagen={EMPAP_IMG} emoji="🌶"
               conteo={milEmpapeladas.length}
               open={empapOpen} onToggle={() => setEmpapOpen(v => !v)}
-              guiaProducto={milEmpapeladas[0]}
             >
               {milEmpapeladas.map(flavor => (
                 <FilaVariante

@@ -60,7 +60,7 @@ function dibujarFotoCubierta(ctx, img, x, y, lado, radio) {
 
 // Dibuja todo y devuelve la altura que ocupa el contenido (sin el pie).
 function componer(ctx, alto, datos, foto, estilo) {
-  const { nombre, metodo, resumen, pasos, notas } = datos
+  const { nombre, metodo, resumen, intro, pasos, notas } = datos
   const { titulo, cuerpo, c } = estilo
   ctx.textBaseline = 'alphabetic'
 
@@ -98,16 +98,30 @@ function componer(ctx, alto, datos, foto, estilo) {
 
   y = altoEncabezado + 56
 
-  // Resumen (tiempo · temperatura)
+  // Resumen (tiempo · temperatura): se achica la letra si no cabe en una línea
   if (resumen) {
-    ctx.font = `800 44px ${titulo}`
-    const w = Math.min(ctx.measureText(resumen).width + 72, ANCHO - MARGEN * 2)
+    let px = 44
+    ctx.font = `800 ${px}px ${titulo}`
+    while (px > 28 && ctx.measureText(resumen).width > ANCHO - MARGEN * 2 - 72) {
+      px -= 2
+      ctx.font = `800 ${px}px ${titulo}`
+    }
+    const w = ctx.measureText(resumen).width + 72
     ctx.fillStyle = c.pastilla
     rectRedondeado(ctx, MARGEN, y, w, 88, 44)
     ctx.fill()
     ctx.fillStyle = c.rojo
-    ctx.fillText(resumen, MARGEN + 36, y + 58, ANCHO - MARGEN * 2 - 72)
+    ctx.fillText(resumen, MARGEN + 36, y + 44 + Math.round(px * 0.33))
     y += 88 + 52
+  }
+
+  // Introducción del método
+  if (intro) {
+    ctx.font = `500 38px ${cuerpo}`
+    const lineasIntro = partirLineas(ctx, intro, ANCHO - MARGEN * 2)
+    ctx.fillStyle = c.texto
+    lineasIntro.forEach((l, k) => ctx.fillText(l, MARGEN, y + 38 + k * 54))
+    y += lineasIntro.length * 54 + 40
   }
 
   // Pasos

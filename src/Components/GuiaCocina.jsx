@@ -24,7 +24,8 @@ export function GuiaCocinaPanel({ producto, titulo, imagenUrl, onVolver }) {
       metodo: metodo.nombre,
       resumen: metodo.resumen,
       pasos: metodo.pasos,
-      notas: guia.notas,
+      intro: metodo.intro || '',
+      notas: [metodo.nota, ...guia.notas].filter(Boolean),
       imagenUrl: imagenUrl || producto.image_cooked_url || producto.image_url || null,
     }).then(blob => {
       if (imagen.current.clave === clave) imagen.current.blob = blob
@@ -59,7 +60,7 @@ export function GuiaCocinaPanel({ producto, titulo, imagenUrl, onVolver }) {
         <button type="button" className="gc-volver" onClick={onVolver}>Volver</button>
       </div>
 
-      <div className="gc-tabs" role="tablist">
+      <div className="gc-tabs" role="tablist" style={{ gridTemplateColumns: `repeat(${guia.metodos.length}, 1fr)` }}>
         {guia.metodos.map(m => (
           <button
             key={m.id}
@@ -80,10 +81,11 @@ export function GuiaCocinaPanel({ producto, titulo, imagenUrl, onVolver }) {
       ) : (
         <div className="gc-detalle">
           {metodo.resumen && <div className="gc-resumen">{metodo.resumen}</div>}
+          {metodo.intro && <p className="gc-intro">{metodo.intro}</p>}
           <ol className="gc-pasos">
             {metodo.pasos.map((paso, i) => <li key={i}>{paso}</li>)}
           </ol>
-          {guia.notas.map((n, i) => <p key={i} className="gc-nota">{n}</p>)}
+          {[metodo.nota, ...guia.notas].filter(Boolean).map((n, i) => <p key={i} className="gc-nota">{n}</p>)}
           <button
             type="button"
             className={`gc-guardar${estado === 'listo' ? ' ok' : ''}`}
