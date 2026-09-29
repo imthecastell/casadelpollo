@@ -6,7 +6,8 @@ import '../styles/guiaCocina.css'
 export { guiaDisponible }
 
 /* Panel "¿Cómo cocinar?": elige método (sartén / horno / airfryer) → pasos → guardar como imagen. */
-export function GuiaCocinaPanel({ producto, imagenUrl, onVolver }) {
+export function GuiaCocinaPanel({ producto, titulo, imagenUrl, onVolver }) {
+  const nombre = titulo || producto.name
   const guia = guiaDe(producto)
   const [metodoId, setMetodoId] = useState(null)
   const [estado, setEstado] = useState('idle') // idle | guardando | listo | error
@@ -19,7 +20,7 @@ export function GuiaCocinaPanel({ producto, imagenUrl, onVolver }) {
     if (!metodo) return
     const clave = `${producto.id}-${metodo.id}`
     const promesa = generarImagenGuia({
-      nombre: producto.name,
+      nombre,
       metodo: metodo.nombre,
       resumen: metodo.resumen,
       pasos: metodo.pasos,
@@ -42,7 +43,7 @@ export function GuiaCocinaPanel({ producto, imagenUrl, onVolver }) {
       setTimeout(() => setEstado('idle'), 3000)
       return
     }
-    const resultado = await guardarImagen(blob, nombreArchivoGuia(producto.name, metodo.id), `Cómo cocinar ${producto.name}`)
+    const resultado = await guardarImagen(blob, nombreArchivoGuia(nombre, metodo.id), `Cómo cocinar ${nombre}`)
     if (resultado === 'cancelada') { setEstado('idle'); return }
     setEstado('listo')
     setTimeout(() => setEstado('idle'), 2500)
@@ -53,7 +54,7 @@ export function GuiaCocinaPanel({ producto, imagenUrl, onVolver }) {
       <div className="gc-head">
         <div className="gc-titulo">
           <span className="gc-kicker">Cómo cocinar</span>
-          <span className="gc-nombre">{producto.name}</span>
+          <span className="gc-nombre">{nombre}</span>
         </div>
         <button type="button" className="gc-volver" onClick={onVolver}>Volver</button>
       </div>
@@ -101,10 +102,10 @@ export function GuiaCocinaPanel({ producto, imagenUrl, onVolver }) {
 }
 
 /* Versión autocontenida (v1): enlace discreto que se abre en un panel dentro del configurador. */
-export function GuiaCocinaInline({ producto, imagenUrl, oculto = false }) {
+export function GuiaCocinaInline({ producto, titulo, imagenUrl, oculto = false }) {
   const [abierta, setAbierta] = useState(false)
   if (!guiaDisponible(producto) || oculto) return null
   return abierta
-    ? <div className="gc-inline"><GuiaCocinaPanel producto={producto} imagenUrl={imagenUrl} onVolver={() => setAbierta(false)} /></div>
+    ? <div className="gc-inline"><GuiaCocinaPanel producto={producto} titulo={titulo} imagenUrl={imagenUrl} onVolver={() => setAbierta(false)} /></div>
     : <button type="button" className="gc-link" onClick={() => setAbierta(true)}>¿Cómo cocinar? ›</button>
 }

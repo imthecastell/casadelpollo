@@ -58,8 +58,12 @@
 .gc-guardar:disabled { opacity: .65; cursor: default; }
 .gc-guardar.ok { background: #e8f5e9; color: #2e7d32; border-color: #2e7d32; }
 
+/* v1: chips + enlace agrupados; si ninguno se muestra, no ocupan espacio */
+.gc-extras { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.gc-extras:empty { display: none; }
+
 /* v1: el panel vive dentro del configurador */
-.gc-inline { background: var(--gris-claro); border-radius: 12px; padding: 12px; }
+.gc-inline { align-self: stretch; width: 100%; background: var(--gris-claro); border-radius: 12px; padding: 12px; }
 
 /* v2: el panel reemplaza el contenido de la tarjeta del producto */
 .v2-asistente-bowl-seleccionado.gc-abierta { display: block; padding: 14px; }
