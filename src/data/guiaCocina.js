@@ -1,7 +1,7 @@
 // Guía de "¿Cómo cocinar?".
-// Marinados: guía oficial "Guía de cocinado Casa del Pollo" (marinados de 200 a 600 g).
-// Cualquier producto puede tener guía propia (p.guia_cocina, se llena en el admin); así el
-// botón también aparece en Preparados y Milanesas, que todavía no tienen guía estándar.
+// Guía oficial "Guía de cocinado Casa del Pollo" (marinados de 200 a 600 g). Por ahora se usa
+// igual en Preparados y Milanesas, con el texto adaptado, hasta tener guías propias.
+// Cualquier producto puede tener guía propia (p.guia_cocina, se llena en el admin) y esa manda.
 
 export const METODOS = [
   { id: 'sarten', nombre: 'Al sartén', icono: '🍳' },
@@ -45,23 +45,41 @@ const NOTAS_MARINADOS = [
   'Para marinados de 200 a 600 g. Los tiempos son de referencia: cada equipo calienta y distribuye el calor distinto, y cada método indica cuándo ajustar.',
 ]
 
+const NOTAS_GENERALES = [
+  'Guía de referencia: los tiempos cambian según el producto, su grosor y tu equipo. Antes de servir, revisa que el centro esté bien cocido.',
+]
+
+const CATEGORIAS_CON_GUIA = ['Marinados', 'Preparados', 'Milanesas']
+const esMarinado = (p) => p?.category_name === 'Marinados'
+
 const tienePasos = (m) => Array.isArray(m?.pasos) && m.pasos.length > 0
 
-// Marinados siempre; el resto de productos solo si tienen al menos un método propio.
+// Fuera de Marinados es el mismo texto, sin decir "marinado" ni hablar de su salsa.
+function adaptar(metodo, p) {
+  if (esMarinado(p)) return metodo
+  const t = (s) => s
+    .replace(' para que la salsa quede en su punto', '')
+    .replace('salsa del marinado', 'salsa')
+    .replace(/\bel marinado/g, 'el producto')
+  return { ...metodo, intro: metodo.intro && t(metodo.intro), pasos: metodo.pasos.map(t) }
+}
+
+// Marinados, Preparados y Milanesas siempre; el resto solo si tiene al menos un método propio.
 export const guiaDisponible = (p) =>
-  p?.category_name === 'Marinados' || METODOS.some(m => tienePasos(p?.guia_cocina?.[m.id]))
+  CATEGORIAS_CON_GUIA.includes(p?.category_name) || METODOS.some(m => tienePasos(p?.guia_cocina?.[m.id]))
 
 // { metodos: [{ id, nombre, icono, resumen, intro?, pasos, nota?, propia }], notas: [] }
 export function guiaDe(p) {
-  const plantilla = p?.category_name === 'Marinados' ? MARINADOS : {}
+  const plantilla = CATEGORIAS_CON_GUIA.includes(p?.category_name) ? MARINADOS : {}
 
   const metodos = METODOS.map(m => {
     const propia = p?.guia_cocina?.[m.id]
     if (tienePasos(propia)) {
       return { ...m, resumen: propia.resumen || '', pasos: propia.pasos, propia: true }
     }
-    return tienePasos(plantilla[m.id]) ? { ...m, ...plantilla[m.id], propia: false } : null
+    return tienePasos(plantilla[m.id]) ? { ...m, ...adaptar(plantilla[m.id], p), propia: false } : null
   }).filter(Boolean)
 
-  return { metodos, notas: metodos.some(m => !m.propia) ? NOTAS_MARINADOS : [] }
+  const usaEstandar = metodos.some(m => !m.propia)
+  return { metodos, notas: usaEstandar ? (esMarinado(p) ? NOTAS_MARINADOS : NOTAS_GENERALES) : [] }
 }

@@ -6,6 +6,7 @@ import AvisoAirfryer from '../Components/AvisoAirfryer.jsx'
 import { tagsDe } from '../data/productTags'
 import { MarimadoImg } from '../Components/SeccionMarinados.jsx'
 import { GuiaCocinaPanel, guiaDisponible } from '../Components/GuiaCocina.jsx'
+import { fotoIngrediente } from '../data/fotosIngrediente.js'
 import { generarHorariosDisponibles, ventanaPreparacion, obtenerCocFinEfectivo } from '../data/slots.js'
 import { armarMensajeWhatsapp } from '../data/pedidoWhatsapp.js'
 import { codificarQR } from '../data/lealtadQR.js'
@@ -2366,8 +2367,8 @@ export default function HomeV2Preview() {
               {grupoAbierto.productos.map(p => (
                 <div key={p.id} className="v2-variante-card" onClick={() => { abrirSeleccion(p); setGrupoAbierto(null) }}>
                   <div className="v2-variante-foto">
-                    {imgV2(p, postersMap)
-                      ? <img src={imgV2(p, postersMap)} alt={p.name} />
+                    {(fotoIngrediente(p) || imgV2(p, postersMap))
+                      ? <img src={fotoIngrediente(p) || imgV2(p, postersMap)} alt={p.name} />
                       : <div className="v2-variante-foto-placeholder" style={{ background: PLACEHOLDER_COLOR['Preparados'] }} />}
                   </div>
                   <div className="v2-variante-info">
