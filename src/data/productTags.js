@@ -30,6 +30,10 @@ export const PRODUCT_TAGS = {
   48: ['empanizado', 'pan molido', 'crujiente'],
   51: ['empanizado', 'pan molido', 'crujiente'],
   71: ['queso', 'achiote', 'enrollado', 'molida'],
+  // ── Milanesas (variantes que se ofrecen en Preparados) ───────
+  29: ['natural', 'sin empanizar', 'aplanada'],
+  30: ['empanizado', 'pan molido', 'crujiente'],
+  47: ['empanizado', 'parmesano', 'crujiente'],
 }
 
 // Tags del backend (editables en el admin); si el producto aun no los trae, usa el mapa fijo.

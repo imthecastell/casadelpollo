@@ -23,7 +23,19 @@ const PREP_MIN = 1
 const PREP_MAX = 10
 const PREP_PASO = 1
 const esPorPiezas = p => /alb[oó]ndigas/i.test(p?.name || '')
-const esPreparado = p => p?.category_name === 'Preparados' && !esPorPiezas(p)
+const esPreparado = p => (p?.category_name === 'Preparados' || p?.category_name === 'Milanesas') && !esPorPiezas(p)
+
+// Milanesas que se ofrecen: 3 variantes dentro de Preparados y solo la natural también en
+// Pollo fresco. Comparten categoría con el resto de los sabores, así que se reconocen por nombre.
+const MILANESAS_VARIANTES = [
+  { corto: 'Naturales (sin empanizar)', match: n => /natural|aplanada/.test(n) },
+  { corto: 'Empanizado de la casa', match: n => /^milanesa empanizada$/.test(n) },
+  { corto: 'Empanizado con parmesano', match: n => /empanizada al parmesano/.test(n) },
+]
+const varianteMilanesa = p =>
+  p?.category_name === 'Milanesas' ? MILANESAS_VARIANTES.findIndex(v => v.match(normalizarNombre(p.name))) : -1
+const esMilanesaOfrecida = p => varianteMilanesa(p) >= 0
+const esMilanesaNatural = p => varianteMilanesa(p) === 0
 
 function calcularTiempoMarinado(gramos) {
   const base = 20
@@ -135,6 +147,11 @@ const CATEGORIAS = [
   { key: 'fresco', label: 'Pollo fresco', match: 'Pollo Fresco', emoji: '🕐', antojo: 'Hoy tengo tiempo', desc: 'Piezas frescas para cocinar a tu manera' },
 ]
 
+const enCategoria = (p, cat) =>
+  p.category_name === cat.match ||
+  (cat.key === 'preparados' && esMilanesaOfrecida(p)) ||
+  (cat.key === 'fresco' && esMilanesaNatural(p))
+
 // Descripciones de prueba para poder armar y probar el buscador ya
 // mismo — en el catálogo real este texto vendría del backend (campo
 // description, todavía no existe) y se cargaría desde el admin. Punto
@@ -234,6 +251,14 @@ const GRUPOS_PREPARADOS = [
     match: p => /nuggets?|tenders|trozos de pollo|palomitas/i.test(p.name),
     shortName: p => p.name,
   },
+  {
+    id: 'milanesas',
+    nombre: 'Milanesas',
+    desc: 'Naturales o empanizadas',
+    match: esMilanesaOfrecida,
+    shortName: p => MILANESAS_VARIANTES[varianteMilanesa(p)]?.corto ?? p.name,
+    orden: varianteMilanesa,
+  },
 ]
 
 function agruparPreparados(lista) {
@@ -241,6 +266,7 @@ function agruparPreparados(lista) {
   const grupos = []
   GRUPOS_PREPARADOS.forEach(g => {
     const miembros = lista.filter(g.match)
+    if (g.orden) miembros.sort((a, b) => g.orden(a) - g.orden(b))
     if (miembros.length >= 2) {
       grupos.push({ ...g, productos: miembros })
       miembros.forEach(p => asignados.add(p.id))
@@ -616,7 +642,7 @@ export default function HomeV2Preview() {
   const preparadosImg = productos.filter(p => p.category_name === 'Preparados' && img(p))
   const complementosDisp = productos.filter(p => p.category_name === 'Complementos' && p.active !== false)
   const preparadosItems = agruparPreparados(
-    productos.filter(p => p.category_name === 'Preparados' && p.active !== false)
+    productos.filter(p => (p.category_name === 'Preparados' || esMilanesaOfrecida(p)) && p.active !== false)
   )
   const nuevoProducto = productos.find(p => p.is_nuevo && img(p))
   // Igual que MenuPrincipal: sucursales sin bowls (diseno.bowls_enabled =
@@ -632,7 +658,7 @@ export default function HomeV2Preview() {
     ...preparadosItems.individuales.filter(img),
   ], 6, semillaCarga + 1)
 
-  const productosBuscables = productos.filter(p => CATEGORIAS.some(c => c.match === p.category_name) && img(p))
+  const productosBuscables = productos.filter(p => CATEGORIAS.some(c => enCategoria(p, c)) && img(p))
   const resultadosBusqueda = consultaBusqueda.trim()
     ? productosBuscables.filter(p => coincideBusqueda(p, consultaBusqueda))
     : []
@@ -724,7 +750,13 @@ export default function HomeV2Preview() {
   }
 
   const catDef = CATEGORIAS.find(c => c.key === categoria)
-  const productosCategoria = productos.filter(p => p.category_name === catDef.match && p.active !== false)
+  // En Pollo fresco la milanesa natural queda entre los demás cortes (por nombre) y con su foto cruda.
+  const productosCategoria = productos
+    .filter(p => enCategoria(p, catDef) && p.active !== false)
+    .sort((a, b) => (catDef.key === 'fresco' ? a.name.localeCompare(b.name, 'es') : 0))
+  const fotoTile = p => (catDef.key === 'fresco' && esMilanesaNatural(p)
+    ? fotoCruda(p.image_url, p.image_cooked_url, { w: 800 }) || null
+    : imgV2(p, postersMap))
 
   // Solo Marinados escala el tiempo de cocción con el peso — Preparados
   // usa el mismo estimado fijo que ya usa el asistente para esa categoría.
@@ -802,7 +834,7 @@ export default function HomeV2Preview() {
     const cocinado = recogidaSel === 'cocinado'
     agregarAlCarrito(usaPiezasSel
       ? {
-          tipo: 'preparado',
+          tipo: seleccionProducto.category_name === 'Milanesas' ? 'milanesa' : 'preparado',
           nombre: seleccionProducto.name,
           cantidad: gramosSel,
           precioKg: seleccionProducto.price,
@@ -936,8 +968,11 @@ export default function HomeV2Preview() {
     patchAsistente({ categoria: catKey, paso: 3 })
   }
 
-  const productosAsistente = asistente.categoria
-    ? productos.filter(p => p.category_name === CATEGORIAS.find(c => c.key === asistente.categoria)?.match && p.active !== false)
+  const catAsistente = CATEGORIAS.find(c => c.key === asistente.categoria)
+  const productosAsistente = catAsistente
+    ? productos
+        .filter(p => enCategoria(p, catAsistente) && p.active !== false)
+        .sort((a, b) => (catAsistente.key === 'marinados' ? 0 : a.name.localeCompare(b.name, 'es')))
     : []
 
   function elegirProductoAsistente(p) {
@@ -1051,7 +1086,7 @@ export default function HomeV2Preview() {
     } else if (asistente.categoria === 'preparados') {
       const cocina = productoAsistente.se_puede_cocinar && asistente.recogida === 'cocinado'
       agregarAlCarrito({
-        tipo: 'preparado',
+        tipo: productoAsistente.category_name === 'Milanesas' ? 'milanesa' : 'preparado',
         nombre: productoAsistente.name,
         cantidad: asistente.cantidad,
         precioKg: productoAsistente.price,
@@ -1275,7 +1310,7 @@ export default function HomeV2Preview() {
                       <div className="v2-card-foto">{imgV2(item, postersMap) ? <img src={imgV2(item, postersMap)} alt={item.name} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[item.category_name] || '#888' }} />}</div>
                       <div className="v2-card-barra">
                         <div className="v2-card-barra-nombre">{item.name}</div>
-                        <div className="v2-ts-precio-pill">${item.category_name === 'Preparados' ? `$${Number(item.price)}/kg` : `$${Number(item.price)}`}</div>
+                        <div className="v2-ts-precio-pill">${Number(item.price)}/kg</div>
                       </div>
                       <button className="v2-ts-add" onClick={(e) => { e.stopPropagation(); abrirSeleccion(item) }}>+</button>
                     </div>
@@ -1336,9 +1371,9 @@ export default function HomeV2Preview() {
               <div className="v2-grid-simple">
                 {productosCategoria.map(p => (
                   <div key={p.id} className="v2-tarjeta-simple" onClick={() => abrirSeleccion(p)}>
-                    {imgV2(p, postersMap) ? <img src={imgV2(p, postersMap)} alt={p.name} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[p.category_name] || '#888', position: 'absolute', inset: 0 }} />}
+                    {fotoTile(p) ? <img src={fotoTile(p)} alt={p.name} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[p.category_name] || '#888', position: 'absolute', inset: 0 }} />}
                     <div className="v2-ts-scrim" />
-                    <div className="v2-ts-precio-top">${Number(p.price)}{categoria === 'marinados' ? '/kg' : ''}</div>
+                    <div className="v2-ts-precio-top">${Number(p.price)}/kg</div>
                     <div className="v2-ts-overlay">
                       <div className="v2-ts-nombre">{p.name}</div>
                     </div>
@@ -1587,7 +1622,7 @@ export default function HomeV2Preview() {
                   <div key={p.id} className="v2-tarjeta-simple" onClick={() => { abrirSeleccion(p); setMostrarBuscador(false) }}>
                     {imgV2(p, postersMap) ? <img src={imgV2(p, postersMap)} alt={p.name} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[p.category_name] || '#888', position: 'absolute', inset: 0 }} />}
                     <div className="v2-ts-scrim" />
-                    <div className="v2-ts-precio-top">${Number(p.price)}{p.category_name === 'Marinados' || p.category_name === 'Preparados' ? '/kg' : ''}</div>
+                    <div className="v2-ts-precio-top">${Number(p.price)}/kg</div>
                     <div className="v2-ts-overlay">
                       <div className="v2-ts-nombre">{p.name}</div>
                     </div>
@@ -2016,7 +2051,7 @@ export default function HomeV2Preview() {
                     <button key={p.id} className="v2-tarjeta-simple v2-asistente-producto" onClick={() => elegirProductoAsistente(p)}>
                       <img src={img(p)} alt={p.name} />
                       <div className="v2-ts-scrim" />
-                      <div className="v2-ts-precio-top">${Number(p.price)}{asistente.categoria === 'marinados' || asistente.categoria === 'preparados' ? '/kg' : ''}</div>
+                      <div className="v2-ts-precio-top">${Number(p.price)}/kg</div>
                       <div className="v2-ts-overlay">
                         <div className="v2-ts-nombre">{p.name}</div>
                       </div>
@@ -2283,7 +2318,7 @@ export default function HomeV2Preview() {
                   </div>
                   <div className="v2-variante-info">
                     <div className="v2-variante-nombre">{grupoAbierto.shortName(p)}</div>
-                    <div className="v2-variante-precio">${Number(p.price)}</div>
+                    <div className="v2-variante-precio">${Number(p.price)}/kg</div>
                   </div>
                 </div>
               ))}
