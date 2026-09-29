@@ -731,7 +731,6 @@ export default function HomeV2Preview() {
   const tiempoEstimadoSel = seleccionProducto?.category_name === 'Marinados' ? calcularTiempoMarinado(gramosSel) : 20
   const esPorPiezasSel = esPorPiezas(seleccionProducto)
   const esPreparadoSel = esPreparado(seleccionProducto)
-  const tagsSelP = tagsDe(seleccionProducto)
   const tieneGuia = guiaDisponible(seleccionProducto) && recogidaSel !== 'cocinado'
   const verGuia = tieneGuia && guiaAbierta
   const usaPiezasSel   = esPorPiezasSel || esPreparadoSel
@@ -1608,11 +1607,6 @@ export default function HomeV2Preview() {
                 <div className="v2-sel-info">
                   <span className="v2-sel-nombre">{seleccionProducto.name}</span>
                   <span className={`v2-sel-pill${recogidaSel === 'cocinado' ? ' v2-sel-pill-servir' : ''}`}>{recogidaSel === 'cocinado' ? 'Listo para servir' : 'Listo para cocinar'}</span>
-                  {tagsSelP.length > 0 && (
-                    <div className="v2-tags-row">
-                      {tagsSelP.map(t => <span key={t} className="v2-tag">{t}</span>)}
-                    </div>
-                  )}
                   {tieneGuia && <button type="button" className="gc-link" onClick={() => setGuiaAbierta(true)}>¿Cómo cocinar? ›</button>}
                 </div>
               </>)}
