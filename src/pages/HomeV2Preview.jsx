@@ -624,7 +624,7 @@ export default function HomeV2Preview() {
   const bowlGrande = marinadosImg[1] || marinadosImg[0]
   // "Más pedidos" del Home: 6 productos al azar (marinados o preparados)
   // que cambian una vez al día, para no mostrar siempre los mismos.
-  const destacadosHoy = destacadosDelDia([...marinadosImg, ...preparadosImg], 6)
+  const destacadosHoy = destacadosDelDia(marinadosImg, 6)
 
   const productosBuscables = productos.filter(p => CATEGORIAS.some(c => c.match === p.category_name) && img(p))
   const resultadosBusqueda = consultaBusqueda.trim()

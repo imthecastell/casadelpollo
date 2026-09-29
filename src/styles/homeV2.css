@@ -300,9 +300,10 @@
 /* ---- tira de solo imágenes grandes ---- */
 .v2-strip-grandes { display: flex; gap: 12px; overflow-x: auto; padding: 0 18px 4px; margin: 0 -18px; }
 .v2-tarjeta-grande-strip {
-  position: relative; flex: 0 0 auto; width: 200px; aspect-ratio: 9 / 16; border-radius: 18px; overflow: hidden;
+  position: relative; flex: 0 0 auto; width: 200px; aspect-ratio: 3 / 4; border-radius: 18px; overflow: hidden;
   background: var(--gris-claro); border: 3px solid var(--cafe); box-shadow: 5px 5px 0 var(--cafe); cursor: pointer;
 }
+.v2-tarjeta-grande-strip .v2-card-foto img { object-position: center top; }
 
 .v2-idea-card { background: linear-gradient(135deg, #FFF3DC, #FCE6D2); border-radius: 16px; padding: 14px 15px; display: flex; gap: 11px; align-items: center; margin-top: 14px; }
 .v2-idea-card .v2-emoji { font-size: 22px; }
