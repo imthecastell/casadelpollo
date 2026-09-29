@@ -734,12 +734,11 @@ export default function HomeV2Preview() {
   const tieneGuia = guiaDisponible(seleccionProducto) && recogidaSel !== 'cocinado'
   const verGuia = tieneGuia && guiaAbierta
   const usaPiezasSel   = esPorPiezasSel || esPreparadoSel
+  // Preparados y albóndigas se eligen por pieza pero el precio es por kg: se cobran al pesar.
   const precioTotalSel = seleccionProducto
-    ? esPorPiezasSel
-      ? gramosSel * parseFloat(seleccionProducto.price || 0)
-      : esPreparadoSel
-        ? null
-        : (gramosSel / 1000) * parseFloat(seleccionProducto.price || 0)
+    ? usaPiezasSel
+      ? null
+      : (gramosSel / 1000) * parseFloat(seleccionProducto.price || 0)
     : 0
 
   function abrirSeleccion(p) {
@@ -800,21 +799,32 @@ export default function HomeV2Preview() {
 
   function handleAgregarSel() {
     if (!seleccionProducto) return
-    agregarAlCarrito({
-      tipo: 'marinado',
-      nombre: seleccionProducto.name,
-      gramos: gramosSel,
-      recogida: recogidaSel,
-      tiempoEstimado: recogidaSel === 'cocinado' ? tiempoEstimadoSel : null,
-      necesitaHora: true,
-      precio: seleccionProducto.price,
-      precioTotal: precioTotalSel,
-      imagen_url: img(seleccionProducto),
-      resumen: esPreparado(seleccionProducto)
-        ? `${seleccionProducto.name} ${gramosSel} pz · $${seleccionProducto.price}/kg · precio al pesar`
-        : `${seleccionProducto.name} ${gramosSel}${esPorPiezas(seleccionProducto) ? ' pz' : 'g'} · ${recogidaSel === 'crudo' ? 'Crudo' : `Cocinado ~${tiempoEstimadoSel} min`} · $${precioTotalSel?.toFixed(2)}`,
-     
-    })
+    const cocinado = recogidaSel === 'cocinado'
+    agregarAlCarrito(usaPiezasSel
+      ? {
+          tipo: 'preparado',
+          nombre: seleccionProducto.name,
+          cantidad: gramosSel,
+          precioKg: seleccionProducto.price,
+          precio: seleccionProducto.price,
+          recogida: recogidaSel,
+          tiempoEstimado: cocinado ? tiempoEstimadoSel : null,
+          necesitaHora: true,
+          imagen_url: img(seleccionProducto),
+          resumen: `${seleccionProducto.name} × ${gramosSel} pz${cocinado ? ` · Cocinado ~${tiempoEstimadoSel} min` : ''} · $${Number(seleccionProducto.price)}/kg · precio al pesar`,
+        }
+      : {
+          tipo: 'marinado',
+          nombre: seleccionProducto.name,
+          gramos: gramosSel,
+          recogida: recogidaSel,
+          tiempoEstimado: cocinado ? tiempoEstimadoSel : null,
+          necesitaHora: true,
+          precio: seleccionProducto.price,
+          precioTotal: precioTotalSel,
+          imagen_url: img(seleccionProducto),
+          resumen: `${seleccionProducto.name} ${gramosSel}g · ${cocinado ? `Cocinado ~${tiempoEstimadoSel} min` : 'Crudo'} · $${precioTotalSel.toFixed(2)}`,
+        })
     setAgregadoSel(true)
     setTimeout(() => {
       setAgregadoSel(false)
@@ -1315,7 +1325,7 @@ export default function HomeV2Preview() {
                   <div key={item.id} className="v2-tarjeta-simple" onClick={() => abrirSeleccion(item)}>
                     {imgV2(item, postersMap) ? <img src={imgV2(item, postersMap)} alt={item.name} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[item.category_name] || '#888', position: 'absolute', inset: 0 }} />}
                     <div className="v2-ts-scrim" />
-                    <div className="v2-ts-precio-top">${Number(item.price)}</div>
+                    <div className="v2-ts-precio-top">${Number(item.price)}/kg</div>
                     <div className="v2-ts-overlay">
                       <div className="v2-ts-nombre">{item.name}</div>
                     </div>
@@ -1577,7 +1587,7 @@ export default function HomeV2Preview() {
                   <div key={p.id} className="v2-tarjeta-simple" onClick={() => { abrirSeleccion(p); setMostrarBuscador(false) }}>
                     {imgV2(p, postersMap) ? <img src={imgV2(p, postersMap)} alt={p.name} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[p.category_name] || '#888', position: 'absolute', inset: 0 }} />}
                     <div className="v2-ts-scrim" />
-                    <div className="v2-ts-precio-top">${Number(p.price)}{p.category_name === 'Marinados' ? '/kg' : ''}</div>
+                    <div className="v2-ts-precio-top">${Number(p.price)}{p.category_name === 'Marinados' || p.category_name === 'Preparados' ? '/kg' : ''}</div>
                     <div className="v2-ts-overlay">
                       <div className="v2-ts-nombre">{p.name}</div>
                     </div>
@@ -1625,7 +1635,7 @@ export default function HomeV2Preview() {
             </div>
             <div style={{ fontSize: 12, color: 'var(--texto-suave)', margin: '6px 0 16px' }}>
               {esPorPiezasSel
-                ? `Mín. ${PZ_MIN} pz · charola ${PZ_PASO * 2} pz · de ${PZ_PASO} en ${PZ_PASO}`
+                ? `Mín. ${PZ_MIN} pz · charola ${PZ_PASO * 2} pz · de ${PZ_PASO} en ${PZ_PASO} · precio final al pesar`
                 : esPreparadoSel
                   ? 'De 1 en 1 · precio final al pesar'
                   : `${MARINADO_MIN}g — ${MARINADO_MAX}g · intervalos de ${MARINADO_PASO}g`}
@@ -1664,9 +1674,9 @@ export default function HomeV2Preview() {
               onClick={handleAgregarSel}
             >
               {agregadoSel ? '✓ Agregado'
-                : esPreparadoSel
-                  ? `Agregar ${gramosSel} pz · $${seleccionProducto?.price}/kg`
-                  : `Agregar ${gramosSel}${esPorPiezasSel ? ' pz' : 'g'} · $${precioTotalSel?.toFixed(2)}`}
+                : usaPiezasSel
+                  ? `Agregar ${gramosSel} pz · $${Number(seleccionProducto?.price)}/kg`
+                  : `Agregar ${gramosSel}g · $${precioTotalSel?.toFixed(2)}`}
             </button>
             </>) : (
               <div className="v2-comp-paso">
@@ -2006,7 +2016,7 @@ export default function HomeV2Preview() {
                     <button key={p.id} className="v2-tarjeta-simple v2-asistente-producto" onClick={() => elegirProductoAsistente(p)}>
                       <img src={img(p)} alt={p.name} />
                       <div className="v2-ts-scrim" />
-                      <div className="v2-ts-precio-top">${Number(p.price)}{asistente.categoria === 'marinados' ? '/kg' : ''}</div>
+                      <div className="v2-ts-precio-top">${Number(p.price)}{asistente.categoria === 'marinados' || asistente.categoria === 'preparados' ? '/kg' : ''}</div>
                       <div className="v2-ts-overlay">
                         <div className="v2-ts-nombre">{p.name}</div>
                       </div>
