@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import AvisoAirfryer from './AvisoAirfryer.jsx'
+import TagsChips from './TagsChips.jsx'
 import { fotoCruda, fotoCocinada } from '../data/fotos.js'
 
 export function MarimadoImg({ imageUrl, imageCookedUrl, isSelected, recogida }) {
@@ -134,6 +135,7 @@ export default function SeccionMarinados() {
 
           {seleccion?.id === p.id && (
             <div className="configurador-card slide-up" style={{ marginTop: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0 }}>
+              <TagsChips producto={p} />
               <div>
                 <label className="config-label">Cantidad</label>
                 <div className="cantidad-ctrl">

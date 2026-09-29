@@ -3,7 +3,7 @@ import QRCode from 'qrcode'
 import { useApp } from '../data/AppContext.jsx'
 import LogoSlot from '../Components/LogoSlot.jsx'
 import AvisoAirfryer from '../Components/AvisoAirfryer.jsx'
-import { PRODUCT_TAGS } from '../data/productTags'
+import { tagsDe } from '../data/productTags'
 import { MarimadoImg } from '../Components/SeccionMarinados.jsx'
 import { generarHorariosDisponibles, ventanaPreparacion, obtenerCocFinEfectivo } from '../data/slots.js'
 import { armarMensajeWhatsapp } from '../data/pedidoWhatsapp.js'
@@ -183,7 +183,7 @@ function normalizarTexto(txt) {
 function coincideBusqueda(producto, consulta) {
   const palabras = normalizarTexto(consulta).split(/\s+/).filter(Boolean)
   if (palabras.length === 0) return false
-  const tagsStr = (PRODUCT_TAGS[producto.id] || []).join(' ')
+  const tagsStr = tagsDe(producto).join(' ')
   const indice = normalizarTexto(`${producto.name} ${descripcionProducto(producto)} ${producto.category_name || ''} ${tagsStr}`)
   return palabras.every(palabra => indice.includes(palabra))
 }
@@ -729,7 +729,7 @@ export default function HomeV2Preview() {
   const tiempoEstimadoSel = seleccionProducto?.category_name === 'Marinados' ? calcularTiempoMarinado(gramosSel) : 20
   const esPorPiezasSel = esPorPiezas(seleccionProducto)
   const esPreparadoSel = esPreparado(seleccionProducto)
-  const tagsSelP = seleccionProducto ? (PRODUCT_TAGS[seleccionProducto.id] || []) : []
+  const tagsSelP = tagsDe(seleccionProducto)
   const usaPiezasSel   = esPorPiezasSel || esPreparadoSel
   const precioTotalSel = seleccionProducto
     ? esPorPiezasSel

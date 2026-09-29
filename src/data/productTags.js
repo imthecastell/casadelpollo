@@ -31,3 +31,7 @@ export const PRODUCT_TAGS = {
   51: ['empanizado', 'pan molido', 'crujiente'],
   71: ['queso', 'achiote', 'enrollado', 'molida'],
 }
+
+// Tags del backend (editables en el admin); si el producto aun no los trae, usa el mapa fijo.
+export const tagsDe = (p) =>
+  (Array.isArray(p?.tags) && p.tags.length ? p.tags : PRODUCT_TAGS[p?.id]) || []
