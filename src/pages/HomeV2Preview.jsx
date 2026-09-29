@@ -1184,7 +1184,7 @@ export default function HomeV2Preview() {
             {promos.length > 0 && (
               <div className="v2-carrusel v2-carrusel-promo">
                 {promos.map((p, i) => (
-                  <div key={p.titulo} className={`v2-promo-slide${i === heroIdx ? ' on' : ''}`} onClick={p.accion}>
+                  <div key={p.titulo} className={`v2-promo-slide${i === heroIdx ? ' on' : ''}${p.objectPos ? ' v2-promo-slide-bowl' : ''}`} onClick={p.accion}>
                     <img className="v2-promo-foto-completa" src={p.imagen} alt={p.titulo} />
                     <div className="v2-promo-tarjeta">
                       <div className="v2-promo-texto">

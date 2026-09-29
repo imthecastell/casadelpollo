@@ -170,6 +170,9 @@
 }
 .v2-promo-slide.on { opacity: 1; z-index: 1; }
 .v2-promo-foto-completa { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Bowl: la foto termina justo encima de la tarjeta flotante para que la base no quede tapada. */
+.v2-promo-slide-bowl { background: #cdb794; }
+.v2-promo-slide-bowl .v2-promo-foto-completa { bottom: auto; height: calc(100% - 116px); }
 .v2-promo-badge {
   display: inline-block; background: #fff; color: var(--rojo);
   font-family: var(--font-title); font-weight: 800; font-size: 10.5px; letter-spacing: .04em;
@@ -268,7 +271,7 @@
   border: 3px solid var(--cafe); box-shadow: 6px 6px 0 var(--cafe);
   display: flex; flex-direction: column;
 }
-.v2-bowl-hibrido-foto { flex: none; width: 100%; aspect-ratio: 4 / 3; background: var(--gris-claro); position: relative; overflow: hidden; }
+.v2-bowl-hibrido-foto { flex: none; width: 100%; aspect-ratio: 3 / 4; background: var(--gris-claro); position: relative; overflow: hidden; }
 .v2-bowl-hibrido-foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: bottom center; display: block; }
 .v2-bowl-hibrido-panel { flex: 1; padding: 18px 18px 20px; display: flex; flex-direction: column; }
 .v2-bowl-hibrido-panel .v2-promo-badge { align-self: flex-start; }
