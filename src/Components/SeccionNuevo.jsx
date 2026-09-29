@@ -6,7 +6,6 @@
 import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import { cookedCrop } from './SeccionMarinados.jsx'
-import TagsChips from './TagsChips.jsx'
 import { GuiaCocinaInline } from './GuiaCocina.jsx'
 
 // unidad display según precio_tipo del producto
@@ -330,7 +329,6 @@ function NvCardExpandida({ p, recogida, gramos, precioTotal, agregado, onClose, 
           </div>
         </div>
         <div className="gc-extras">
-          <TagsChips producto={p} />
           <GuiaCocinaInline producto={p} imagenUrl={cookedCrop(p.image_cooked_url || p.image_url, 600)} oculto={recogida === 'cocinado'} />
         </div>
 

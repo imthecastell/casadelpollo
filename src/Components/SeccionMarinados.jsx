@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import AvisoAirfryer from './AvisoAirfryer.jsx'
-import TagsChips from './TagsChips.jsx'
 import { GuiaCocinaInline } from './GuiaCocina.jsx'
 
 /* ── extrae la ruta del archivo ignorando transformaciones previas ── */
@@ -160,7 +159,6 @@ export default function SeccionMarinados() {
           {seleccion?.id === p.id && (
             <div className="configurador-card slide-up" style={{ marginTop: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0 }}>
               <div className="gc-extras">
-                <TagsChips producto={p} />
                 <GuiaCocinaInline producto={p} imagenUrl={cookedCrop(p.image_cooked_url || p.image_url, 600)} oculto={recogida === 'cocinado'} />
               </div>
               <div>

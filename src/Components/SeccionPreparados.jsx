@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import { rawCrop, cookedCrop } from './SeccionMarinados.jsx'
-import TagsChips from './TagsChips.jsx'
 import { GuiaCocinaInline } from './GuiaCocina.jsx'
 import AvisoDisponibilidad from './AvisoDisponibilidad.jsx'
 
@@ -100,7 +99,6 @@ function CardProducto({ producto, seleccion, cantidad, recogida, onSeleccionar, 
       {isActive && (
         <div className="configurador-card slide-up" style={{ marginTop: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0 }}>
           <div className="gc-extras">
-            <TagsChips producto={producto} />
             <GuiaCocinaInline producto={producto} imagenUrl={cookedCrop(producto.image_cooked_url || producto.image_url, 600)} oculto={recogida === 'cocinado'} />
           </div>
 
