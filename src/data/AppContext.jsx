@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useRef } from 'react'
 import { getBranches, getProductsByBranch, createOrder, getDesign, getBanners, getSchedule } from './api.js'
 import { armarMensajeWhatsapp } from './pedidoWhatsapp.js'
 
@@ -18,6 +18,8 @@ export function AppProvider({ children }) {
   const [diseno, setDiseno] = useState({})
   const [cargando, setCargando] = useState(true)
   const [ultimoNumeroOrden, setUltimoNumeroOrden] = useState(null)
+  // Para que la precarga del diseño (abajo) no pise el de la sucursal elegida.
+  const sucursalRef = useRef(null)
   const [ultimaHora, setUltimaHora] = useState(null)
   const [modoWhatsapp, setModoWhatsapp] = useState(false)
   const [bannersMenu, setBannersMenu] = useState([])
@@ -33,6 +35,9 @@ export function AppProvider({ children }) {
       const intentar = (intento) =>
         getDesign(branchId)
           .then(d => {
+            // Ya hay sucursal elegida (ej. recordada de otra visita): su diseño
+            // manda y esta precarga, o sus reintentos, ya no aplican.
+            if (sucursalRef.current) return
             if (d && !d.error && (d.logo_url || d.primary_color)) {
               setDiseno(d)
             } else if (intento < 2) {
@@ -87,18 +92,25 @@ export function AppProvider({ children }) {
   }, [])
 
   useEffect(() => {
+    sucursalRef.current = sucursalActiva
     if (sucursalActiva) {
+      // Si se cambia de sucursal antes de que lleguen las respuestas de la
+      // anterior, esas respuestas se ignoran: sin esto una respuesta tardía
+      // pisaba el catálogo y el diseño de la sucursal nueva (productos
+      // desactivados o bowls que no corresponden).
+      let vigente = true
       getProductsByBranch(sucursalActiva.id)
-        .then(data => setProductos(Array.isArray(data) ? data : []))
-        .catch(() => setProductos([]))
+        .then(data => { if (vigente) setProductos(Array.isArray(data) ? data : []) })
+        .catch(() => { if (vigente) setProductos([]) })
 
       getDesign(sucursalActiva.id)
-        .then(data => setDiseno(data || {}))
-        .catch(() => setDiseno({}))
+        .then(data => { if (vigente) setDiseno(data || {}) })
+        .catch(() => { if (vigente) setDiseno({}) })
 
       // Horario específico de la sucursal
       getSchedule(sucursalActiva.id)
         .then(data => {
+          if (!vigente) return
           // El endpoint por sucursal devuelve { horarios, cocinados_inicio, cocinados_fin, cocinados_fin_sabado }
           const horarios = data?.horarios
           const ci = data?.cocinados_inicio
@@ -112,6 +124,7 @@ export function AppProvider({ children }) {
           setCocFinSabado(cfs || null)
         })
         .catch(() => {})
+      return () => { vigente = false }
     }
   }, [sucursalActiva])
 

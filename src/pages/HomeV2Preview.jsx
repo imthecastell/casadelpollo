@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react'
+﻿import { useState, useEffect, useMemo, useRef } from 'react'
 import QRCode from 'qrcode'
 import { useApp } from '../data/AppContext.jsx'
 import LogoSlot from '../Components/LogoSlot.jsx'
@@ -388,7 +388,10 @@ function RuletaHoras({ horas, valor, onCambiar }) {
 }
 
 export default function HomeV2Preview() {
-  const { sucursales, sucursalActiva, setSucursalActiva, productos, carrito, agregarAlCarrito, eliminarDelCarrito, limpiarCarrito, registrarPedido, cargando, diseno, schedule, cocInicio, cocFin, cocFinSabado } = useApp()
+  const { sucursales, sucursalActiva, setSucursalActiva, productos: productosSucursal, carrito, agregarAlCarrito, eliminarDelCarrito, limpiarCarrito, registrarPedido, cargando, diseno, schedule, cocInicio, cocFin, cocFinSabado } = useApp()
+  // Disponibilidad por sucursal (los checkmarks del admin): un producto
+  // desactivado en esta sucursal no se muestra en ningún lado de la tienda.
+  const productos = useMemo(() => productosSucursal.filter(p => p.available !== false), [productosSucursal])
   const [tab, setTab] = useState('home')
   const [categoria, setCategoria] = useState('marinados')
   const [seleccionProducto, setSeleccionProducto] = useState(null)
@@ -491,6 +494,20 @@ export default function HomeV2Preview() {
   }, [toast])
 
   const mostrarToast = (msg) => setToast(msg)
+
+  // Al cambiar de sucursal el carrito se conserva: se quita lo que en la
+  // sucursal nueva está desactivado (se compara por nombre, que es lo que
+  // guarda el carrito).
+  useEffect(() => {
+    const noDisponibles = new Set(productosSucursal.filter(p => p.available === false).map(p => p.name))
+    if (!noDisponibles.size) return
+    const quitar = carrito.filter(it => [it.nombre, it.marinado, it.base].some(n => n && noDisponibles.has(n)))
+    if (!quitar.length) return
+    quitar.forEach(it => eliminarDelCarrito(it.id))
+    setTimeout(() => mostrarToast(`Quitamos de tu carrito lo que no está disponible en ${sucursalActiva?.name || 'esta sucursal'}`), 0)
+    // Solo al llegar el catálogo de una sucursal.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productosSucursal])
 
   // Sin rama para "sin tarjeta": el JSX ya deja de mostrar el QR en
   // cuanto lealtad es null, así que no hace falta limpiar qrLealtad acá.
