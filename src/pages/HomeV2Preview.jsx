@@ -1448,7 +1448,7 @@ export default function HomeV2Preview() {
             {sucursales.map(s => {
               const l = linkDe(s.name)
               const telefono = digitosLocales(l?.telefonos?.[0] || s.phone)
-              const whatsappHref = l?.whatsapp || (s.whatsapp ? `https://wa.me/52${s.whatsapp}` : null)
+              const whatsappHref = l?.whatsapp || (s.whatsapp ? `https://wa.me/52${digitosLocales(s.whatsapp)}` : null)
               const mapaHref = l?.googleMaps || l?.appleMaps
               return (
                 <div key={s.id} className="v2-suc-full">

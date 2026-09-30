@@ -242,7 +242,9 @@ export function AppProvider({ children }) {
     // El WhatsApp real de la sucursal puede ser distinto al teléfono local
     // (ej. El Parque) — se prefiere branches.whatsapp y solo se cae a
     // branches.phone si esa sucursal no tiene un número de WhatsApp propio.
-    const telefonoSucursal = (sucursalActiva?.whatsapp || sucursalActiva?.phone || '').replace(/\D/g, '')
+    const digitosSucursal = (sucursalActiva?.whatsapp || sucursalActiva?.phone || '').replace(/\D/g, '')
+    // El número puede venir guardado como "+52 668 123 4567": se le quita el 52 para no duplicarlo en wa.me/52…
+    const telefonoSucursal = digitosSucursal.length === 12 && digitosSucursal.startsWith('52') ? digitosSucursal.slice(2) : digitosSucursal
     const url = `https://wa.me/${telefonoSucursal ? `52${telefonoSucursal}` : ''}?text=${encodeURIComponent(mensaje)}`
     window.open(url, '_blank')
 
