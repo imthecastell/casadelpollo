@@ -1,0 +1,75 @@
+/* Estilo "tienda nueva" de la V2 (todos los anchos): tarjetas blancas muy
+   redondeadas con sombra suave sobre las bandas de color, cuadrículas en lugar
+   de tiras deslizables y el planeador "¿Cuántos son?". Se carga después de
+   homeV2.css y antes de homeV2Adaptativo.css (las reglas de escritorio). */
+
+/* ---- tarjetas de producto sobre bandas (Marinados más pedidos y Preparados) ---- */
+.v2-grid-2filas {
+  display: grid; grid-template-rows: none; grid-auto-flow: row; grid-auto-columns: auto;
+  grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;
+  overflow: visible; padding: 0; margin: 0; justify-content: stretch; align-items: stretch;
+}
+.v2-strip-grandes {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;
+  overflow: visible; padding: 0; margin: 0;
+}
+.v2-tile-mini2, .v2-tarjeta-grande-strip {
+  position: relative; display: flex; flex-direction: column; width: auto; aspect-ratio: auto;
+  background: #fff; border: 0; border-radius: 22px; overflow: hidden; cursor: pointer;
+  box-shadow: 0 1px 3px rgba(42,15,11,.06), 0 8px 24px rgba(42,15,11,.10);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.v2-tile-mini2:hover, .v2-tarjeta-grande-strip:hover {
+  transform: translateY(-4px); box-shadow: 0 6px 16px rgba(42,15,11,.10), 0 24px 50px rgba(42,15,11,.20);
+}
+.v2-tile-mini2 .v2-card-foto, .v2-tarjeta-grande-strip .v2-card-foto { flex: none; aspect-ratio: 4 / 3; }
+.v2-card-foto img { transition: transform .4s ease; }
+.v2-tile-mini2:hover .v2-card-foto img, .v2-tarjeta-grande-strip:hover .v2-card-foto img { transform: scale(1.06); }
+.v2-tile-mini2 .v2-card-barra, .v2-tarjeta-grande-strip .v2-card-barra {
+  height: auto; background: #fff; flex-direction: column; align-items: flex-start; gap: 7px; padding: 11px 13px 13px;
+}
+.v2-tile-mini2 .v2-card-barra-nombre, .v2-tarjeta-grande-strip .v2-card-barra-nombre {
+  color: var(--texto); font-size: 14px; line-height: 1.2; font-weight: 800; -webkit-line-clamp: 2;
+}
+.v2-card-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; }
+.v2-mas {
+  width: 30px; height: 30px; border-radius: 50%; background: var(--rojo); color: #fff; font-size: 18px; line-height: 1;
+  display: flex; align-items: center; justify-content: center; flex: none; transition: transform .2s ease;
+}
+.v2-tile-mini2:hover .v2-mas { transform: rotate(90deg) scale(1.08); }
+.v2-tarjeta-grande-strip .v2-ts-add { top: 10px; right: 10px; width: 30px; height: 30px; box-shadow: 0 2px 8px rgba(0,0,0,.18); }
+
+/* ---- bowl: sin marco duro, misma sombra suave ---- */
+.v2-bowl-hibrido { border: 0; border-radius: 26px; box-shadow: 0 6px 16px rgba(42,15,11,.12), 0 24px 50px rgba(42,15,11,.24); }
+
+/* ---- pestaña Productos: tarjetas con foto arriba y datos abajo ---- */
+.v2-tarjeta-simple { display: flex; flex-direction: column; aspect-ratio: auto; background: #fff; border-radius: 22px; }
+.v2-tarjeta-simple img { flex: none; width: 100%; height: auto; aspect-ratio: 4 / 3; }
+.v2-tarjeta-simple .v2-foto-placeholder { position: relative !important; inset: auto !important; flex: none; aspect-ratio: 4 / 3; width: 100%; }
+.v2-tarjeta-simple .v2-ts-scrim { display: none; }
+.v2-tarjeta-simple .v2-ts-overlay { position: static; order: 1; padding: 11px 13px 0; }
+.v2-tarjeta-simple .v2-ts-nombre { color: var(--texto); text-shadow: none; font-size: 14px; font-weight: 800; }
+.v2-tarjeta-simple .v2-ts-precio-top { position: static; order: 2; align-self: flex-start; margin: 7px 13px 13px; font-size: 12.5px; padding: 4px 11px; }
+.v2-tarjeta-simple .v2-grupo-indicador-grid { top: 10px; right: 10px; bottom: auto; }
+
+/* ---- planeador "¿Cuántos son?" ---- */
+.v2-plan {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; background: #fff; color: var(--texto);
+  border-radius: 24px; padding: 13px 18px; margin-bottom: 18px;
+  box-shadow: 0 1px 3px rgba(42,15,11,.06), 0 8px 24px rgba(42,15,11,.10);
+}
+.v2-plan-titulo { font-family: var(--font-title), sans-serif; font-weight: 800; font-size: 15px; }
+.v2-plan-res { flex: 1 1 180px; min-width: 0; font-size: 13px; color: var(--texto-suave); line-height: 1.4; }
+.v2-plan-res b { color: var(--texto); font-variant-numeric: tabular-nums; }
+.v2-paso { display: inline-flex; align-items: center; gap: 4px; background: var(--crema); border-radius: 99px; padding: 4px; }
+.v2-paso button {
+  width: 34px; height: 34px; border-radius: 50%; border: 0; background: #fff; color: var(--rojo); font-size: 18px; line-height: 1;
+  display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 1px 3px rgba(42,15,11,.14); transition: transform .12s;
+}
+.v2-paso button:active { transform: scale(.92); }
+.v2-paso button:disabled { opacity: .35; cursor: default; }
+.v2-paso output { min-width: 92px; text-align: center; font-family: var(--font-title), sans-serif; font-weight: 800; font-size: 15px; font-variant-numeric: tabular-nums; }
+
+@media (prefers-reduced-motion: reduce) {
+  .v2-tile-mini2, .v2-tarjeta-grande-strip, .v2-card-foto img, .v2-mas { transition: none; }
+}

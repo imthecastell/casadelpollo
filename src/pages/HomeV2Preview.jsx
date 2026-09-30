@@ -12,6 +12,8 @@ import { armarMensajeWhatsapp } from '../data/pedidoWhatsapp.js'
 import { codificarQR } from '../data/lealtadQR.js'
 import { fotoCruda, fotoCocinada } from '../data/fotos.js'
 import '../styles/homeV2.css'
+import '../styles/homeV2Estilo.css'
+import '../styles/homeV2Adaptativo.css'
 import '../styles/menu.css'
 
 const MARINADO_MIN = 200
@@ -396,6 +398,8 @@ export default function HomeV2Preview() {
   const [categoria, setCategoria] = useState('marinados')
   const [seleccionProducto, setSeleccionProducto] = useState(null)
   const [gramosSel, setGramosSel] = useState(300)
+  // "¿Cuántos son?" del Home: solo cambia los gramos con los que se abre un marinado.
+  const [personasHome, setPersonasHome] = useState(1)
   const [recogidaSel, setRecogidaSel] = useState('crudo')
   const [agregadoSel, setAgregadoSel] = useState(false)
   const [mostrarAvisoSel, setMostrarAvisoSel] = useState(false)
@@ -631,7 +635,7 @@ export default function HomeV2Preview() {
       setColorTopbar(null)
       return
     }
-    const limite = topbarRef.current.getBoundingClientRect().bottom
+    const limite = contenidoRef.current.getBoundingClientRect().top
     const bandas = contenidoRef.current.querySelectorAll('.v2-banda')
     let color = null
     bandas.forEach(b => {
@@ -799,7 +803,7 @@ export default function HomeV2Preview() {
 
   function abrirSeleccion(p) {
     setSeleccionProducto(p)
-    setGramosSel(esPorPiezas(p) ? 20 : esPreparado(p) ? 1 : 300)
+    setGramosSel(esPorPiezas(p) ? 20 : esPreparado(p) ? 1 : Math.min(MARINADO_MAX, Math.max(MARINADO_MIN, Math.round((personasHome * 300) / MARINADO_PASO) * MARINADO_PASO)))
     setRecogidaSel('crudo')
     setAgregadoSel(false)
     setStepComplementos(false)
@@ -1235,7 +1239,7 @@ export default function HomeV2Preview() {
     // al no tener position/opacity/transform no crea un stacking context
     // nuevo, así que no reintroduce ese bug.
     <div className="v2-shell-root">
-    <div className="v2-shell">
+    <div className="v2-shell" style={colorTopbar ? { '--cab-color': colorTopbar, '--cab-txt': '#fff' } : undefined}>
 
       <div className="v2-topbar" ref={topbarRef} style={colorTopbar ? { background: colorTopbar } : undefined}>
         <div className="v2-tb-pill">
@@ -1300,6 +1304,17 @@ export default function HomeV2Preview() {
                   <div className="v2-seccion-titulo" style={{ margin: 0 }}>Marinados más pedidos</div>
                   <div className="v2-promo-badge" style={{ margin: 0 }}>Desde $230/kg</div>
                 </div>
+                <div className="v2-plan">
+                  <div className="v2-plan-titulo">¿Cuántos son?</div>
+                  <div className="v2-paso">
+                    <button onClick={() => setPersonasHome(n => Math.max(1, n - 1))} disabled={personasHome <= 1} aria-label="Menos personas">−</button>
+                    <output aria-live="polite">{personasHome} {personasHome === 1 ? 'persona' : 'personas'}</output>
+                    <button onClick={() => setPersonasHome(n => Math.min(12, n + 1))} disabled={personasHome >= 12} aria-label="Más personas">+</button>
+                  </div>
+                  <div className="v2-plan-res">
+                    Te sugerimos <b>{personasHome * 300 >= 1000 ? `${(personasHome * 0.3).toFixed(1).replace(/\.0$/, '')} kg` : `${personasHome * 300} g`}</b> de marinado (300 g por persona).
+                  </div>
+                </div>
                 <div className="v2-grid-2filas">
                   {destacadosHoy.map(p => (
                     <div key={p.id} className="v2-tile-mini2" onClick={() => abrirSeleccion(p)}>
@@ -1308,6 +1323,7 @@ export default function HomeV2Preview() {
                       </div>
                       <div className="v2-card-barra">
                         <div className="v2-card-barra-nombre">{p.name}</div>
+                        <div className="v2-card-meta"><span className="v2-ts-precio-pill">${Number(p.price)}/kg</span><span className="v2-mas" aria-hidden="true">+</span></div>
                       </div>
                     </div>
                   ))}
@@ -1364,7 +1380,7 @@ export default function HomeV2Preview() {
         )}
 
         {tab === 'productos' && (
-          <div className="v2-pantalla">
+          <div className="v2-pantalla v2-pantalla-productos">
             <div className="v2-pills">
               <div className="v2-pill-fondo" style={{ transform: `translateX(${CATEGORIAS.findIndex(c => c.key === categoria) * 100}%)` }} />
               {CATEGORIAS.map(c => (
@@ -1435,7 +1451,7 @@ export default function HomeV2Preview() {
         )}
 
         {tab === 'sucursales' && (
-          <div className="v2-pantalla">
+          <div className="v2-pantalla v2-pantalla-angosta v2-pantalla-sucursales">
             <div className="v2-saludo">Sucursales</div>
             <div className="v2-saludo-sub">Las {sucursales.length}, sin recortar</div>
 
@@ -1478,7 +1494,7 @@ export default function HomeV2Preview() {
         )}
 
         {tab === 'lealtad' && (
-          <div className="v2-pantalla">
+          <div className="v2-pantalla v2-pantalla-angosta">
             <div className="v2-saludo">Lealtad</div>
 
             {!lealtad ? (
@@ -1838,8 +1854,8 @@ export default function HomeV2Preview() {
       <div className="v2-tabbar">
         <button className={`v2-tab${tab === 'home' ? ' on' : ''}`} onClick={() => cambiarTab('home')}><span className="v2-ticono">🏠</span><span className="v2-tlabel">Home</span></button>
         <button className={`v2-tab${tab === 'productos' ? ' on' : ''}`} onClick={() => cambiarTab('productos')}><span className="v2-ticono">📋</span><span className="v2-tlabel">Productos</span></button>
-        <div className="v2-tab-central-wrap">
-          <div className="v2-tab-central" onClick={abrirAsistente}>🍗</div>
+        <div className="v2-tab-central-wrap" onClick={abrirAsistente}>
+          <div className="v2-tab-central">🍗</div>
           <div className="v2-tab-central-label">Crear pedido</div>
         </div>
         <button className={`v2-tab${tab === 'sucursales' ? ' on' : ''}`} onClick={() => cambiarTab('sucursales')}><span className="v2-ticono">📍</span><span className="v2-tlabel">Sucursales</span></button>
