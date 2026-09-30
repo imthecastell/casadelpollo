@@ -21,8 +21,15 @@
     display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr);
   }
   .v2-topbar { grid-row: 1; padding: 14px var(--v2-gutter) 12px; border-bottom: 0; }
-  /* La barra y las pestañas toman el color de la banda que pasa detrás (--cab-color lo fija el JSX). */
-  .v2-topbar, .v2-tabbar { background: var(--cab-color, var(--crema)); transition: background-color .35s ease; }
+  /* Encabezado crema; el color de la banda que pasa detrás (--cab-color, lo fija el JSX) se ve como una
+     franja de 4 px al pie de las pestañas. */
+  .v2-topbar, .v2-tabbar { background: var(--crema); }
+  .v2-topbar::after { display: none; }
+  .v2-tabbar { position: relative; }
+  .v2-tabbar::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 4px;
+    background: var(--cab-color, transparent); transition: background-color .35s ease;
+  }
   .v2-tabbar { grid-row: 2; }
   .v2-contenido { grid-row: 3; min-height: 0; }
 
@@ -43,10 +50,10 @@
   }
   .v2-tab {
     flex: 0 0 auto; flex-direction: row; gap: 8px; padding: 9px 18px; border-radius: 999px;
-    color: var(--cab-txt, var(--texto-suave)); transition: background-color .15s ease;
+    transition: background-color .15s ease;
   }
-  .v2-tab:hover { background: rgba(255,255,255,.28); }
-  .v2-tab.on { background: rgba(255,255,255,.92); color: var(--rojo); }
+  .v2-tab:hover { background: var(--gris-claro); }
+  .v2-tab.on { background: color-mix(in srgb, var(--rojo) 10%, #fff); color: var(--rojo); }
   .v2-ticono { font-size: 17px; }
   .v2-tlabel { font-size: 13.5px; }
   /* "Crear pedido": el botón circular flotante pasa a ser una píldora roja. */
@@ -105,6 +112,16 @@
   /* Marinados y Preparados: cuadrícula que se llena según el ancho. */
   .v2-grid-2filas, .v2-strip-grandes { grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 18px; }
   .v2-tile-mini2 .v2-card-barra-nombre, .v2-tarjeta-grande-strip .v2-card-barra-nombre { font-size: 15px; }
+  /* Pocos productos (1 a 3): la fila se reparte entre los que hay y cada tarjeta pasa a horizontal
+     (foto a la izquierda, datos a la derecha). Con 4 o más vuelve la cuadrícula vertical. */
+  .v2-grid-pocos { grid-template-columns: repeat(var(--n, 2), minmax(0, 1fr)); }
+  .v2-grid-pocos[style*="--n: 1"] { max-width: 720px; }
+  .v2-grid-pocos .v2-tile-mini2, .v2-grid-pocos .v2-tarjeta-grande-strip { flex-direction: row; min-height: 210px; }
+  .v2-grid-pocos .v2-card-foto { flex: 0 0 46%; aspect-ratio: auto; min-height: 100%; }
+  .v2-grid-pocos .v2-card-barra { flex: 1; justify-content: center; align-items: flex-start; gap: 14px; padding: 18px 22px; }
+  .v2-grid-pocos .v2-card-barra-nombre { font-size: 20px; -webkit-line-clamp: 3; }
+  .v2-grid-pocos .v2-ts-precio-pill { font-size: 14px; padding: 6px 14px; }
+  .v2-grid-pocos .v2-mas { width: 38px; height: 38px; font-size: 22px; }
   .v2-titulo-fila .v2-seccion-titulo { margin-bottom: 0; }
   .v2-titulo-fila { margin-bottom: 18px; }
 

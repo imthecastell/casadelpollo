@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect, useMemo, useRef } from 'react'
 import QRCode from 'qrcode'
 import { useApp } from '../data/AppContext.jsx'
+import { getDesign } from '../data/api.js'
 import LogoSlot from '../Components/LogoSlot.jsx'
 import AvisoAirfryer from '../Components/AvisoAirfryer.jsx'
 import { tagsDe } from '../data/productTags'
@@ -433,6 +434,8 @@ export default function HomeV2Preview() {
   const [selectorSucursalAbierto, setSelectorSucursalAbierto] = useState(false)
   const [links, setLinks] = useState(null)
   const [heroIdx, setHeroIdx] = useState(0)
+  const [bowlsPorSuc, setBowlsPorSuc] = useState({})
+  const [avisoBowl, setAvisoBowl] = useState(null)
   const [postersMap, setPostersMap] = useState({})
   const [grupoAbierto, setGrupoAbierto] = useState(null)
   const [stepComplementos, setStepComplementos] = useState(false)
@@ -474,6 +477,18 @@ export default function HomeV2Preview() {
       .then(data => setLinks(data))
       .catch(() => setLinks({ branches: [] }))
   }, [])
+
+  // Qué sucursales ofrecen bowls (diseno.bowls_enabled de cada una), para poder
+  // decir dónde sí están disponibles cuando la sucursal activa no los tiene.
+  useEffect(() => {
+    let vivo = true
+    ;(sucursales || []).forEach(s => {
+      getDesign(s.id)
+        .then(d => { if (vivo) setBowlsPorSuc(m => ({ ...m, [s.id]: d?.bowls_enabled !== false })) })
+        .catch(() => {})
+    })
+    return () => { vivo = false }
+  }, [sucursales])
 
   useEffect(() => {
     fetch(`${API_URL}/api/media?categoria=posters`)
@@ -708,6 +723,29 @@ export default function HomeV2Preview() {
       accion: () => { cambiarTab('productos'); setCategoria('marinados') },
     },
   ].filter(Boolean)
+
+  // Sucursales con catálogo corto (ej. El Parque: 2 marinados y sin bowls)
+  // quedaban con un carrusel casi vacío. Se completa con sus propios marinados
+  // y con fotos de cocinado de sus preparados, hasta 4 slides.
+  if (promos.length < 4) {
+    const titulosUsados = new Set(promos.map(p => p.titulo))
+    const deMarinado = marinadosImg
+      .filter(p => p.name !== nuevoProducto?.name)
+      .map(p => ({
+        badge: 'MARINADO', titulo: p.name, desc: `Listo para cocinar. $${Number(p.price)}/kg.`,
+        cta: 'Elegir gramos', imagen: img(p), accion: () => abrirSeleccion(p),
+      }))
+    const dePreparado = destacadosDelDia(preparadosItems.individuales.filter(img), 4, semillaCarga + 2)
+      .map(p => ({
+        badge: 'PREPARADO', titulo: p.name, desc: `$${Number(p.price)}/kg. Disponible hoy en ${sucursalActiva?.name || 'tu sucursal'}.`,
+        cta: 'Ver preparado', imagen: img(p), accion: () => abrirSeleccion(p),
+      }))
+    ;[...deMarinado, ...dePreparado].forEach(s => {
+      if (promos.length < 4 && !titulosUsados.has(s.titulo)) { promos.push(s); titulosUsados.add(s.titulo) }
+    })
+  }
+  // El índice guardado puede quedar fuera de rango al cambiar de sucursal.
+  const idxHero = promos.length ? heroIdx % promos.length : 0
 
   useEffect(() => {
     clearInterval(timerRef.current)
@@ -1239,9 +1277,9 @@ export default function HomeV2Preview() {
     // al no tener position/opacity/transform no crea un stacking context
     // nuevo, así que no reintroduce ese bug.
     <div className="v2-shell-root">
-    <div className="v2-shell" style={colorTopbar ? { '--cab-color': colorTopbar, '--cab-txt': '#fff' } : undefined}>
+    <div className="v2-shell" style={colorTopbar ? { '--cab-color': colorTopbar } : undefined}>
 
-      <div className="v2-topbar" ref={topbarRef} style={colorTopbar ? { background: colorTopbar } : undefined}>
+      <div className="v2-topbar" ref={topbarRef}>
         <div className="v2-tb-pill">
           <button className="v2-tb-pill-icono" onClick={() => mostrarToast('Menú con Ayuda, Recetas (próximamente) y Ajustes')}>☰</button>
           <button className="v2-tb-pill-nombre" onClick={() => setSelectorSucursalAbierto(true)} aria-label={`Sucursal ${sucursalActiva.name}, cambiar`}>
@@ -1280,7 +1318,7 @@ export default function HomeV2Preview() {
             {promos.length > 0 && (
               <div className="v2-carrusel v2-carrusel-promo">
                 {promos.map((p, i) => (
-                  <div key={p.titulo} className={`v2-promo-slide${i === heroIdx ? ' on' : ''}${p.objectPos ? ' v2-promo-slide-bowl' : ''}`} onClick={p.accion}>
+                  <div key={p.titulo} className={`v2-promo-slide${i === idxHero ? ' on' : ''}${p.objectPos ? ' v2-promo-slide-bowl' : ''}`} onClick={p.accion}>
                     <img className="v2-promo-foto-completa" src={p.imagen} alt={p.titulo} />
                     <div className="v2-promo-tarjeta">
                       <div className="v2-promo-texto">
@@ -1293,7 +1331,7 @@ export default function HomeV2Preview() {
                   </div>
                 ))}
                 <div className="v2-carrusel-dots">
-                  {promos.map((_, i) => <div key={i} className={`v2-cdot${i === heroIdx ? ' on' : ''}`} />)}
+                  {promos.map((_, i) => <div key={i} className={`v2-cdot${i === idxHero ? ' on' : ''}`} />)}
                 </div>
               </div>
             )}
@@ -1315,7 +1353,7 @@ export default function HomeV2Preview() {
                     Te sugerimos <b>{personasHome * 300 >= 1000 ? `${(personasHome * 0.3).toFixed(1).replace(/\.0$/, '')} kg` : `${personasHome * 300} g`}</b> de marinado (300 g por persona).
                   </div>
                 </div>
-                <div className="v2-grid-2filas">
+                <div className={`v2-grid-2filas${destacadosHoy.length <= 3 ? ' v2-grid-pocos' : ''}`} style={{ '--n': destacadosHoy.length }}>
                   {destacadosHoy.map(p => (
                     <div key={p.id} className="v2-tile-mini2" onClick={() => abrirSeleccion(p)}>
                       <div className="v2-card-foto">
@@ -1348,10 +1386,33 @@ export default function HomeV2Preview() {
               </div>
             )}
 
+            {!bowlsActivo && (() => {
+              const conBowls = sucursales.filter(s => s.id !== sucursalActiva?.id && bowlsPorSuc[s.id] === true)
+              if (conBowls.length === 0) return null
+              return (
+                <div className="v2-banda v2-banda-verde" data-color="#2a7a4b">
+                  <div className="v2-seccion-titulo">Arma tu Bowl</div>
+                  <div className="v2-bowl-hibrido v2-bowl-anuncio">
+                    <div className="v2-bowl-hibrido-foto"><img src={BOWL_PORTADA_CDN} alt="Bowl" /></div>
+                    <div className="v2-bowl-hibrido-panel">
+                      <div className="v2-promo-badge">BOWLS</div>
+                      <h3>Arma tu Bowl</h3>
+                      <p className="v2-bowl-anuncio-txt">{sucursalActiva?.name} no ofrece bowls por ahora. Disponibles en:</p>
+                      <div className="v2-bowl-pills">
+                        {conBowls.map(s => (
+                          <button key={s.id} className="v2-bowl-pill" onClick={() => setAvisoBowl(s)}>{s.name}</button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
+            })()}
+
             {(preparadosImg.length > 0 || preparadosItems.grupos.length > 0) && (
               <div className="v2-banda v2-banda-rojo" data-color="#922B21">
                 <div className="v2-seccion-titulo">Preparados para lucirte</div>
-                <div className="v2-strip-grandes">
+                <div className={`v2-strip-grandes${preparadosStrip.length <= 3 ? ' v2-grid-pocos' : ''}`} style={{ '--n': preparadosStrip.length }}>
                   {preparadosStrip.map(item => item._tipo === 'grupo' ? (
                     <div key={item.id} className="v2-tarjeta-grande-strip v2-tarjeta-grupo" onClick={() => setGrupoAbierto(item)}>
                       <div className="v2-card-foto">
@@ -2409,6 +2470,20 @@ export default function HomeV2Preview() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {avisoBowl && (
+        <div className="v2-confirmar-overlay" onClick={(e) => { if (e.target === e.currentTarget) setAvisoBowl(null) }}>
+          <div className="v2-confirmar" role="alertdialog" aria-modal="true" aria-labelledby="v2-aviso-bowl-titulo">
+            <div className="v2-confirmar-titulo" id="v2-aviso-bowl-titulo">Bowls en {avisoBowl.name}</div>
+            <p className="v2-confirmar-texto">
+              {sucursalActiva?.name} no ofrece bowls. Para pedir uno tienes que cambiar de sucursal a {avisoBowl.name}.
+              Tu carrito se conserva, salvo lo que no esté disponible allá.
+            </p>
+            <button className="btn-primario" onClick={() => { const s = avisoBowl; setAvisoBowl(null); elegirSucursal(s) }}>Cambiar a {avisoBowl.name}</button>
+            <button className="btn-secundario" style={{ marginTop: 8 }} onClick={() => setAvisoBowl(null)}>Seguir en {sucursalActiva?.name}</button>
           </div>
         </div>
       )}

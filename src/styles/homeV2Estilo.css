@@ -73,3 +73,20 @@
 @media (prefers-reduced-motion: reduce) {
   .v2-tile-mini2, .v2-tarjeta-grande-strip, .v2-card-foto img, .v2-mas { transition: none; }
 }
+
+/* ---- encabezado: siempre crema; el color de la banda se ve como una franja fina ---- */
+.v2-topbar::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 4px;
+  background: var(--cab-color, transparent); transition: background-color .35s ease;
+}
+
+/* ---- Bowl como anuncio (sucursal sin bowls): dónde sí está disponible ---- */
+.v2-bowl-anuncio { cursor: default; }
+.v2-bowl-anuncio-txt { color: #fff; opacity: .92; font-size: 14px; line-height: 1.4; margin: 10px 0 0; }
+.v2-bowl-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.v2-bowl-pill {
+  border: 0; border-radius: 99px; padding: 10px 18px; background: #fff; color: var(--verde);
+  font-family: var(--font-title), sans-serif; font-weight: 800; font-size: 14px; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,.18); transition: transform .15s ease;
+}
+.v2-bowl-pill:hover { transform: translateY(-2px); }
