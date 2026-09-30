@@ -33,10 +33,36 @@ export function esFotoCompuesta(imageUrl, imageCookedUrl) {
   return !imageCookedUrl || mismoArchivo(imageUrl, imageCookedUrl)
 }
 
+// Los pósters de dos paneles (crudo | cocinado) traen una franja blanca en el
+// centro, de ~1% del ancho. Un corte exacto a la mitad deja media franja pegada
+// al borde de cada foto, así que del lado de la costura se retrocede un poco.
+// Solo se toca el corte exacto a la mitad (w_0.50); cualquier otro recorte se
+// respeta tal cual lo guardó el admin.
+const MARGEN_COSTURA = 0.01
+// Pósters cuya franja no está en el centro (x = inicio y ancho de cada mitad).
+const COSTURA_ESPECIAL = {
+  'pollo%20al%20pastor': { cruda: [0, 0.44], cocinada: [0.46, 0.54] },
+  'pollo al pastor': { cruda: [0, 0.44], cocinada: [0.46, 0.54] },
+}
+const dos = n => n.toFixed(2)
+
+function sinCostura(recorte, a) {
+  const m = recorte && recorte.match(/^c_crop,fl_relative,x_([\d.]+),y_([\d.]+),w_([\d.]+),h_([\d.]+)$/)
+  if (!m) return recorte
+  const [x, y, w, h] = m.slice(1).map(Number)
+  if (w !== 0.5 || (x !== 0 && x !== 0.5) || h !== 1) return recorte
+  const lado = x === 0 ? 'cruda' : 'cocinada'
+  const clave = Object.keys(COSTURA_ESPECIAL).find(k => a.includes(k))
+  const [nx, nw] = clave
+    ? COSTURA_ESPECIAL[clave][lado]
+    : lado === 'cruda' ? [0, 0.5 - MARGEN_COSTURA] : [0.5 + MARGEN_COSTURA, 0.5 - MARGEN_COSTURA]
+  return `c_crop,fl_relative,x_${dos(nx)},y_${dos(y)},w_${dos(nw)},h_${dos(h)}`
+}
+
 function conTamano(url, ar, w) {
   const a = archivo(url)
   if (!a) return url
-  const recorte = recorteGuardado(url)
+  const recorte = sinCostura(recorteGuardado(url), a)
   return `${CDN}/${recorte ? `${recorte}/` : ''}ar_${ar},c_fill,w_${w}/${a}`
 }
 
@@ -44,7 +70,8 @@ function mitad(url, lado, ar, w) {
   const a = archivo(url)
   if (!a) return url
   const x = lado === 'cruda' ? '0.00' : '0.50'
-  return `${CDN}/c_crop,fl_relative,x_${x},y_0.00,w_0.50,h_1.00/ar_${ar},c_fill,w_${w}/${a}`
+  const recorte = sinCostura(`c_crop,fl_relative,x_${x},y_0.00,w_0.50,h_1.00`, a)
+  return `${CDN}/${recorte}/ar_${ar},c_fill,w_${w}/${a}`
 }
 
 export function fotoCruda(imageUrl, imageCookedUrl, { ar = '4:3', w = 320 } = {}) {

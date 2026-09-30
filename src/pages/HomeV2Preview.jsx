@@ -1,7 +1,10 @@
 ﻿import { useState, useEffect, useMemo, useRef } from 'react'
 import QRCode from 'qrcode'
 import { useApp } from '../data/AppContext.jsx'
+import { getDesign } from '../data/api.js'
 import LogoSlot from '../Components/LogoSlot.jsx'
+import Icono from '../Components/Icono.jsx'
+import PieV2 from '../Components/PieV2.jsx'
 import AvisoAirfryer from '../Components/AvisoAirfryer.jsx'
 import { tagsDe } from '../data/productTags'
 import { MarimadoImg } from '../Components/SeccionMarinados.jsx'
@@ -433,6 +436,9 @@ export default function HomeV2Preview() {
   const [selectorSucursalAbierto, setSelectorSucursalAbierto] = useState(false)
   const [links, setLinks] = useState(null)
   const [heroIdx, setHeroIdx] = useState(0)
+  const [bowlsPorSuc, setBowlsPorSuc] = useState({})
+  const [avisoBowl, setAvisoBowl] = useState(null)
+  const [menuInfoAbierto, setMenuInfoAbierto] = useState(false)
   const [postersMap, setPostersMap] = useState({})
   const [grupoAbierto, setGrupoAbierto] = useState(null)
   const [stepComplementos, setStepComplementos] = useState(false)
@@ -474,6 +480,18 @@ export default function HomeV2Preview() {
       .then(data => setLinks(data))
       .catch(() => setLinks({ branches: [] }))
   }, [])
+
+  // Qué sucursales ofrecen bowls (diseno.bowls_enabled de cada una), para poder
+  // decir dónde sí están disponibles cuando la sucursal activa no los tiene.
+  useEffect(() => {
+    let vivo = true
+    ;(sucursales || []).forEach(s => {
+      getDesign(s.id)
+        .then(d => { if (vivo) setBowlsPorSuc(m => ({ ...m, [s.id]: d?.bowls_enabled !== false })) })
+        .catch(() => {})
+    })
+    return () => { vivo = false }
+  }, [sucursales])
 
   useEffect(() => {
     fetch(`${API_URL}/api/media?categoria=posters`)
@@ -708,6 +726,29 @@ export default function HomeV2Preview() {
       accion: () => { cambiarTab('productos'); setCategoria('marinados') },
     },
   ].filter(Boolean)
+
+  // Sucursales con catálogo corto (ej. El Parque: 2 marinados y sin bowls)
+  // quedaban con un carrusel casi vacío. Se completa con sus propios marinados
+  // y con fotos de cocinado de sus preparados, hasta 4 slides.
+  if (promos.length < 4) {
+    const titulosUsados = new Set(promos.map(p => p.titulo))
+    const deMarinado = marinadosImg
+      .filter(p => p.name !== nuevoProducto?.name)
+      .map(p => ({
+        badge: 'MARINADO', titulo: p.name, desc: `Listo para cocinar. $${Number(p.price)}/kg.`,
+        cta: 'Elegir gramos', imagen: img(p), accion: () => abrirSeleccion(p),
+      }))
+    const dePreparado = destacadosDelDia(preparadosItems.individuales.filter(img), 4, semillaCarga + 2)
+      .map(p => ({
+        badge: 'PREPARADO', titulo: p.name, desc: `$${Number(p.price)}/kg. Disponible hoy en ${sucursalActiva?.name || 'tu sucursal'}.`,
+        cta: 'Ver preparado', imagen: img(p), accion: () => abrirSeleccion(p),
+      }))
+    ;[...deMarinado, ...dePreparado].forEach(s => {
+      if (promos.length < 4 && !titulosUsados.has(s.titulo)) { promos.push(s); titulosUsados.add(s.titulo) }
+    })
+  }
+  // El índice guardado puede quedar fuera de rango al cambiar de sucursal.
+  const idxHero = promos.length ? heroIdx % promos.length : 0
 
   useEffect(() => {
     clearInterval(timerRef.current)
@@ -1239,11 +1280,11 @@ export default function HomeV2Preview() {
     // al no tener position/opacity/transform no crea un stacking context
     // nuevo, así que no reintroduce ese bug.
     <div className="v2-shell-root">
-    <div className="v2-shell" style={colorTopbar ? { '--cab-color': colorTopbar, '--cab-txt': '#fff' } : undefined}>
+    <div className="v2-shell" style={colorTopbar ? { '--cab-color': colorTopbar } : undefined}>
 
-      <div className="v2-topbar" ref={topbarRef} style={colorTopbar ? { background: colorTopbar } : undefined}>
+      <div className="v2-topbar" ref={topbarRef}>
         <div className="v2-tb-pill">
-          <button className="v2-tb-pill-icono" onClick={() => mostrarToast('Menú con Ayuda, Recetas (próximamente) y Ajustes')}>☰</button>
+          <button className="v2-tb-pill-icono" onClick={() => setMenuInfoAbierto(true)} aria-label="Información de la sucursal" aria-haspopup="dialog"><Icono nombre="list" /></button>
           <button className="v2-tb-pill-nombre" onClick={() => setSelectorSucursalAbierto(true)} aria-label={`Sucursal ${sucursalActiva.name}, cambiar`}>
             <span className="v2-tb-pill-etiqueta">Sucursal</span>
             <span className="v2-tb-pill-suc">{sucursalActiva.name}</span>
@@ -1262,11 +1303,11 @@ export default function HomeV2Preview() {
         </div>
         <div className="v2-tb-derecha">
           <button className="v2-tb-btn" onClick={() => setMostrarBuscador(true)}>
-            <span className="v2-tb-btn-icono" aria-hidden="true">🔍</span>
+            <span className="v2-tb-btn-icono" aria-hidden="true"><Icono nombre="magnifying-glass" /></span>
             <span className="v2-tb-btn-etiqueta">Buscar</span>
           </button>
           <button className="v2-tb-btn" onClick={() => setMostrarCarrito(true)}>
-            <span className="v2-tb-btn-icono" aria-hidden="true">🛒</span>
+            <span className="v2-tb-btn-icono" aria-hidden="true"><Icono nombre="shopping-cart" /></span>
             <span className="v2-tb-btn-etiqueta">Carrito</span>
             {carrito.length > 0 && <span className="v2-tb-badge">{carrito.length}</span>}
           </button>
@@ -1280,7 +1321,7 @@ export default function HomeV2Preview() {
             {promos.length > 0 && (
               <div className="v2-carrusel v2-carrusel-promo">
                 {promos.map((p, i) => (
-                  <div key={p.titulo} className={`v2-promo-slide${i === heroIdx ? ' on' : ''}${p.objectPos ? ' v2-promo-slide-bowl' : ''}`} onClick={p.accion}>
+                  <div key={p.titulo} className={`v2-promo-slide${i === idxHero ? ' on' : ''}${p.objectPos ? ' v2-promo-slide-bowl' : ''}`} onClick={p.accion}>
                     <img className="v2-promo-foto-completa" src={p.imagen} alt={p.titulo} />
                     <div className="v2-promo-tarjeta">
                       <div className="v2-promo-texto">
@@ -1293,7 +1334,7 @@ export default function HomeV2Preview() {
                   </div>
                 ))}
                 <div className="v2-carrusel-dots">
-                  {promos.map((_, i) => <div key={i} className={`v2-cdot${i === heroIdx ? ' on' : ''}`} />)}
+                  {promos.map((_, i) => <div key={i} className={`v2-cdot${i === idxHero ? ' on' : ''}`} />)}
                 </div>
               </div>
             )}
@@ -1315,7 +1356,7 @@ export default function HomeV2Preview() {
                     Te sugerimos <b>{personasHome * 300 >= 1000 ? `${(personasHome * 0.3).toFixed(1).replace(/\.0$/, '')} kg` : `${personasHome * 300} g`}</b> de marinado (300 g por persona).
                   </div>
                 </div>
-                <div className="v2-grid-2filas">
+                <div className={`v2-grid-2filas${destacadosHoy.length <= 3 ? ' v2-grid-pocos' : ''}`} style={{ '--n': destacadosHoy.length }}>
                   {destacadosHoy.map(p => (
                     <div key={p.id} className="v2-tile-mini2" onClick={() => abrirSeleccion(p)}>
                       <div className="v2-card-foto">
@@ -1348,10 +1389,33 @@ export default function HomeV2Preview() {
               </div>
             )}
 
+            {!bowlsActivo && (() => {
+              const conBowls = sucursales.filter(s => s.id !== sucursalActiva?.id && bowlsPorSuc[s.id] === true)
+              if (conBowls.length === 0) return null
+              return (
+                <div className="v2-banda v2-banda-verde" data-color="#2a7a4b">
+                  <div className="v2-seccion-titulo">Arma tu Bowl</div>
+                  <div className="v2-bowl-hibrido v2-bowl-anuncio">
+                    <div className="v2-bowl-hibrido-foto"><img src={BOWL_PORTADA_CDN} alt="Bowl" /></div>
+                    <div className="v2-bowl-hibrido-panel">
+                      <div className="v2-promo-badge">BOWLS</div>
+                      <h3>Arma tu Bowl</h3>
+                      <p className="v2-bowl-anuncio-txt">{sucursalActiva?.name} no ofrece bowls por ahora. Disponibles en:</p>
+                      <div className="v2-bowl-pills">
+                        {conBowls.map(s => (
+                          <button key={s.id} className="v2-bowl-pill" onClick={() => setAvisoBowl(s)}>{s.name}</button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
+            })()}
+
             {(preparadosImg.length > 0 || preparadosItems.grupos.length > 0) && (
               <div className="v2-banda v2-banda-rojo" data-color="#922B21">
                 <div className="v2-seccion-titulo">Preparados para lucirte</div>
-                <div className="v2-strip-grandes">
+                <div className={`v2-strip-grandes${preparadosStrip.length <= 3 ? ' v2-grid-pocos' : ''}`} style={{ '--n': preparadosStrip.length }}>
                   {preparadosStrip.map(item => item._tipo === 'grupo' ? (
                     <div key={item.id} className="v2-tarjeta-grande-strip v2-tarjeta-grupo" onClick={() => setGrupoAbierto(item)}>
                       <div className="v2-card-foto">
@@ -1391,7 +1455,7 @@ export default function HomeV2Preview() {
             </div>
 
             {bowlsActivo && <div className="v2-bowls-cta" onClick={() => abrirBowlDirecto()}>
-              <div className="v2-bowls-emoji">🥗</div>
+              <div className="v2-bowls-emoji"><Icono nombre="bowl-food" /></div>
               <div className="v2-bowls-txt">
                 <strong>¿Poco tiempo? Pide un Bowl</strong>
                 <span>Base + marinado + tu toque, listo en minutos</span>
@@ -1611,6 +1675,7 @@ export default function HomeV2Preview() {
           </div>
         )}
 
+        <PieV2 clase="v2-pie-inline" sucursal={sucursalActiva} enlaces={linkDe(sucursalActiva?.name)} schedule={schedule} productos={productosSucursal} bowlsActivo={bowlsActivo} />
       </div>
 
       {toast && <div className="v2-toast on">{toast}</div>}
@@ -1852,14 +1917,14 @@ export default function HomeV2Preview() {
       {mostrarAvisoSel && <AvisoAirfryer onCerrar={() => setMostrarAvisoSel(false)} />}
 
       <div className="v2-tabbar">
-        <button className={`v2-tab${tab === 'home' ? ' on' : ''}`} onClick={() => cambiarTab('home')}><span className="v2-ticono">🏠</span><span className="v2-tlabel">Home</span></button>
-        <button className={`v2-tab${tab === 'productos' ? ' on' : ''}`} onClick={() => cambiarTab('productos')}><span className="v2-ticono">📋</span><span className="v2-tlabel">Productos</span></button>
+        <button className={`v2-tab${tab === 'home' ? ' on' : ''}`} onClick={() => cambiarTab('home')}><span className="v2-ticono"><Icono nombre="house" relleno={tab === 'home'} /></span><span className="v2-tlabel">Home</span></button>
+        <button className={`v2-tab${tab === 'productos' ? ' on' : ''}`} onClick={() => cambiarTab('productos')}><span className="v2-ticono"><Icono nombre="fork-knife" relleno={tab === 'productos'} /></span><span className="v2-tlabel">Productos</span></button>
         <div className="v2-tab-central-wrap" onClick={abrirAsistente}>
-          <div className="v2-tab-central">🍗</div>
+          <div className="v2-tab-central"><Icono nombre="pollo" /></div>
           <div className="v2-tab-central-label">Crear pedido</div>
         </div>
-        <button className={`v2-tab${tab === 'sucursales' ? ' on' : ''}`} onClick={() => cambiarTab('sucursales')}><span className="v2-ticono">📍</span><span className="v2-tlabel">Sucursales</span></button>
-        <button className={`v2-tab${tab === 'lealtad' ? ' on' : ''}`} onClick={() => cambiarTab('lealtad')}><span className="v2-ticono">🎁</span><span className="v2-tlabel">Lealtad</span></button>
+        <button className={`v2-tab${tab === 'sucursales' ? ' on' : ''}`} onClick={() => cambiarTab('sucursales')}><span className="v2-ticono"><Icono nombre="storefront" relleno={tab === 'sucursales'} /></span><span className="v2-tlabel">Sucursales</span></button>
+        <button className={`v2-tab${tab === 'lealtad' ? ' on' : ''}`} onClick={() => cambiarTab('lealtad')}><span className="v2-ticono"><Icono nombre="gift" relleno={tab === 'lealtad'} /></span><span className="v2-tlabel">Lealtad</span></button>
       </div>
     </div>
 
@@ -2409,6 +2474,33 @@ export default function HomeV2Preview() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {menuInfoAbierto && (
+        <div className="v2-sheet-overlay on" onClick={(e) => { if (e.target === e.currentTarget) setMenuInfoAbierto(false) }}>
+          <div className="v2-sheet v2-sheet-info" role="dialog" aria-modal="true" aria-label={`Información de ${sucursalActiva?.name}`}>
+            <div className="v2-sheet-handle" />
+            <div className="v2-sheet-cabecera">
+              <div className="v2-sheet-titulo">Información de {sucursalActiva?.name}</div>
+              <button className="v2-grupo-sheet-cerrar" onClick={() => setMenuInfoAbierto(false)} aria-label="Cerrar">✕</button>
+            </div>
+            <PieV2 clase="v2-pie-en-hoja" sucursal={sucursalActiva} enlaces={linkDe(sucursalActiva?.name)} schedule={schedule} productos={productosSucursal} bowlsActivo={bowlsActivo} />
+          </div>
+        </div>
+      )}
+
+      {avisoBowl && (
+        <div className="v2-confirmar-overlay" onClick={(e) => { if (e.target === e.currentTarget) setAvisoBowl(null) }}>
+          <div className="v2-confirmar" role="alertdialog" aria-modal="true" aria-labelledby="v2-aviso-bowl-titulo">
+            <div className="v2-confirmar-titulo" id="v2-aviso-bowl-titulo">Bowls en {avisoBowl.name}</div>
+            <p className="v2-confirmar-texto">
+              {sucursalActiva?.name} no ofrece bowls. Para pedir uno tienes que cambiar de sucursal a {avisoBowl.name}.
+              Tu carrito se conserva, salvo lo que no esté disponible allá.
+            </p>
+            <button className="btn-primario" onClick={() => { const s = avisoBowl; setAvisoBowl(null); elegirSucursal(s) }}>Cambiar a {avisoBowl.name}</button>
+            <button className="btn-secundario" style={{ marginTop: 8 }} onClick={() => setAvisoBowl(null)}>Seguir en {sucursalActiva?.name}</button>
           </div>
         </div>
       )}
