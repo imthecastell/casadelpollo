@@ -78,12 +78,14 @@
     margin: 0 0 36px; border-radius: 0; background: transparent; overflow: visible;
     aspect-ratio: auto; width: 100%; height: clamp(340px, 34vw, 440px);
   }
-  .v2-promo-slide { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); gap: 44px; align-items: center; cursor: default; }
+  /* La fila mide exactamente el alto del héroe (minmax(0,1fr)): así la foto, aunque sea un póster vertical,
+     se recorta dentro del marco en vez de crecer a su tamaño natural y salirse. */
+  .v2-promo-slide { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); grid-template-rows: minmax(0, 1fr); gap: 44px; align-items: center; cursor: default; }
   .v2-promo-foto-completa {
-    position: relative; inset: auto; grid-column: 2; grid-row: 1; width: 100%; height: 100%;
+    position: relative; inset: auto; grid-column: 2; grid-row: 1; width: 100%; height: 100%; min-height: 0; max-height: 100%; object-fit: cover;
     border-radius: 28px; object-position: center 40%; box-shadow: 0 6px 16px rgba(42,15,11,.12), 0 24px 60px rgba(42,15,11,.22);
   }
-  .v2-promo-slide-bowl .v2-promo-foto-completa { height: 100%; object-position: center 66%; }
+  .v2-promo-slide-bowl .v2-promo-foto-completa { height: 100%; bottom: auto; object-position: center 66%; }
   .v2-promo-tarjeta {
     position: static; grid-column: 1; grid-row: 1; width: auto; padding: 0; background: transparent; box-shadow: none;
     border-radius: 0; flex-direction: column; align-items: flex-start; gap: 22px;
