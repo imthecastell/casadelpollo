@@ -144,3 +144,12 @@
 .v2-sheet-cabecera .v2-sheet-titulo { margin: 0; }
 .v2-pie-en-hoja { border-radius: 22px; padding: 22px 18px 18px; }
 .v2-tb-pill-icono { cursor: pointer; }
+
+/* ---- punto focal de la foto del bowl ----
+   La foto es un póster vertical 2:3: el tazón ocupa del ~63% al ~88% de la altura y los
+   ingredientes caen arriba. Con object-fit: cover, cajas anchas solo muestran una franja, así
+   que object-position fija el centro de esa franja sobre el tazón (y las piezas que caen) en
+   vez de pegarla al borde inferior. Un solo valor para todas las cajas: si cambia la foto,
+   se ajusta aquí (eje Y, 0% = arriba, 100% = abajo). */
+.v2-shell-root { --foco-bowl: 50% 80%; }
+.v2-bowl-hibrido-foto img { object-position: var(--foco-bowl); }
