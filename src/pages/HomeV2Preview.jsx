@@ -295,7 +295,7 @@ const imgV2 = (p, postersMap) => {
     if (postersMap) {
       const key = normalizarNombre(p.name)
       if (postersMap[key]) return postersMap[key]
-      const keyNoDe = key.replace(/de /g, '').replace(/ +/g, ' ').trim()
+      const keyNoDe = key.replace(/\bde\b /g, '').replace(/ +/g, ' ').trim()
       if (postersMap[keyNoDe]) return postersMap[keyNoDe]
       const match = Object.keys(postersMap).find(k => key.startsWith(k + ' '))
       if (match) return postersMap[match]
@@ -476,7 +476,7 @@ export default function HomeV2Preview() {
         items.forEach(item => {
           const k = normalizarNombre(item.nombre)
           map[k] = item.url
-          const kNoDe = k.replace(/de /g, '').replace(/ +/g, ' ').trim()
+          const kNoDe = k.replace(/\bde\b /g, '').replace(/ +/g, ' ').trim()
           if (kNoDe !== k) map[kNoDe] = item.url
         })
         setPostersMap(map)
@@ -657,9 +657,7 @@ export default function HomeV2Preview() {
   // Igual que MenuPrincipal: sucursales sin bowls (diseno.bowls_enabled =
   // false, ej. El Parque) no muestran ningún acceso a "Arma tu Bowl".
   const bowlsActivo = diseno?.bowls_enabled !== false
-  const ensalada = productos.find(p => p.name === 'Ensalada')
   const bowlImg = BOWL_PORTADA_CDN
-  const bowlGrande = marinadosImg[1] || marinadosImg[0]
   // Home: 6 marinados y 6 preparados al azar, distintos en cada carga.
   const destacadosHoy = destacadosDelDia(marinadosImg, 6, semillaCarga)
   const preparadosStrip = destacadosDelDia([
