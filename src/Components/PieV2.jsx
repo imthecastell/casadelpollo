@@ -66,7 +66,7 @@ function gruposHorario(schedule) {
 
 const ICONO_METODO = { sarten: 'cooking-pot', horno: 'oven', airfryer: 'wind' }
 
-export default function PieV2({ sucursal, enlaces, schedule, productos, bowlsActivo }) {
+export default function PieV2({ sucursal, enlaces, schedule, productos, bowlsActivo, clase = '' }) {
   if (!sucursal) return null
   const estado = estadoHorario(schedule)
   const grupos = gruposHorario(schedule)
@@ -88,11 +88,14 @@ export default function PieV2({ sucursal, enlaces, schedule, productos, bowlsAct
   const wa = enlaces?.whatsapp
   const instagram = enlaces?.instagram || INSTAGRAM_POR_DEFECTO
 
+  const disponibles = servicios.filter(s => s.ok).map(s => s.texto)
+  const noDisponibles = servicios.filter(s => !s.ok).map(s => s.texto)
+
   return (
-    <footer className="v2-pie">
+    <footer className={`v2-pie${clase ? ` ${clase}` : ''}`}>
       <div className="v2-pie-grid">
         <section className="v2-pie-bloque">
-          <h3><Icono nombre="storefront" /> {sucursal.name}</h3>
+          <h3>{sucursal.name}</h3>
           {direccion && <p className="v2-pie-dir">{direccion}</p>}
           <div className="v2-pie-botones">
             {mapa && <a className="v2-pie-btn" href={mapa} target="_blank" rel="noopener noreferrer"><Icono nombre="navigation-arrow" /> Cómo llegar</a>}
@@ -101,7 +104,7 @@ export default function PieV2({ sucursal, enlaces, schedule, productos, bowlsAct
         </section>
 
         <section className="v2-pie-bloque">
-          <h3><Icono nombre="clock" /> Horario</h3>
+          <h3>Horario</h3>
           {estado && <p className={`v2-pie-estado${estado.abierto ? ' abierto' : ''}`}><i />{estado.texto}</p>}
           <ul className="v2-pie-horas">
             {grupos.map(g => (
@@ -109,44 +112,34 @@ export default function PieV2({ sucursal, enlaces, schedule, productos, bowlsAct
             ))}
           </ul>
         </section>
-
-        <section className="v2-pie-bloque">
-          <h3><Icono nombre="check-circle" /> Servicios en {sucursal.name}</h3>
-          <ul className="v2-pie-pills">
-            {servicios.map(s => (
-              <li key={s.texto} className={`v2-pie-pill${s.ok ? '' : ' no'}`}>
-                <Icono nombre={s.ok ? s.icono : 'x-circle'} />
-                <span>{s.texto}{s.ok ? '' : ' (no disponible)'}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section className="v2-pie-bloque">
-          <h3><Icono nombre="credit-card" /> Se paga en el local al recoger</h3>
-          <ul className="v2-pie-pills">
-            {PAGOS.map(p => (
-              <li key={p.texto} className="v2-pie-pill"><Icono nombre={p.icono} /><span>{p.texto}</span></li>
-            ))}
-          </ul>
-        </section>
       </div>
 
+      <dl className="v2-pie-lineas">
+        <div>
+          <dt>En {sucursal.name}</dt>
+          <dd>{disponibles.join(' · ')}{noDisponibles.length > 0 && <span className="v2-pie-no"> · No disponible: {noDisponibles.join(', ')}</span>}</dd>
+        </div>
+        <div>
+          <dt>Pago en el local</dt>
+          <dd>{PAGOS.map(p => p.texto).join(' · ')}</dd>
+        </div>
+      </dl>
+
       {metodos.length > 0 && (
-        <section className="v2-pie-sugerencia">
-          <div className="v2-pie-sug-titulo"><Icono nombre="lightbulb" /> Sugerencia de cocinado para {base.name}</div>
+        <details className="v2-pie-sugerencia">
+          <summary><Icono nombre="lightbulb" /> Sugerencia de cocinado para {base.name}</summary>
           <ul>
             {metodos.map(m => (
               <li key={m.id}><Icono nombre={ICONO_METODO[m.id] || 'cooking-pot'} /><b>{m.nombre}</b><span>{m.resumen}</span></li>
             ))}
           </ul>
-        </section>
+        </details>
       )}
 
       <div className="v2-pie-final">
         <div className="v2-pie-redes">
-          <a href={FACEBOOK_URL} target="_blank" rel="noopener noreferrer" aria-label="Facebook de Casa del Pollo"><Icono nombre="facebook-logo" /> Facebook</a>
-          <a href={instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram de Casa del Pollo"><Icono nombre="instagram-logo" /> Instagram</a>
+          <a href={FACEBOOK_URL} target="_blank" rel="noopener noreferrer" aria-label="Facebook de Casa del Pollo"><Icono nombre="facebook-logo" /></a>
+          <a href={instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram de Casa del Pollo"><Icono nombre="instagram-logo" /></a>
         </div>
         <p>© Casa del Pollo</p>
       </div>

@@ -438,6 +438,7 @@ export default function HomeV2Preview() {
   const [heroIdx, setHeroIdx] = useState(0)
   const [bowlsPorSuc, setBowlsPorSuc] = useState({})
   const [avisoBowl, setAvisoBowl] = useState(null)
+  const [menuInfoAbierto, setMenuInfoAbierto] = useState(false)
   const [postersMap, setPostersMap] = useState({})
   const [grupoAbierto, setGrupoAbierto] = useState(null)
   const [stepComplementos, setStepComplementos] = useState(false)
@@ -1283,7 +1284,7 @@ export default function HomeV2Preview() {
 
       <div className="v2-topbar" ref={topbarRef}>
         <div className="v2-tb-pill">
-          <button className="v2-tb-pill-icono" onClick={() => mostrarToast('Menú con Ayuda, Recetas (próximamente) y Ajustes')} aria-label="Menú"><Icono nombre="list" /></button>
+          <button className="v2-tb-pill-icono" onClick={() => setMenuInfoAbierto(true)} aria-label="Información de la sucursal" aria-haspopup="dialog"><Icono nombre="list" /></button>
           <button className="v2-tb-pill-nombre" onClick={() => setSelectorSucursalAbierto(true)} aria-label={`Sucursal ${sucursalActiva.name}, cambiar`}>
             <span className="v2-tb-pill-etiqueta">Sucursal</span>
             <span className="v2-tb-pill-suc">{sucursalActiva.name}</span>
@@ -1674,7 +1675,7 @@ export default function HomeV2Preview() {
           </div>
         )}
 
-        <PieV2 sucursal={sucursalActiva} enlaces={linkDe(sucursalActiva?.name)} schedule={schedule} productos={productosSucursal} bowlsActivo={bowlsActivo} />
+        <PieV2 clase="v2-pie-inline" sucursal={sucursalActiva} enlaces={linkDe(sucursalActiva?.name)} schedule={schedule} productos={productosSucursal} bowlsActivo={bowlsActivo} />
       </div>
 
       {toast && <div className="v2-toast on">{toast}</div>}
@@ -2473,6 +2474,19 @@ export default function HomeV2Preview() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {menuInfoAbierto && (
+        <div className="v2-sheet-overlay on" onClick={(e) => { if (e.target === e.currentTarget) setMenuInfoAbierto(false) }}>
+          <div className="v2-sheet v2-sheet-info" role="dialog" aria-modal="true" aria-label={`Información de ${sucursalActiva?.name}`}>
+            <div className="v2-sheet-handle" />
+            <div className="v2-sheet-cabecera">
+              <div className="v2-sheet-titulo">Información de {sucursalActiva?.name}</div>
+              <button className="v2-grupo-sheet-cerrar" onClick={() => setMenuInfoAbierto(false)} aria-label="Cerrar">✕</button>
+            </div>
+            <PieV2 clase="v2-pie-en-hoja" sucursal={sucursalActiva} enlaces={linkDe(sucursalActiva?.name)} schedule={schedule} productos={productosSucursal} bowlsActivo={bowlsActivo} />
           </div>
         </div>
       )}
