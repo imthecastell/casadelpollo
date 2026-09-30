@@ -18,6 +18,11 @@
   --dorado: #F0A020;
   --dorado-claro: #F7B84D;
   --crema: #FFF7EA;
+  /* Tipografía de la marca fija en la V2: el diseño de cada sucursal (admin)
+     puede traer otra fuente que esta app no carga, y sin ella los títulos
+     caían a una fuente con serif. */
+  --font-title: 'Plus Jakarta Sans';
+  --font-body: 'DM Sans';
 }
 
 .v2-cargando {
