@@ -21,9 +21,8 @@
     display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr);
   }
   .v2-topbar { grid-row: 1; padding: 14px var(--v2-gutter) 12px; border-bottom: 0; }
-  /* En teléfono la barra absorbe el color de la banda que pasa detrás (inline); con las
-     pestañas debajo ya no hay nada que pase detrás de ella, así que se queda crema. */
-  .v2-topbar { background: var(--crema) !important; }
+  /* La barra y las pestañas toman el color de la banda que pasa detrás (--cab-color lo fija el JSX). */
+  .v2-topbar, .v2-tabbar { background: var(--cab-color, var(--crema)); transition: background-color .35s ease; }
   .v2-tabbar { grid-row: 2; }
   .v2-contenido { grid-row: 3; min-height: 0; }
 
@@ -39,15 +38,15 @@
 
   /* Pestañas: de barra inferior a navegación horizontal bajo el encabezado. */
   .v2-tabbar {
-    justify-content: center; gap: 6px; padding: 8px var(--v2-gutter);
-    border-top: 0; border-bottom: 1px solid rgba(0,0,0,.06);
+    justify-content: center; gap: 6px; padding: 0 var(--v2-gutter) 10px;
+    border-top: 0; border-bottom: 0;
   }
   .v2-tab {
     flex: 0 0 auto; flex-direction: row; gap: 8px; padding: 9px 18px; border-radius: 999px;
-    transition: background-color .15s ease;
+    color: var(--cab-txt, var(--texto-suave)); transition: background-color .15s ease;
   }
-  .v2-tab:hover { background: var(--gris-claro); }
-  .v2-tab.on { background: color-mix(in srgb, var(--rojo) 10%, #fff); }
+  .v2-tab:hover { background: rgba(255,255,255,.28); }
+  .v2-tab.on { background: rgba(255,255,255,.92); color: var(--rojo); }
   .v2-ticono { font-size: 17px; }
   .v2-tlabel { font-size: 13.5px; }
   /* "Crear pedido": el botón circular flotante pasa a ser una píldora roja. */
@@ -74,49 +73,39 @@
   .v2-pantalla-sucursales .v2-suc-full { display: inline-block; width: calc(50% - 8px); vertical-align: top; margin-right: 12px; }
   .v2-pantalla-sucursales .v2-suc-full:nth-of-type(even) { margin-right: 0; }
 
-  /* ---- Home: carrusel principal como banner ancho ---- */
+  /* ---- Home: carrusel principal como héroe dividido (texto a la izquierda, foto a la derecha) ---- */
   .v2-carrusel-promo {
-    margin: 0 0 32px; border-radius: 28px; aspect-ratio: auto; width: 100%; height: clamp(320px, 45vw, 540px);
+    margin: 0 0 36px; border-radius: 0; background: transparent; overflow: visible;
+    aspect-ratio: auto; width: 100%; height: clamp(340px, 34vw, 440px);
   }
-  .v2-promo-foto-completa { object-position: center 38%; }
-  /* El bowl es una foto vertical: en el banner ancho se recorta enfocando el tazón. */
+  .v2-promo-slide { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); gap: 44px; align-items: center; cursor: default; }
+  .v2-promo-foto-completa {
+    position: relative; inset: auto; grid-column: 2; grid-row: 1; width: 100%; height: 100%;
+    border-radius: 28px; object-position: center 40%; box-shadow: 0 6px 16px rgba(42,15,11,.12), 0 24px 60px rgba(42,15,11,.22);
+  }
   .v2-promo-slide-bowl .v2-promo-foto-completa { height: 100%; object-position: center 66%; }
   .v2-promo-tarjeta {
-    left: 32px; right: auto; bottom: 32px; width: min(480px, calc(100% - 64px)); padding: 20px 22px;
-    border-radius: 22px; gap: 18px;
+    position: static; grid-column: 1; grid-row: 1; width: auto; padding: 0; background: transparent; box-shadow: none;
+    border-radius: 0; flex-direction: column; align-items: flex-start; gap: 22px;
   }
-  .v2-promo-tarjeta h3 { font-size: 24px; margin-bottom: 6px; }
-  .v2-promo-tarjeta p { font-size: 13px; }
-  .v2-promo-cta { padding: 12px 22px; font-size: 13.5px; }
-  .v2-promo-badge { font-size: 11px; }
-  .v2-carrusel-dots { top: 20px; right: 22px; }
+  .v2-promo-tarjeta h3 { font-size: clamp(32px, 4.6vw, 54px); line-height: 1.02; margin-bottom: 12px; }
+  .v2-promo-tarjeta p { font-size: 17px; line-height: 1.45; max-width: 44ch; }
+  .v2-promo-cta { padding: 14px 28px; font-size: 14.5px; }
+  .v2-promo-badge { font-size: 11px; margin-bottom: 12px; }
+  .v2-carrusel-dots { top: auto; bottom: -22px; left: 0; right: auto; }
+  .v2-cdot { background: rgba(42,15,11,.2); }
+  .v2-cdot.on { background: var(--rojo); }
 
   /* Bandas de color: siguen de borde a borde, el contenido queda en el ancho máximo. */
   .v2-banda { margin-inline: calc(-1 * var(--v2-gutter)); padding: 36px var(--v2-gutter) 44px; }
   .v2-banda .v2-seccion-titulo { font-size: 24px; }
 
-  /* Marinados más pedidos: las 2 filas deslizables pasan a una cuadrícula. */
-  .v2-grid-2filas {
-    grid-template-rows: none; grid-auto-flow: row; grid-auto-columns: auto;
-    grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 18px;
-    overflow: visible; padding: 0; margin: 0; justify-content: stretch;
-  }
-  .v2-tile-mini2 { border-radius: 18px; box-shadow: 4px 4px 0 var(--cafe); transition: transform .15s ease; }
-  .v2-tile-mini2:hover { transform: translateY(-3px); }
-  .v2-tile-mini2 .v2-card-barra { height: 56px; padding: 10px 14px; }
-  .v2-tile-mini2 .v2-card-barra-nombre { font-size: 14px; }
+  /* Marinados y Preparados: cuadrícula que se llena según el ancho. */
+  .v2-grid-2filas, .v2-strip-grandes { grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 18px; }
+  .v2-tile-mini2 .v2-card-barra-nombre, .v2-tarjeta-grande-strip .v2-card-barra-nombre { font-size: 15px; }
   .v2-titulo-fila .v2-seccion-titulo { margin-bottom: 0; }
   .v2-titulo-fila { margin-bottom: 18px; }
 
-  /* Preparados: de tira deslizable a cuadrícula. */
-  .v2-strip-grandes {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 18px;
-    overflow: visible; padding: 0; margin: 0;
-  }
-  .v2-tarjeta-grande-strip { width: auto; border-radius: 20px; box-shadow: 5px 5px 0 var(--cafe); transition: transform .15s ease; }
-  .v2-tarjeta-grande-strip:hover { transform: translateY(-3px); }
-  .v2-tarjeta-grande-strip .v2-card-barra { flex-direction: column; align-items: flex-start; gap: 6px; padding: 12px 14px; }
-  .v2-tarjeta-grande-strip .v2-card-barra-nombre { font-size: 14px; }
   .v2-ts-precio-pill { font-size: 12px; padding: 5px 12px; }
 
   /* Bowls: foto a la izquierda y panel a la derecha. */
@@ -175,11 +164,6 @@
   .v2-selector-inicial-sub { font-size: 15px; }
 }
 
-/* Escritorio ancho: una columna más en las cuadrículas de producto. */
-@media (min-width: 1040px) {
-  .v2-tile-mini2 .v2-card-barra { height: 52px; padding: 8px 10px; }
-  .v2-tile-mini2 .v2-card-barra-nombre { font-size: 13px; }
-}
 
 @media (min-width: 720px) and (prefers-reduced-motion: reduce) {
   .v2-tile-mini2, .v2-tarjeta-grande-strip, .v2-tarjeta-simple, .v2-tab-central-wrap { transition: none; }
