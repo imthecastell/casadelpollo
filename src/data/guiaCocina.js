@@ -55,14 +55,34 @@ const esMarinado = (p) => p?.category_name === 'Marinados'
 const tienePasos = (m) => Array.isArray(m?.pasos) && m.pasos.length > 0
 
 // Tiempos propios por tipo de producto (solo horno y airfryer, que son los métodos con tiempo).
+// Los empanizados llevan además su propio sartén (aceite en spray, tapado y luego voltear).
+// Hamburguesa y medallón suelen ir al sartén o a la parrilla: solo se ofrece la airfryer.
+const SARTEN_EMPANIZADOS = {
+  resumen: 'Fuego medio',
+  intro: '',
+  pasos: [
+    'Rocía un poco de aceite en spray en el sartén y coloca el producto a fuego medio.',
+    'Tapa para que se cocine primero al vapor.',
+    'Voltea el producto y cocina hasta obtener el dorado deseado.',
+  ],
+}
+
 const TIEMPOS = [
   { match: /chiles? rellenos?/i, cocina: '12 a 15', resumen: '12 a 15' },
   { match: /pechuga rellena|rollo relleno/i, cocina: '15', extra: 5, resumen: '15 a 20' },
-  { match: /empanada|nugget|tender|trozos de pollo|empanizada/i, cocina: '10 a 12', resumen: '10 a 12' },
+  { match: /hamburguesa|medall[oó]n/i, cocina: '10 a 12', resumen: '10 a 12', soloAirfryer: true },
+  { match: /empanada|nugget|tender|trozos de pollo|empanizada/i, cocina: '10 a 12', resumen: '10 a 12', sarten: SARTEN_EMPANIZADOS },
 ]
 
+// Sin guía estándar: las albóndigas van en caldo y la milanesa natural la cocina el cliente como quiera.
+const sinGuiaEstandar = (p) =>
+  /alb[oó]ndigas/i.test(p?.name || '') || (p?.category_name === 'Milanesas' && /natural|aplanada/i.test(p?.name || ''))
+
+const tipoDe = (p) => TIEMPOS.find(x => x.match.test(p?.name || ''))
+
 function conTiempos(metodo, id, p) {
-  const t = TIEMPOS.find(x => x.match.test(p?.name || ''))
+  const t = tipoDe(p)
+  if (t?.sarten && id === 'sarten') return { ...metodo, ...t.sarten }
   if (!t || (id !== 'horno' && id !== 'airfryer')) return metodo
   const horno = id === 'horno'
   const pasos = [metodo.pasos[0], `${horno ? 'Hornea a 180\u00a0°C por' : 'Cocina'} ${t.cocina} minutos.`]
@@ -89,17 +109,19 @@ function adaptar(metodo, id, p) {
 
 // Marinados, Preparados y Milanesas siempre; el resto solo si tiene al menos un método propio.
 export const guiaDisponible = (p) =>
-  CATEGORIAS_CON_GUIA.includes(p?.category_name) || METODOS.some(m => tienePasos(p?.guia_cocina?.[m.id]))
+  (CATEGORIAS_CON_GUIA.includes(p?.category_name) && !sinGuiaEstandar(p)) || METODOS.some(m => tienePasos(p?.guia_cocina?.[m.id]))
 
 // { metodos: [{ id, nombre, icono, resumen, intro?, pasos, nota?, propia }], notas: [] }
 export function guiaDe(p) {
-  const plantilla = CATEGORIAS_CON_GUIA.includes(p?.category_name) ? MARINADOS : {}
+  const plantilla = CATEGORIAS_CON_GUIA.includes(p?.category_name) && !sinGuiaEstandar(p) ? MARINADOS : {}
+  const soloAirfryer = !esMarinado(p) && tipoDe(p)?.soloAirfryer
 
   const metodos = METODOS.map(m => {
     const propia = p?.guia_cocina?.[m.id]
     if (tienePasos(propia)) {
       return { ...m, resumen: propia.resumen || '', pasos: propia.pasos, propia: true }
     }
+    if (soloAirfryer && m.id !== 'airfryer' && !tienePasos(propia)) return null
     return tienePasos(plantilla[m.id]) ? { ...m, ...adaptar(plantilla[m.id], m.id, p), propia: false } : null
   }).filter(Boolean)
 
