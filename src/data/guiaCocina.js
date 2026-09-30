@@ -54,14 +54,37 @@ const esMarinado = (p) => p?.category_name === 'Marinados'
 
 const tienePasos = (m) => Array.isArray(m?.pasos) && m.pasos.length > 0
 
+// Tiempos propios por tipo de producto (solo horno y airfryer, que son los métodos con tiempo).
+const TIEMPOS = [
+  { match: /chiles? rellenos?/i, cocina: '12 a 15', resumen: '12 a 15' },
+  { match: /pechuga rellena|rollo relleno/i, cocina: '15', extra: 5, resumen: '15 a 20' },
+  { match: /empanada|nugget|tender|trozos de pollo|empanizada/i, cocina: '10 a 12', resumen: '10 a 12' },
+]
+
+function conTiempos(metodo, id, p) {
+  const t = TIEMPOS.find(x => x.match.test(p?.name || ''))
+  if (!t || (id !== 'horno' && id !== 'airfryer')) return metodo
+  const horno = id === 'horno'
+  const pasos = [metodo.pasos[0], `${horno ? 'Hornea a 180\u00a0°C por' : 'Cocina'} ${t.cocina} minutos.`]
+  if (t.extra) {
+    pasos.push(`Voltea el producto y ${horno ? 'hornea' : 'cocina'} ${t.extra} minutos más para que se dore por el otro lado.`)
+    pasos.push(horno ? 'Si aún le falta, déjalo unos minutos más.' : 'Si aún le falta, agrega de 3 a 5 minutos más.')
+  } else {
+    pasos.push('A la mitad del tiempo, voltea el producto.')
+    pasos.push(horno ? 'Si aún le falta, déjalo 5 minutos más.' : 'Si aún le falta, agrega de 3 a 5 minutos más.')
+  }
+  const temp = horno ? '180\u00a0°C' : '365\u00a0°F (aprox. 185\u00a0°C)'
+  return { ...metodo, pasos, resumen: `${temp} · ${t.resumen} min*` }
+}
+
 // Fuera de Marinados es el mismo texto, sin decir "marinado" ni hablar de su salsa.
-function adaptar(metodo, p) {
+function adaptar(metodo, id, p) {
   if (esMarinado(p)) return metodo
   const t = (s) => s
     .replace(' para que la salsa quede en su punto', '')
     .replace('salsa del marinado', 'salsa')
     .replace(/\bel marinado/g, 'el producto')
-  return { ...metodo, intro: metodo.intro && t(metodo.intro), pasos: metodo.pasos.map(t) }
+  return conTiempos({ ...metodo, intro: metodo.intro && t(metodo.intro), pasos: metodo.pasos.map(t) }, id, p)
 }
 
 // Marinados, Preparados y Milanesas siempre; el resto solo si tiene al menos un método propio.
@@ -77,7 +100,7 @@ export function guiaDe(p) {
     if (tienePasos(propia)) {
       return { ...m, resumen: propia.resumen || '', pasos: propia.pasos, propia: true }
     }
-    return tienePasos(plantilla[m.id]) ? { ...m, ...adaptar(plantilla[m.id], p), propia: false } : null
+    return tienePasos(plantilla[m.id]) ? { ...m, ...adaptar(plantilla[m.id], m.id, p), propia: false } : null
   }).filter(Boolean)
 
   const usaEstandar = metodos.some(m => !m.propia)
