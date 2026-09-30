@@ -12,6 +12,7 @@ import { armarMensajeWhatsapp } from '../data/pedidoWhatsapp.js'
 import { codificarQR } from '../data/lealtadQR.js'
 import { fotoCruda, fotoCocinada } from '../data/fotos.js'
 import '../styles/homeV2.css'
+import '../styles/homeV2Adaptativo.css'
 import '../styles/menu.css'
 
 const MARINADO_MIN = 200
@@ -1364,7 +1365,7 @@ export default function HomeV2Preview() {
         )}
 
         {tab === 'productos' && (
-          <div className="v2-pantalla">
+          <div className="v2-pantalla v2-pantalla-productos">
             <div className="v2-pills">
               <div className="v2-pill-fondo" style={{ transform: `translateX(${CATEGORIAS.findIndex(c => c.key === categoria) * 100}%)` }} />
               {CATEGORIAS.map(c => (
@@ -1435,7 +1436,7 @@ export default function HomeV2Preview() {
         )}
 
         {tab === 'sucursales' && (
-          <div className="v2-pantalla">
+          <div className="v2-pantalla v2-pantalla-angosta v2-pantalla-sucursales">
             <div className="v2-saludo">Sucursales</div>
             <div className="v2-saludo-sub">Las {sucursales.length}, sin recortar</div>
 
@@ -1478,7 +1479,7 @@ export default function HomeV2Preview() {
         )}
 
         {tab === 'lealtad' && (
-          <div className="v2-pantalla">
+          <div className="v2-pantalla v2-pantalla-angosta">
             <div className="v2-saludo">Lealtad</div>
 
             {!lealtad ? (
@@ -1838,8 +1839,8 @@ export default function HomeV2Preview() {
       <div className="v2-tabbar">
         <button className={`v2-tab${tab === 'home' ? ' on' : ''}`} onClick={() => cambiarTab('home')}><span className="v2-ticono">🏠</span><span className="v2-tlabel">Home</span></button>
         <button className={`v2-tab${tab === 'productos' ? ' on' : ''}`} onClick={() => cambiarTab('productos')}><span className="v2-ticono">📋</span><span className="v2-tlabel">Productos</span></button>
-        <div className="v2-tab-central-wrap">
-          <div className="v2-tab-central" onClick={abrirAsistente}>🍗</div>
+        <div className="v2-tab-central-wrap" onClick={abrirAsistente}>
+          <div className="v2-tab-central">🍗</div>
           <div className="v2-tab-central-label">Crear pedido</div>
         </div>
         <button className={`v2-tab${tab === 'sucursales' ? ' on' : ''}`} onClick={() => cambiarTab('sucursales')}><span className="v2-ticono">📍</span><span className="v2-tlabel">Sucursales</span></button>

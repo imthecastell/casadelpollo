@@ -1,0 +1,187 @@
+/* Versión adaptativa de la V2 (tablet y escritorio).
+   Todo vive dentro de @media (min-width: 720px): por debajo de ese ancho la
+   V2 se ve EXACTAMENTE como antes (columna de 480px para teléfono). Se carga
+   después de homeV2.css, así que gana por orden a igual especificidad.
+
+   Idea: la columna de 480px pasa a ser un lienzo fluido. El contenido se
+   centra en un ancho máximo (--v2-ancho) con un margen lateral (--v2-gutter)
+   y las bandas de color siguen llegando de borde a borde. La barra de
+   pestañas sube debajo de la barra superior y las hojas inferiores pasan a
+   ser ventanas centradas. */
+
+@media (min-width: 720px) {
+  .v2-shell-root {
+    --v2-ancho: 1160px;
+    --v2-gutter: max(28px, calc((100vw - var(--v2-ancho)) / 2));
+  }
+
+  /* ---- esqueleto: barra superior, pestañas arriba, contenido ---- */
+  .v2-shell {
+    max-width: none; margin: 0;
+    display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr);
+  }
+  .v2-topbar { grid-row: 1; padding: 14px var(--v2-gutter) 12px; border-bottom: 0; }
+  /* En teléfono la barra absorbe el color de la banda que pasa detrás (inline); con las
+     pestañas debajo ya no hay nada que pase detrás de ella, así que se queda crema. */
+  .v2-topbar { background: var(--crema) !important; }
+  .v2-tabbar { grid-row: 2; }
+  .v2-contenido { grid-row: 3; min-height: 0; }
+
+  .v2-tb-pill { padding-right: 16px; }
+  .v2-tb-pill-nombre { max-width: 220px; }
+  .v2-tb-pill-suc { font-size: 14px; }
+  .v2-tb-pill-etiqueta { font-size: 10px; }
+  .v2-tb-logo-crop { height: 42px; }
+  .v2-tb-btn { width: auto; height: 42px; flex-direction: row; gap: 8px; padding: 0 16px; border-radius: 999px; }
+  .v2-tb-btn-icono { font-size: 16px; }
+  .v2-tb-btn-etiqueta { font-size: 12px; }
+  .v2-tb-badge { top: -4px; right: -2px; }
+
+  /* Pestañas: de barra inferior a navegación horizontal bajo el encabezado. */
+  .v2-tabbar {
+    justify-content: center; gap: 6px; padding: 8px var(--v2-gutter);
+    border-top: 0; border-bottom: 1px solid rgba(0,0,0,.06);
+  }
+  .v2-tab {
+    flex: 0 0 auto; flex-direction: row; gap: 8px; padding: 9px 18px; border-radius: 999px;
+    transition: background-color .15s ease;
+  }
+  .v2-tab:hover { background: var(--gris-claro); }
+  .v2-tab.on { background: color-mix(in srgb, var(--rojo) 10%, #fff); }
+  .v2-ticono { font-size: 17px; }
+  .v2-tlabel { font-size: 13.5px; }
+  /* "Crear pedido": el botón circular flotante pasa a ser una píldora roja. */
+  .v2-tab-central-wrap {
+    flex: 0 0 auto; flex-direction: row; gap: 8px; margin: 0 12px; padding: 10px 22px 10px 18px;
+    background: var(--rojo); border-radius: 999px; cursor: pointer; box-shadow: 0 6px 16px rgba(146,43,33,.3);
+    transition: transform .15s ease;
+  }
+  .v2-tab-central-wrap:hover { transform: translateY(-1px); }
+  .v2-tab-central {
+    width: auto; height: auto; margin: 0; border: 0; background: none; box-shadow: none; font-size: 17px;
+  }
+  .v2-tab-central-label { margin: 0; color: #fff; font-size: 13.5px; }
+
+  /* ---- pantallas ---- */
+  .v2-pantalla { padding: 28px var(--v2-gutter) 56px; }
+  .v2-pantalla-home { padding-top: 24px; }
+  .v2-saludo { font-size: 28px; }
+  .v2-saludo-sub { font-size: 14px; margin-bottom: 22px; }
+  .v2-seccion-titulo { font-size: 22px; margin-bottom: 18px; }
+  /* Sucursales y Lealtad son pantallas de lectura: no se estiran a todo el ancho. */
+  .v2-pantalla-angosta { max-width: calc(760px + 2 * 28px); margin-inline: auto; padding-inline: 28px; }
+  .v2-pantalla-sucursales { max-width: calc(1000px + 2 * 28px); }
+  .v2-pantalla-sucursales .v2-suc-full { display: inline-block; width: calc(50% - 8px); vertical-align: top; margin-right: 12px; }
+  .v2-pantalla-sucursales .v2-suc-full:nth-of-type(even) { margin-right: 0; }
+
+  /* ---- Home: carrusel principal como banner ancho ---- */
+  .v2-carrusel-promo {
+    margin: 0 0 32px; border-radius: 28px; aspect-ratio: auto; width: 100%; height: clamp(320px, 45vw, 540px);
+  }
+  .v2-promo-foto-completa { object-position: center 38%; }
+  /* El bowl es una foto vertical: en el banner ancho se recorta enfocando el tazón. */
+  .v2-promo-slide-bowl .v2-promo-foto-completa { height: 100%; object-position: center 66%; }
+  .v2-promo-tarjeta {
+    left: 32px; right: auto; bottom: 32px; width: min(480px, calc(100% - 64px)); padding: 20px 22px;
+    border-radius: 22px; gap: 18px;
+  }
+  .v2-promo-tarjeta h3 { font-size: 24px; margin-bottom: 6px; }
+  .v2-promo-tarjeta p { font-size: 13px; }
+  .v2-promo-cta { padding: 12px 22px; font-size: 13.5px; }
+  .v2-promo-badge { font-size: 11px; }
+  .v2-carrusel-dots { top: 20px; right: 22px; }
+
+  /* Bandas de color: siguen de borde a borde, el contenido queda en el ancho máximo. */
+  .v2-banda { margin-inline: calc(-1 * var(--v2-gutter)); padding: 36px var(--v2-gutter) 44px; }
+  .v2-banda .v2-seccion-titulo { font-size: 24px; }
+
+  /* Marinados más pedidos: las 2 filas deslizables pasan a una cuadrícula. */
+  .v2-grid-2filas {
+    grid-template-rows: none; grid-auto-flow: row; grid-auto-columns: auto;
+    grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 18px;
+    overflow: visible; padding: 0; margin: 0; justify-content: stretch;
+  }
+  .v2-tile-mini2 { border-radius: 18px; box-shadow: 4px 4px 0 var(--cafe); transition: transform .15s ease; }
+  .v2-tile-mini2:hover { transform: translateY(-3px); }
+  .v2-tile-mini2 .v2-card-barra { height: 56px; padding: 10px 14px; }
+  .v2-tile-mini2 .v2-card-barra-nombre { font-size: 14px; }
+  .v2-titulo-fila .v2-seccion-titulo { margin-bottom: 0; }
+  .v2-titulo-fila { margin-bottom: 18px; }
+
+  /* Preparados: de tira deslizable a cuadrícula. */
+  .v2-strip-grandes {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 18px;
+    overflow: visible; padding: 0; margin: 0;
+  }
+  .v2-tarjeta-grande-strip { width: auto; border-radius: 20px; box-shadow: 5px 5px 0 var(--cafe); transition: transform .15s ease; }
+  .v2-tarjeta-grande-strip:hover { transform: translateY(-3px); }
+  .v2-tarjeta-grande-strip .v2-card-barra { flex-direction: column; align-items: flex-start; gap: 6px; padding: 12px 14px; }
+  .v2-tarjeta-grande-strip .v2-card-barra-nombre { font-size: 14px; }
+  .v2-ts-precio-pill { font-size: 12px; padding: 5px 12px; }
+
+  /* Bowls: foto a la izquierda y panel a la derecha. */
+  .v2-bowl-hibrido { flex-direction: row; min-height: 320px; }
+  .v2-bowl-hibrido-foto { flex: 0 0 46%; width: auto; aspect-ratio: auto; }
+  .v2-bowl-hibrido-panel { padding: 32px 36px; justify-content: center; }
+  .v2-bowl-hibrido-panel h3 { font-size: 34px; }
+  .v2-bowl-hibrido-panel .v2-promo-fila { margin-top: 24px; padding-top: 0; }
+
+  /* ---- Productos ---- */
+  .v2-pantalla-productos .v2-pills { max-width: 560px; margin: 0 auto 26px; }
+  .v2-pill { font-size: 13px; padding: 11px 4px; }
+  .v2-bowls-cta { max-width: 760px; margin-inline: auto; }
+  .v2-grid-simple { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+  .v2-tarjeta-simple { border-radius: 20px; transition: transform .15s ease; }
+  .v2-tarjeta-simple:hover { transform: translateY(-3px); }
+  .v2-ts-nombre { font-size: 15px; }
+  .v2-ts-overlay { padding: 14px; }
+  .v2-idea-card { max-width: 760px; margin-inline: auto; }
+
+  /* ---- hojas inferiores -> ventanas centradas ---- */
+  .v2-sheet-overlay { max-width: none; margin: 0; align-items: center; justify-content: center; padding: 24px; }
+  .v2-sheet { width: min(520px, 100%); border-radius: 28px; padding: 14px 26px 28px; animation: v2-sheet-pop .2s ease; max-height: 88vh; }
+  .v2-sheet-handle { display: none; }
+  @keyframes v2-sheet-pop { from { transform: translateY(14px) scale(.98); opacity: 0; } to { transform: none; opacity: 1; } }
+  .v2-carrito-lista { max-height: 50vh; }
+
+  .v2-grupo-overlay { align-items: center; justify-content: center; padding: 24px; }
+  .v2-grupo-sheet { width: min(560px, 100%); border-radius: 28px; padding: 26px 26px 30px; max-height: 88vh; }
+  .v2-confirmar-overlay { max-width: none; margin: 0; }
+
+  /* Asistente de pedido y buscador: panel centrado sobre fondo atenuado. */
+  .v2-asistente, .v2-buscador-overlay {
+    inset: 4vh 0; width: min(720px, calc(100% - 48px)); max-width: none; margin: 0 auto;
+    border-radius: 28px; overflow: hidden; box-shadow: 0 30px 80px rgba(0, 0, 0, .35);
+  }
+  /* Velo que atenúa la página detrás del panel (un escalón por debajo de cada panel). */
+  body:has(.v2-asistente)::before, body:has(.v2-buscador-overlay)::before {
+    content: ''; position: fixed; inset: 0; background: rgba(20, 8, 6, .55); z-index: 940;
+  }
+  body:has(.v2-buscador-overlay):not(:has(.v2-asistente))::before { z-index: 55; }
+  .v2-asistente-header { padding: 18px 22px 14px; }
+  .v2-asistente-contenido { padding: 24px 28px 32px; }
+  .v2-asistente-titulo { font-size: 24px; }
+  .v2-asistente-complementos { grid-template-columns: repeat(3, 1fr); }
+  .v2-asistente-complemento img { height: 110px; }
+  .v2-asistente-confirmado { padding-top: 48px; }
+
+  .v2-toast { bottom: 40px; }
+
+  /* ---- pantalla inicial: elegir sucursal ---- */
+  .v2-selector-inicial { max-width: none; }
+  .v2-selector-inicial-contenido { align-items: center; padding-inline: 28px; }
+  .v2-selector-inicial-contenido > * { width: min(560px, 100%); }
+  .v2-selector-inicial-titulo { font-size: 32px; }
+  .v2-selector-inicial-sub { font-size: 15px; }
+}
+
+/* Escritorio ancho: una columna más en las cuadrículas de producto. */
+@media (min-width: 1040px) {
+  .v2-tile-mini2 .v2-card-barra { height: 52px; padding: 8px 10px; }
+  .v2-tile-mini2 .v2-card-barra-nombre { font-size: 13px; }
+}
+
+@media (min-width: 720px) and (prefers-reduced-motion: reduce) {
+  .v2-tile-mini2, .v2-tarjeta-grande-strip, .v2-tarjeta-simple, .v2-tab-central-wrap { transition: none; }
+  .v2-sheet { animation: none; }
+}
