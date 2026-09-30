@@ -3,6 +3,8 @@ import QRCode from 'qrcode'
 import { useApp } from '../data/AppContext.jsx'
 import { getDesign } from '../data/api.js'
 import LogoSlot from '../Components/LogoSlot.jsx'
+import Icono from '../Components/Icono.jsx'
+import PieV2 from '../Components/PieV2.jsx'
 import AvisoAirfryer from '../Components/AvisoAirfryer.jsx'
 import { tagsDe } from '../data/productTags'
 import { MarimadoImg } from '../Components/SeccionMarinados.jsx'
@@ -1281,7 +1283,7 @@ export default function HomeV2Preview() {
 
       <div className="v2-topbar" ref={topbarRef}>
         <div className="v2-tb-pill">
-          <button className="v2-tb-pill-icono" onClick={() => mostrarToast('Menú con Ayuda, Recetas (próximamente) y Ajustes')}>☰</button>
+          <button className="v2-tb-pill-icono" onClick={() => mostrarToast('Menú con Ayuda, Recetas (próximamente) y Ajustes')} aria-label="Menú"><Icono nombre="list" /></button>
           <button className="v2-tb-pill-nombre" onClick={() => setSelectorSucursalAbierto(true)} aria-label={`Sucursal ${sucursalActiva.name}, cambiar`}>
             <span className="v2-tb-pill-etiqueta">Sucursal</span>
             <span className="v2-tb-pill-suc">{sucursalActiva.name}</span>
@@ -1300,11 +1302,11 @@ export default function HomeV2Preview() {
         </div>
         <div className="v2-tb-derecha">
           <button className="v2-tb-btn" onClick={() => setMostrarBuscador(true)}>
-            <span className="v2-tb-btn-icono" aria-hidden="true">🔍</span>
+            <span className="v2-tb-btn-icono" aria-hidden="true"><Icono nombre="magnifying-glass" /></span>
             <span className="v2-tb-btn-etiqueta">Buscar</span>
           </button>
           <button className="v2-tb-btn" onClick={() => setMostrarCarrito(true)}>
-            <span className="v2-tb-btn-icono" aria-hidden="true">🛒</span>
+            <span className="v2-tb-btn-icono" aria-hidden="true"><Icono nombre="shopping-cart" /></span>
             <span className="v2-tb-btn-etiqueta">Carrito</span>
             {carrito.length > 0 && <span className="v2-tb-badge">{carrito.length}</span>}
           </button>
@@ -1452,7 +1454,7 @@ export default function HomeV2Preview() {
             </div>
 
             {bowlsActivo && <div className="v2-bowls-cta" onClick={() => abrirBowlDirecto()}>
-              <div className="v2-bowls-emoji">🥗</div>
+              <div className="v2-bowls-emoji"><Icono nombre="bowl-food" /></div>
               <div className="v2-bowls-txt">
                 <strong>¿Poco tiempo? Pide un Bowl</strong>
                 <span>Base + marinado + tu toque, listo en minutos</span>
@@ -1672,6 +1674,7 @@ export default function HomeV2Preview() {
           </div>
         )}
 
+        <PieV2 sucursal={sucursalActiva} enlaces={linkDe(sucursalActiva?.name)} schedule={schedule} productos={productosSucursal} bowlsActivo={bowlsActivo} />
       </div>
 
       {toast && <div className="v2-toast on">{toast}</div>}
@@ -1913,14 +1916,14 @@ export default function HomeV2Preview() {
       {mostrarAvisoSel && <AvisoAirfryer onCerrar={() => setMostrarAvisoSel(false)} />}
 
       <div className="v2-tabbar">
-        <button className={`v2-tab${tab === 'home' ? ' on' : ''}`} onClick={() => cambiarTab('home')}><span className="v2-ticono">🏠</span><span className="v2-tlabel">Home</span></button>
-        <button className={`v2-tab${tab === 'productos' ? ' on' : ''}`} onClick={() => cambiarTab('productos')}><span className="v2-ticono">📋</span><span className="v2-tlabel">Productos</span></button>
+        <button className={`v2-tab${tab === 'home' ? ' on' : ''}`} onClick={() => cambiarTab('home')}><span className="v2-ticono"><Icono nombre="house" relleno={tab === 'home'} /></span><span className="v2-tlabel">Home</span></button>
+        <button className={`v2-tab${tab === 'productos' ? ' on' : ''}`} onClick={() => cambiarTab('productos')}><span className="v2-ticono"><Icono nombre="fork-knife" relleno={tab === 'productos'} /></span><span className="v2-tlabel">Productos</span></button>
         <div className="v2-tab-central-wrap" onClick={abrirAsistente}>
-          <div className="v2-tab-central">🍗</div>
+          <div className="v2-tab-central"><Icono nombre="pollo" /></div>
           <div className="v2-tab-central-label">Crear pedido</div>
         </div>
-        <button className={`v2-tab${tab === 'sucursales' ? ' on' : ''}`} onClick={() => cambiarTab('sucursales')}><span className="v2-ticono">📍</span><span className="v2-tlabel">Sucursales</span></button>
-        <button className={`v2-tab${tab === 'lealtad' ? ' on' : ''}`} onClick={() => cambiarTab('lealtad')}><span className="v2-ticono">🎁</span><span className="v2-tlabel">Lealtad</span></button>
+        <button className={`v2-tab${tab === 'sucursales' ? ' on' : ''}`} onClick={() => cambiarTab('sucursales')}><span className="v2-ticono"><Icono nombre="storefront" relleno={tab === 'sucursales'} /></span><span className="v2-tlabel">Sucursales</span></button>
+        <button className={`v2-tab${tab === 'lealtad' ? ' on' : ''}`} onClick={() => cambiarTab('lealtad')}><span className="v2-ticono"><Icono nombre="gift" relleno={tab === 'lealtad'} /></span><span className="v2-tlabel">Lealtad</span></button>
       </div>
     </div>
 
