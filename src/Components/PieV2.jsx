@@ -1,8 +1,7 @@
 import Icono from './Icono.jsx'
-import { guiaDe, guiaDisponible } from '../data/guiaCocina.js'
 
-/* Pie de la tienda V2: datos de la sucursal activa (horario y si está abierta,
-   servicios, dirección), cómo se paga, una sugerencia de cocinado y redes. */
+/* Pie de la tienda V2: datos de la sucursal activa (dirección, horario y si está abierta,
+   servicios), cómo se paga y redes. */
 
 // Facebook: enlace genérico por ahora. Cuando haya página propia de la marca, solo se cambia aquí.
 const FACEBOOK_URL = 'https://www.facebook.com/'
@@ -64,8 +63,6 @@ function gruposHorario(schedule) {
   }))
 }
 
-const ICONO_METODO = { sarten: 'cooking-pot', horno: 'oven', airfryer: 'wind' }
-
 export default function PieV2({ sucursal, enlaces, schedule, productos, bowlsActivo, clase = '' }) {
   if (!sucursal) return null
   const estado = estadoHorario(schedule)
@@ -80,9 +77,6 @@ export default function PieV2({ sucursal, enlaces, schedule, productos, bowlsAct
     { icono: 'basket', texto: 'Pollo fresco', ok: hay('Pollo Fresco') },
     { icono: 'bag', texto: sucursal.pedidos_en_linea === false ? 'Pedidos por WhatsApp' : 'Pedidos en línea', ok: true },
   ]
-  // Sugerencia de cocinado: la guía oficial del primer marinado (o preparado) disponible.
-  const base = disp.find(p => p.category_name === 'Marinados' && guiaDisponible(p)) || disp.find(p => p.category_name === 'Preparados' && guiaDisponible(p))
-  const metodos = base ? guiaDe(base).metodos : []
   const direccion = enlaces?.direccion
   const mapa = enlaces?.googleMaps || enlaces?.appleMaps
   const wa = enlaces?.whatsapp
@@ -124,17 +118,6 @@ export default function PieV2({ sucursal, enlaces, schedule, productos, bowlsAct
           <dd>{PAGOS.map(p => p.texto).join(' · ')}</dd>
         </div>
       </dl>
-
-      {metodos.length > 0 && (
-        <details className="v2-pie-sugerencia">
-          <summary><Icono nombre="lightbulb" /> Sugerencia de cocinado para {base.name}</summary>
-          <ul>
-            {metodos.map(m => (
-              <li key={m.id}><Icono nombre={ICONO_METODO[m.id] || 'cooking-pot'} /><b>{m.nombre}</b><span>{m.resumen}</span></li>
-            ))}
-          </ul>
-        </details>
-      )}
 
       <div className="v2-pie-final">
         <div className="v2-pie-redes">
