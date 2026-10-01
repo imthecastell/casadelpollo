@@ -692,7 +692,6 @@ export default function HomeV2Preview() {
   const preparadosItems = agruparPreparados(
     productos.filter(p => (p.category_name === 'Preparados' || esMilanesaOfrecida(p)) && p.active !== false)
   )
-  const nuevoProducto = productos.find(p => p.is_nuevo && img(p))
   // Igual que MenuPrincipal: sucursales sin bowls (diseno.bowls_enabled =
   // false, ej. El Parque) no muestran ningún acceso a "Arma tu Bowl".
   const bowlsActivo = diseno?.bowls_enabled !== false
@@ -709,11 +708,16 @@ export default function HomeV2Preview() {
     ? productosBuscables.filter(p => coincideBusqueda(p, consultaBusqueda))
     : []
 
+  // Productos estrella del periodo (la estrella del admin, máximo 6 a la vez): se
+  // muestran juntos en "Favoritos del momento" y uno de ellos abre el carrusel.
+  const estrellas = productosBuscables.filter(p => p.is_nuevo).slice(0, 6)
+  const estrellaHero = destacadosDelDia(estrellas, 1, semillaCarga + 3)[0]
+
   const promos = [
-    nuevoProducto && {
-      badge: 'NUEVO', titulo: nuevoProducto.name, desc: 'Recién agregado al menú — pruébalo hoy.',
-      cta: 'Ver marinados', imagen: img(nuevoProducto),
-      accion: () => { cambiarTab('productos'); setCategoria('marinados') },
+    estrellaHero && {
+      badge: 'FAVORITO', titulo: estrellaHero.name, desc: 'Favorito del momento. Pruébalo hoy.',
+      cta: 'Elegir', imagen: img(estrellaHero),
+      accion: () => abrirSeleccion(estrellaHero),
     },
     bowlsActivo && {
       badge: 'BOWLS', titulo: 'Arma tu Bowl', desc: 'Base + marinado + tu toque, listo en minutos.',
@@ -733,7 +737,7 @@ export default function HomeV2Preview() {
   if (promos.length < 4) {
     const titulosUsados = new Set(promos.map(p => p.titulo))
     const deMarinado = marinadosImg
-      .filter(p => p.name !== nuevoProducto?.name)
+      .filter(p => p.name !== estrellaHero?.name)
       .map(p => ({
         badge: 'MARINADO', titulo: p.name, desc: `Listo para cocinar. $${Number(p.price)}/kg.`,
         cta: 'Elegir gramos', imagen: img(p), accion: () => abrirSeleccion(p),
@@ -1335,6 +1339,28 @@ export default function HomeV2Preview() {
                 ))}
                 <div className="v2-carrusel-dots">
                   {promos.map((_, i) => <div key={i} className={`v2-cdot${i === idxHero ? ' on' : ''}`} />)}
+                </div>
+              </div>
+            )}
+
+            {estrellas.length > 0 && (
+              <div className="v2-banda v2-banda-estrella" data-color="#5B3A1E">
+                <div className="v2-titulo-fila">
+                  <div className="v2-seccion-titulo" style={{ margin: 0 }}>Favoritos del momento</div>
+                  <div className="v2-promo-badge" style={{ margin: 0 }}>Estrella</div>
+                </div>
+                <div className={`v2-grid-2filas${estrellas.length <= 3 ? ' v2-grid-pocos' : ''}`} style={{ '--n': estrellas.length }}>
+                  {estrellas.map(p => (
+                    <div key={p.id} className="v2-tile-mini2" onClick={() => abrirSeleccion(p)}>
+                      <div className="v2-card-foto">
+                        {imgV2(p, postersMap) ? <img src={imgV2(p, postersMap)} alt={p.name} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[p.category_name] || '#888' }} />}
+                      </div>
+                      <div className="v2-card-barra">
+                        <div className="v2-card-barra-nombre">{p.name}</div>
+                        <div className="v2-card-meta"><span className="v2-ts-precio-pill">${Number(p.price)}/kg</span><span className="v2-mas" aria-hidden="true">+</span></div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

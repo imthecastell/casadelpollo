@@ -158,6 +158,14 @@
     radial-gradient(ellipse 80% 70% at 105% 110%, var(--cafe) 0%, transparent 62%);
   background-blend-mode: overlay, normal, normal;
 }
+/* Favoritos del momento (productos con estrella): café con la mancha dorada arriba. */
+.v2-banda-estrella {
+  background-color: var(--cafe);
+  background-image: var(--v2-grano),
+    radial-gradient(ellipse 90% 70% at 12% -10%, var(--dorado-claro) 0%, transparent 55%),
+    radial-gradient(ellipse 80% 70% at 105% 110%, var(--rojo) 0%, transparent 62%);
+  background-blend-mode: overlay, normal, normal;
+}
 .v2-banda .v2-seccion-titulo { margin-top: 0; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.15); }
 .v2-banda .v2-suc-strip, .v2-banda .v2-bowl-hibrido, .v2-banda .v2-grid-2filas, .v2-banda .v2-strip-grandes { margin-bottom: 0; }
 
