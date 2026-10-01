@@ -68,6 +68,16 @@ function aleatorioConSemilla(semilla) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296
   }
 }
+// Último bowl pedido en este teléfono, para repetirlo con un toque.
+const CLAVE_ULTIMO_BOWL = 'cdp_ultimo_bowl'
+const MAX_BOWLS_IGUALES = 6
+function leerUltimoBowl() {
+  try { return JSON.parse(localStorage.getItem(CLAVE_ULTIMO_BOWL) || 'null') } catch { return null }
+}
+function guardarUltimoBowl(b) {
+  try { localStorage.setItem(CLAVE_ULTIMO_BOWL, JSON.stringify(b)) } catch { /* sin almacenamiento */ }
+}
+
 function destacadosDelDia(lista, cantidad, semilla) {
   if (lista.length <= cantidad) return lista
   const hoy = new Date().toISOString().slice(0, 10)
@@ -1122,6 +1132,22 @@ export default function HomeV2Preview() {
   const precioTotalBowlAsistente = precioBaseBowlAsistente
     + precioExtraBowlAsistente(bowlBaseAsistente, asistente.bowlExtraBase)
     + precioExtraBowlAsistente(bowlMarinadoAsistente, asistente.bowlExtraMarinado)
+  const cantidadBowl = asistente.bowlCantidad || 1
+  const sinBaseHoy = bowlBasesAsistente.length === 0
+  // "Repetir mi último bowl": solo si la base y el marinado siguen disponibles hoy aquí.
+  const ultimoBowl = leerUltimoBowl()
+  const ultimoBase = ultimoBowl && bowlBasesAsistente.find(x => x.producto.name === ultimoBowl.base)?.producto
+  const ultimoMarinado = ultimoBowl && bowlMarinadosAsistente.find(p => p.name === ultimoBowl.marinado)
+  const puedeRepetirBowl = !!(ultimoBase && ultimoMarinado) && !(
+    String(ultimoBase.id) === asistente.bowlBaseId && String(ultimoMarinado.id) === asistente.bowlMarinadoId
+    && (ultimoBowl.extraBase || 0) === asistente.bowlExtraBase && (ultimoBowl.extraMarinado || 0) === asistente.bowlExtraMarinado
+  )
+  function repetirUltimoBowl() {
+    patchAsistente({
+      bowlBaseId: String(ultimoBase.id), bowlMarinadoId: String(ultimoMarinado.id), bowlMarinadoCat: '',
+      bowlExtraBase: ultimoBowl.extraBase || 0, bowlExtraMarinado: ultimoBowl.extraMarinado || 0,
+    })
+  }
 
   function cambiarExtraBowlAsistente(tipo, delta) {
     const campo = tipo === 'base' ? 'bowlExtraBase' : 'bowlExtraMarinado'
@@ -1131,7 +1157,12 @@ export default function HomeV2Preview() {
 
   function confirmarBowlAsistente() {
     if (!bowlListoAsistente) return
-    agregarAlCarrito({
+    guardarUltimoBowl({
+      base: bowlBaseAsistente.name, marinado: bowlMarinadoAsistente.name,
+      extraBase: asistente.bowlExtraBase, extraMarinado: asistente.bowlExtraMarinado,
+    })
+    // Varios bowls iguales: cada uno es una línea del carrito, como si se armaran por separado.
+    for (let i = 0; i < cantidadBowl; i++) agregarAlCarrito({
       tipo: 'bowl',
       base: bowlBaseAsistente.name,
       marinado: bowlMarinadoAsistente.name,
@@ -2078,6 +2109,20 @@ export default function HomeV2Preview() {
                 <div className="v2-asistente-titulo">Arma tu bowl</div>
                 <p className="v2-asistente-sub">200g de base + 200g de marinado cocinado · extras en intervalos de 50g</p>
 
+                {puedeRepetirBowl && (
+                  <div className="v2-bowl-repetir">
+                    <span>Tu último bowl: <b>{ultimoBase.name}</b> + <b>{ultimoMarinado.name}</b></span>
+                    <button onClick={repetirUltimoBowl}>Repetir</button>
+                  </div>
+                )}
+
+                {sinBaseHoy && (
+                  <div className="v2-bowl-aviso" role="status">
+                    <b>Hoy todavía no hay base lista en {sucursalActiva?.name || 'esta sucursal'}.</b>
+                    <span>El arroz, la pasta y la ensalada del día se confirman por la mañana. Vuelve en un rato o pregunta en la tienda.</span>
+                  </div>
+                )}
+
                 <div className="v2-asistente-bowl-card">
                   <div className="v2-asistente-bowl-head">
                     <span>Base</span>
@@ -2179,13 +2224,22 @@ export default function HomeV2Preview() {
                   )}
                 </div>
 
-                <div className="v2-asistente-recomendacion">
-                  💲 Total del bowl: <b>${precioTotalBowlAsistente.toFixed(2)}</b> · listo en ~{TIEMPO_BOWL_ASISTENTE} min
+                <div className="v2-bowl-barra">
+                  <div className="v2-bowl-barra-fila">
+                    <div className="v2-bowl-barra-total">
+                      <b>${(precioTotalBowlAsistente * cantidadBowl).toFixed(2)}</b>
+                      <span>{cantidadBowl > 1 ? `${cantidadBowl} bowls · ` : ''}listo en ~{TIEMPO_BOWL_ASISTENTE} min</span>
+                    </div>
+                    <div className="cantidad-ctrl" aria-label="Cantidad de bowls iguales">
+                      <button className="cantidad-btn" onClick={() => patchAsistente({ bowlCantidad: Math.max(1, cantidadBowl - 1) })} disabled={cantidadBowl <= 1} aria-label="Menos bowls">−</button>
+                      <span className="cantidad-num">{cantidadBowl}</span>
+                      <button className="cantidad-btn" onClick={() => patchAsistente({ bowlCantidad: Math.min(MAX_BOWLS_IGUALES, cantidadBowl + 1) })} disabled={cantidadBowl >= MAX_BOWLS_IGUALES} aria-label="Más bowls">+</button>
+                    </div>
+                  </div>
+                  <button className="btn-primario" disabled={!bowlListoAsistente} onClick={confirmarBowlAsistente}>
+                    {cantidadBowl > 1 ? `Agregar ${cantidadBowl} bowls y continuar →` : 'Agregar bowl y continuar →'}
+                  </button>
                 </div>
-
-                <button className="btn-primario" disabled={!bowlListoAsistente} onClick={confirmarBowlAsistente}>
-                  Agregar bowl y continuar →
-                </button>
               </>
             )}
 

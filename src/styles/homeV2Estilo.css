@@ -153,3 +153,14 @@
    se ajusta aquí (eje Y, 0% = arriba, 100% = abajo). */
 .v2-shell-root { --foco-bowl: 50% 80%; }
 .v2-bowl-hibrido-foto img { object-position: var(--foco-bowl); }
+
+
+/* ── Armado del bowl: repetir último, aviso sin base y barra fija con total y cantidad ── */
+.v2-bowl-repetir { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--card-bg, #fff); border: 2px dashed var(--verde); border-radius: 14px; padding: 10px 12px; font-size: 14px; }
+.v2-bowl-repetir button { flex: none; border: 0; border-radius: 99px; background: var(--verde); color: #fff; font: inherit; font-weight: 700; padding: 9px 16px; min-height: 40px; cursor: pointer; }
+.v2-bowl-aviso { display: flex; flex-direction: column; gap: 4px; background: #FFF1CF; color: #5A3A00; border-radius: 14px; padding: 12px 14px; font-size: 14px; }
+.v2-bowl-barra { position: sticky; bottom: 0; z-index: 5; display: flex; flex-direction: column; gap: 10px; margin: 0 -4px; padding: 12px 4px calc(10px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(to top, var(--crema, #FBF6EF) 82%, transparent); }
+.v2-bowl-barra-fila { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.v2-bowl-barra-total { display: flex; flex-direction: column; line-height: 1.15; }
+.v2-bowl-barra-total b { font-family: var(--font-title); font-size: 22px; }
+.v2-bowl-barra-total span { font-size: 12.5px; opacity: .75; }
