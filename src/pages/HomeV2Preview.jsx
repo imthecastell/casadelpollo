@@ -1094,18 +1094,23 @@ export default function HomeV2Preview() {
   // ── Bowls: mismas reglas/filtros que SeccionBowls.jsx real ──
   // Base curada a 3 opciones simples (igual que el acompañamiento del
   // asistente) en vez de mostrar todas las variantes reales de arroz/pasta.
+  // Regla de la base del bowl (igual en todas las sucursales con bowls): arroz, pasta
+  // o ensalada. Si la tienda tiene activa alguna pasta (poblana o de tomate), esa es la
+  // pasta; si tiene arroz blanco o el del día, ese es el arroz. Ya no depende de la marca
+  // "base de bowl" del producto, solo de lo que esté disponible hoy en la sucursal.
   const bowlBasesReales = productos.filter(p =>
-    p.is_bowl_base &&
     (p.category_name?.toLowerCase().includes('complement') || p.category_name?.toLowerCase().includes('extra')) &&
     p.available !== false
   )
+  const hallarBase = (palabra) => {
+    const opciones = bowlBasesReales.filter(p => p.name.toLowerCase().includes(palabra))
+    return opciones.find(p => /d[ií]a/i.test(p.name)) || opciones[0]
+  }
   const bowlBasesAsistente = [
-    { etiqueta: 'Arroz del día', match: (n) => n.toLowerCase().includes('arroz') },
-    { etiqueta: 'Pasta', match: (n) => n.toLowerCase().includes('pasta') },
-    { etiqueta: 'Ensalada', match: (n) => n.toLowerCase().includes('ensalada') },
-  ]
-    .map(def => ({ ...def, producto: bowlBasesReales.find(p => def.match(p.name)) }))
-    .filter(x => x.producto)
+    { etiqueta: 'Arroz del día', producto: hallarBase('arroz') },
+    { etiqueta: 'Pasta', producto: hallarBase('pasta') },
+    { etiqueta: 'Ensalada', producto: hallarBase('ensalada') },
+  ].filter(x => x.producto)
   // De Preparados solo se ofrecen estas 3 (tempura, tenders, boneless sin
   // salsa) — el resto de Preparados no aplica para bowl, a diferencia de
   // Marinados y Milanesas que sí se ofrecen completos.
@@ -2122,6 +2127,8 @@ export default function HomeV2Preview() {
                     <span>El arroz, la pasta y la ensalada del día se confirman por la mañana. Vuelve en un rato o pregunta en la tienda.</span>
                   </div>
                 )}
+
+                <p className="v2-bowl-nota">Las bases disponibles pueden variar por disponibilidad en tienda. Si cambia algo de tu pedido, la tienda te contactará para avisarte.</p>
 
                 <div className="v2-asistente-bowl-card">
                   <div className="v2-asistente-bowl-head">
