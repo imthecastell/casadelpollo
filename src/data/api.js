@@ -36,3 +36,12 @@ export function getSchedule(branchId) {
     : `${API_URL}/api/schedule`;
   return apiFetch(url);
 }
+
+// Encuesta corta al terminar un pedido (estrellas + comentario opcional).
+export function enviarEncuestaPedido(datos) {
+  return apiFetch(`${API_URL}/api/feedback`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tipo: 'pedido', ...datos }),
+  });
+}
