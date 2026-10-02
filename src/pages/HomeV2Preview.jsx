@@ -1385,7 +1385,7 @@ export default function HomeV2Preview() {
                   <div className="v2-seccion-titulo" style={{ margin: 0 }}>Favoritos del momento</div>
                   <div className="v2-promo-badge" style={{ margin: 0 }}>Estrella</div>
                 </div>
-                <div className={`v2-grid-2filas${estrellas.length <= 3 ? ' v2-grid-pocos' : ''}`} style={{ '--n': estrellas.length }}>
+                <div className={`v2-grid-2filas v2-grid-estrella${estrellas.length <= 3 ? ' v2-grid-pocos' : ''}`} style={{ '--n': estrellas.length }}>
                   {estrellas.map(p => (
                     <div key={p.id} className="v2-tile-mini2" onClick={() => abrirSeleccion(p)}>
                       <div className="v2-card-foto">

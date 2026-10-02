@@ -124,6 +124,13 @@
   .v2-grid-pocos .v2-card-barra-nombre { font-size: 20px; -webkit-line-clamp: 3; }
   .v2-grid-pocos .v2-ts-precio-pill { font-size: 14px; padding: 6px 14px; }
   .v2-grid-pocos .v2-mas { width: 38px; height: 38px; font-size: 22px; }
+  /* Favoritos del momento: de 4 a 6 productos se reparten el ancho en una sola fila, así que la
+     franja siempre queda llena sea cual sea el número de favoritos (hasta 3, tarjetas horizontales). */
+  .v2-grid-estrella:not(.v2-grid-pocos) { grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr)); }
+  .v2-grid-estrella > .v2-tile-mini2:last-child:nth-child(odd) { grid-column: auto; }
+  .v2-grid-estrella:not(.v2-grid-pocos) > .v2-tile-mini2:last-child:nth-child(odd) { flex-direction: column; }
+  .v2-grid-estrella:not(.v2-grid-pocos) > .v2-tile-mini2:last-child:nth-child(odd) .v2-card-foto { flex: none; aspect-ratio: 1 / 1; min-height: 0; }
+  .v2-grid-estrella:not(.v2-grid-pocos) > .v2-tile-mini2:last-child:nth-child(odd) .v2-card-barra { height: 44px; justify-content: flex-start; align-items: flex-end; padding: 0; gap: 0; }
   .v2-titulo-fila .v2-seccion-titulo { margin-bottom: 0; }
   .v2-titulo-fila { margin-bottom: 18px; }
 
