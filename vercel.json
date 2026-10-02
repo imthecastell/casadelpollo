@@ -4,6 +4,7 @@
   "framework": "vite",
   "rewrites": [
     { "source": "/previewv2", "destination": "https://casadelpollo-v2.vercel.app/previewv2/" },
+    { "source": "/previewv2/", "destination": "https://casadelpollo-v2.vercel.app/previewv2/" },
     { "source": "/previewv2/:path*", "destination": "https://casadelpollo-v2.vercel.app/previewv2/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
