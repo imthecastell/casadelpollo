@@ -70,7 +70,7 @@ export default function InstalarApp() {
           display: 'flex', alignItems: 'center', gap: 10, padding: '10px 10px 10px 12px',
         }}
       >
-        <img src="/icon-192.png" alt="" style={{ width: 38, height: 38, borderRadius: 10, flexShrink: 0 }} />
+        <img src={import.meta.env.BASE_URL + "icon-192.png"} alt="" style={{ width: 38, height: 38, borderRadius: 10, flexShrink: 0 }} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{ margin: 0, fontFamily: 'var(--font-title)', fontWeight: 800, fontSize: 13, color: 'var(--texto)' }}>
             Instala Casa del Pollo
