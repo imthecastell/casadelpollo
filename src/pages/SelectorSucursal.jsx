@@ -256,7 +256,7 @@ export default function SelectorSucursal() {
           ))}
         </div>
 
-        <a href="/links" className="selector-contacto-btn">
+        <a href={`${import.meta.env.BASE_URL}links`} className="selector-contacto-btn">
           📍 Ver sucursales y contacto
         </a>
       </div>

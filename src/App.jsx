@@ -21,7 +21,7 @@ function Contenido() {
 }
 
 export default function App() {
-  if (window.location.pathname === '/links') return <LinksPage />
+  if (/\/links\/?$/.test(window.location.pathname)) return <LinksPage />
 
   return (
     <AppProvider>
