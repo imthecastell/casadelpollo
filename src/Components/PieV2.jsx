@@ -5,7 +5,7 @@ import { estadoHorario, hora12 } from '../data/horario.js'
    servicios), cómo se paga y redes. */
 
 // Facebook: enlace genérico por ahora. Cuando haya página propia de la marca, solo se cambia aquí.
-const FACEBOOK_URL = 'https://www.facebook.com/'
+const FACEBOOK_URL = 'https://www.facebook.com/LaCasaDelPolloLM'
 const INSTAGRAM_POR_DEFECTO = 'https://www.instagram.com/casadelpollolm/'
 
 const PAGOS = [
