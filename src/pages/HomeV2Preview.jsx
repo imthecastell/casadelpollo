@@ -5,6 +5,7 @@ import { getDesign } from '../data/api.js'
 import LogoSlot from '../Components/LogoSlot.jsx'
 import Icono from '../Components/Icono.jsx'
 import PieV2 from '../Components/PieV2.jsx'
+import EncuestaPedido from '../Components/EncuestaPedido.jsx'
 import AvisoAirfryer from '../Components/AvisoAirfryer.jsx'
 import { tagsDe } from '../data/productTags'
 import { MarimadoImg } from '../Components/SeccionMarinados.jsx'
@@ -2052,6 +2053,8 @@ export default function HomeV2Preview() {
                 <pre>{asistente.mensajeWhatsapp}</pre>
               </details>
             )}
+
+            <EncuestaPedido key={asistente.numeroOrden} numeroOrden={asistente.numeroOrden} branchId={sucursalActiva?.id} esPrueba={PEDIDOS_DE_PRUEBA} />
 
             <button className="btn-primario" onClick={cerrarAsistente}>Cerrar</button>
           </div>

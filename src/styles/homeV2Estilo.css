@@ -172,3 +172,22 @@
 .v2-grid-estrella > .v2-tile-mini2:last-child:nth-child(odd) { grid-column: 1 / -1; flex-direction: row; }
 .v2-grid-estrella > .v2-tile-mini2:last-child:nth-child(odd) .v2-card-foto { flex: 0 0 46%; aspect-ratio: auto; min-height: 120px; }
 .v2-grid-estrella > .v2-tile-mini2:last-child:nth-child(odd) .v2-card-barra { flex: 1; height: auto; justify-content: center; align-items: flex-start; gap: 8px; padding: 10px 14px; }
+
+/* ── Encuesta al terminar el pedido ── */
+.v2-enc { width: 100%; background: var(--card-bg, #fff); border-radius: 20px; box-shadow: var(--sombra); padding: 18px 16px; display: flex; flex-direction: column; gap: 14px; text-align: center; }
+.v2-enc h3 { font-family: var(--font-title); font-size: 18px; margin: 0; }
+.v2-enc-sub { font-size: 13px; color: #6E4F47; margin: -8px 0 0; }
+.v2-enc-pregunta { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.v2-enc-texto { font-weight: 700; font-size: 15px; }
+.v2-enc-estrellas { display: flex; gap: 2px; }
+.v2-enc-estrella { border: 0; background: transparent; padding: 5px 4px; min-width: 44px; min-height: 44px; cursor: pointer; display: grid; place-items: center; }
+.v2-enc-estrella:focus-visible { outline: 3px solid var(--dorado, #F0A020); outline-offset: 2px; border-radius: 10px; }
+.v2-enc-extremos { display: flex; justify-content: space-between; width: min(100%, 250px); font-size: 11.5px; color: #8a7066; }
+.v2-enc-mas { border: 0; background: transparent; color: var(--rojo, #C62A1B); font: inherit; font-weight: 700; font-size: 14px; min-height: 40px; cursor: pointer; }
+.v2-enc-comentario { display: flex; flex-direction: column; gap: 6px; text-align: left; font-size: 13px; font-weight: 700; }
+.v2-enc-comentario textarea { font: inherit; font-weight: 400; font-size: 15px; border: 1px solid rgba(26,8,6,.18); border-radius: 12px; padding: 10px 12px; resize: vertical; background: #fff; color: inherit; }
+.v2-enc-enviar { border: 0; border-radius: 99px; background: var(--rojo, #C62A1B); color: #fff; font: inherit; font-weight: 800; font-size: 16px; padding: 13px; min-height: 48px; cursor: pointer; }
+.v2-enc-enviar:disabled { opacity: .45; cursor: default; }
+.v2-enc-error { color: #b3261e; font-size: 13px; margin: 0; }
+.v2-enc-gracias { gap: 4px; background: #E4F3EA; color: #1F5C34; }
+.v2-enc-gracias span { font-size: 13px; }
