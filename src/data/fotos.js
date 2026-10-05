@@ -36,9 +36,12 @@ export function esFotoCompuesta(imageUrl, imageCookedUrl) {
 // Los pósters de dos paneles (crudo | cocinado) traen una franja blanca en el
 // centro, de ~1% del ancho. Un corte exacto a la mitad deja media franja pegada
 // al borde de cada foto, así que del lado de la costura se retrocede un poco.
-// Solo se toca el corte exacto a la mitad (w_0.50); cualquier otro recorte se
-// respeta tal cual lo guardó el admin.
+// Se tocan los cortes exactos a la mitad (w_0.50, x_0 o x_0.50), de alto
+// completo o no (los pósters nuevos se guardan con y_0.25/h_0.50 y traen la
+// misma franja, de hasta ~0.8% y no siempre centrada); cualquier otro recorte
+// se respeta tal cual lo guardó el admin.
 const MARGEN_COSTURA = 0.01
+const MARGEN_COSTURA_PARCIAL = 0.015
 // Pósters cuya franja no está en el centro (x = inicio y ancho de cada mitad).
 const COSTURA_ESPECIAL = {
   'pollo%20al%20pastor': { cruda: [0, 0.44], cocinada: [0.46, 0.54] },
@@ -50,12 +53,13 @@ function sinCostura(recorte, a) {
   const m = recorte && recorte.match(/^c_crop,fl_relative,x_([\d.]+),y_([\d.]+),w_([\d.]+),h_([\d.]+)$/)
   if (!m) return recorte
   const [x, y, w, h] = m.slice(1).map(Number)
-  if (w !== 0.5 || (x !== 0 && x !== 0.5) || h !== 1) return recorte
+  if (w !== 0.5 || (x !== 0 && x !== 0.5)) return recorte
   const lado = x === 0 ? 'cruda' : 'cocinada'
+  const margen = h === 1 ? MARGEN_COSTURA : MARGEN_COSTURA_PARCIAL
   const clave = Object.keys(COSTURA_ESPECIAL).find(k => a.includes(k))
   const [nx, nw] = clave
     ? COSTURA_ESPECIAL[clave][lado]
-    : lado === 'cruda' ? [0, 0.5 - MARGEN_COSTURA] : [0.5 + MARGEN_COSTURA, 0.5 - MARGEN_COSTURA]
+    : lado === 'cruda' ? [0, 0.5 - margen] : [0.5 + margen, 0.5 - margen]
   return `c_crop,fl_relative,x_${dos(nx)},y_${dos(y)},w_${dos(nw)},h_${dos(h)}`
 }
 
