@@ -1,7 +1,9 @@
 import { useState, useRef } from 'react'
 import { useApp } from '../data/AppContext.jsx'
-import { rawCrop, cookedCrop } from './SeccionMarinados.jsx'
+import { fotoCruda, fotoCocinada } from '../data/fotos.js'
 import AvisoDisponibilidad from './AvisoDisponibilidad.jsx'
+import TagsChips from './TagsChips.jsx'
+import { GuiaCocinaInline } from './GuiaCocina.jsx'
 
 // Milanesas simples (sin empanado ni empapelado)
 const ORDEN_SIMPLES = ['natural', 'aplanada']
@@ -30,8 +32,8 @@ const esAlbondiga    = (nombre) =>
 
 /* ── Imagen con transición crudo ↔ cocinado (igual que en Marinados) ── */
 function PreparadoImg({ imageUrl, imageCookedUrl, isSelected, recogida }) {
-  const rawSrc    = imageUrl ? rawCrop(imageUrl) : null
-  const cookedSrc = (imageCookedUrl || imageUrl) ? cookedCrop(imageCookedUrl || imageUrl) : null
+  const rawSrc    = fotoCruda(imageUrl, imageCookedUrl)
+  const cookedSrc = fotoCocinada(imageUrl, imageCookedUrl)
   const showCooked = !!(isSelected && recogida === 'cocinado' && cookedSrc)
   const size = isSelected ? 90 : 72
   const dur  = '0.38s cubic-bezier(.34,1.56,.64,1)'
@@ -97,6 +99,8 @@ function CardProducto({ producto, seleccion, cantidad, recogida, onSeleccionar, 
 
       {isActive && (
         <div className="configurador-card slide-up" style={{ marginTop: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0 }}>
+          <TagsChips producto={producto} />
+          <GuiaCocinaInline producto={producto} oculto={recogida === 'cocinado'} />
 
           {/* Cantidad */}
           <div>
@@ -377,8 +381,8 @@ export default function SeccionPreparados() {
       recogida: seleccion.se_puede_cocinar ? recogida : undefined,
       tiempoEstimado, necesitaHora: true,
       imagen_url: recogida === 'cocinado'
-        ? cookedCrop(seleccion.image_cooked_url || seleccion.image_url)
-        : rawCrop(seleccion.image_url),
+        ? fotoCocinada(seleccion.image_url, seleccion.image_cooked_url)
+        : fotoCruda(seleccion.image_url, seleccion.image_cooked_url),
       resumen: `${seleccion.name} × ${cantidad} pz${nota}${recogida === 'cocinado' ? ' · Cocinado ~20 min' : ''} · $${seleccion.price}/kg`,
     })
     marcarAgregado(seleccion.id)
@@ -410,8 +414,8 @@ export default function SeccionPreparados() {
         precioKg: p.price, precio: p.price,
         recogida, tiempoEstimado, necesitaHora: true,
         imagen_url: recogida === 'cocinado'
-          ? cookedCrop(p.image_cooked_url || p.image_url)
-          : rawCrop(p.image_url || p.image_cooked_url),
+          ? fotoCocinada(p.image_url, p.image_cooked_url)
+          : fotoCruda(p.image_url || p.image_cooked_url, p.image_cooked_url),
         resumen: getResumen(p, c, recogida),
       })
       setter(prev => ({ ...prev, [p.id]: 0 }))
