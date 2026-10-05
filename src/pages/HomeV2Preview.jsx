@@ -106,12 +106,14 @@ function precioExtraBowlAsistente(producto, gramosExtra) {
 // La tarjeta (nombre, código, QR) vive en este celular (localStorage). El
 // registro solo existe en el servidor desde que la escanean por primera vez
 // en caja (2 visitas de regalo); de ahí, 1 visita por día, 10% de 10 a 14
-// visitas y 15% desde 15. El canje y la recuperación se hacen en caja. Aquí
+// visitas y 15% desde 15; cada visita exige una compra mínima de $150 (la
+// confirma el cajero al escanear). El canje y la recuperación se hacen en caja. Aquí
 // solo se consultan las visitas reales por código — nunca se manda el nombre.
 const LEALTAD_CLAVE = 'cdp_lealtad'
 const LEALTAD_VISITAS_REGALO = 2
 const LEALTAD_META_10 = 10
 const LEALTAD_META_15 = 15
+const LEALTAD_COMPRA_MINIMA = 150
 
 function generarCodigoCliente() {
   return Math.floor(100000 + Math.random() * 900000).toString()
@@ -1629,7 +1631,7 @@ export default function HomeV2Preview() {
                 <div className="v2-lealtad-intro">
                   <div className="v2-lealtad-intro-emoji">🎁</div>
                   <h3>Únete al programa de lealtad</h3>
-                  <p>Crea tu tarjeta y muéstrala en caja: empiezas con 2 visitas de regalo y sumas 1 cada día que nos visites.</p>
+                  <p>Crea tu tarjeta y muéstrala en caja: empiezas con 2 visitas de regalo y sumas 1 cada día que nos visites con una compra mínima de ${LEALTAD_COMPRA_MINIMA} pesos.</p>
                   <div className="v2-lealtad-metas">
                     <div><b>10 visitas</b><span>10% de descuento</span></div>
                     <div><b>15 visitas</b><span>15% de descuento</span></div>
@@ -1730,6 +1732,7 @@ export default function HomeV2Preview() {
                     )}
                   </div>
 
+                  <p className="v2-lealtad-nota">Cada visita cuenta con una compra mínima de ${LEALTAD_COMPRA_MINIMA} pesos.</p>
                   <button className="v2-lealtad-link" onClick={() => setConsultaLealtad(n => n + 1)}>Actualizar mis visitas</button>
                   <button className="v2-lealtad-link" onClick={borrarTarjetaLealtad}>Borrar tarjeta de este celular</button>
                 </>
