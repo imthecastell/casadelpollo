@@ -1,10 +1,12 @@
-import { AppProvider, useApp } from './data/AppContext.jsx'
+﻿import { AppProvider, useApp } from './data/AppContext.jsx'
 import SelectorSucursal from './pages/SelectorSucursal.jsx'
 import MenuPrincipal from './pages/MenuPrincipal.jsx'
 import Carrito from './pages/Carrito.jsx'
 import Confirmado from './pages/Confirmado.jsx'
 import Feedback from './pages/Feedback.jsx'
 import LinksPage from './pages/LinksPage.jsx'
+import HomeV2Preview from './pages/HomeV2Preview.jsx'
+import InstalarApp from './Components/InstalarApp.jsx'
 import './styles/global.css'
 
 function Contenido() {
@@ -19,11 +21,12 @@ function Contenido() {
 }
 
 export default function App() {
-  if (window.location.pathname === '/links') return <LinksPage />
+  if (/\/links\/?$/.test(window.location.pathname)) return <LinksPage />
 
   return (
     <AppProvider>
-      <Contenido />
+      <HomeV2Preview />
+      <InstalarApp />
     </AppProvider>
   )
 }

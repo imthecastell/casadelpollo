@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, useRef } from 'react'
 import { getBranches, getProductsByBranch, createOrder, getDesign, getBanners, getSchedule } from './api.js'
+import { armarMensajeWhatsapp } from './pedidoWhatsapp.js'
 
 const AppContext = createContext()
 
@@ -17,6 +18,8 @@ export function AppProvider({ children }) {
   const [diseno, setDiseno] = useState({})
   const [cargando, setCargando] = useState(true)
   const [ultimoNumeroOrden, setUltimoNumeroOrden] = useState(null)
+  // Para que la precarga del diseño (abajo) no pise el de la sucursal elegida.
+  const sucursalRef = useRef(null)
   const [ultimaHora, setUltimaHora] = useState(null)
   const [modoWhatsapp, setModoWhatsapp] = useState(false)
   const [bannersMenu, setBannersMenu] = useState([])
@@ -32,6 +35,9 @@ export function AppProvider({ children }) {
       const intentar = (intento) =>
         getDesign(branchId)
           .then(d => {
+            // Ya hay sucursal elegida (ej. recordada de otra visita): su diseño
+            // manda y esta precarga, o sus reintentos, ya no aplican.
+            if (sucursalRef.current) return
             if (d && !d.error && (d.logo_url || d.primary_color)) {
               setDiseno(d)
             } else if (intento < 2) {
@@ -86,18 +92,25 @@ export function AppProvider({ children }) {
   }, [])
 
   useEffect(() => {
+    sucursalRef.current = sucursalActiva
     if (sucursalActiva) {
+      // Si se cambia de sucursal antes de que lleguen las respuestas de la
+      // anterior, esas respuestas se ignoran: sin esto una respuesta tardía
+      // pisaba el catálogo y el diseño de la sucursal nueva (productos
+      // desactivados o bowls que no corresponden).
+      let vigente = true
       getProductsByBranch(sucursalActiva.id)
-        .then(data => setProductos(Array.isArray(data) ? data : []))
-        .catch(() => setProductos([]))
+        .then(data => { if (vigente) setProductos(Array.isArray(data) ? data : []) })
+        .catch(() => { if (vigente) setProductos([]) })
 
       getDesign(sucursalActiva.id)
-        .then(data => setDiseno(data || {}))
-        .catch(() => setDiseno({}))
+        .then(data => { if (vigente) setDiseno(data || {}) })
+        .catch(() => { if (vigente) setDiseno({}) })
 
       // Horario específico de la sucursal
       getSchedule(sucursalActiva.id)
         .then(data => {
+          if (!vigente) return
           // El endpoint por sucursal devuelve { horarios, cocinados_inicio, cocinados_fin, cocinados_fin_sabado }
           const horarios = data?.horarios
           const ci = data?.cocinados_inicio
@@ -111,6 +124,7 @@ export function AppProvider({ children }) {
           setCocFinSabado(cfs || null)
         })
         .catch(() => {})
+      return () => { vigente = false }
     }
   }, [sucursalActiva])
 
@@ -159,7 +173,9 @@ export function AppProvider({ children }) {
   }, [diseno])
 
   const agregarAlCarrito = (item) => {
-    setCarrito(prev => [...prev, { ...item, id: Date.now() + Math.random() }])
+    const id = Date.now() + Math.random()
+    setCarrito(prev => [...prev, { ...item, id }])
+    return id
   }
 
   const eliminarDelCarrito = (id) => {
@@ -168,33 +184,40 @@ export function AppProvider({ children }) {
 
   const limpiarCarrito = () => setCarrito([])
 
-  const confirmarPedido = async (horaEntrega, datosCliente, asap = false) => {
-    // Capturar carrito antes de limpiar
+  // Arma el pedido con el carrito actual y lo registra en el sistema, sin
+  // tocar la navegación — lo usan confirmarPedido (flujo actual) y la V2
+  // (/preview-v2), que maneja su propia pantalla de confirmación.
+  const registrarPedido = async ({ horaEntrega, datosCliente, asap = false, esPrueba = false }) => {
     const carritoSnapshot = [...carrito]
+    const items = carritoSnapshot.map(item => ({
+      product_name: item.resumen || item.nombre || 'Producto',
+      quantity: item.cantidad || 1,
+      price: parseFloat(item.precioTotal || item.precio || item.price || 0),
+      tipo: item.tipo || null
+    }))
+    const total = carritoSnapshot.reduce((sum, item) => {
+      if (item.tipo === 'pieza' || item.tipo === 'preparado' || item.tipo === 'milanesa') return sum
+      if (item.precioTotal !== undefined) return sum + parseFloat(item.precioTotal || 0)
+      const precio = parseFloat(item.precioTotal || item.precio || item.price || 0)
+      const cantidad = parseInt(item.cantidad || 1)
+      return sum + (precio * cantidad)
+    }, 0)
+    return createOrder({
+      branch_id: sucursalActiva.id,
+      customer_name: datosCliente?.nombre || 'Cliente',
+      customer_phone: datosCliente?.telefono || '',
+      customer_notes: datosCliente?.notas || '',
+      pickup_time: asap ? null : horaEntrega,
+      asap,
+      items,
+      total,
+      ...(esPrueba ? { es_prueba: true } : {}),
+    })
+  }
+
+  const confirmarPedido = async (horaEntrega, datosCliente, asap = false) => {
     try {
-      const items = carritoSnapshot.map(item => ({
-        product_name: item.resumen || item.nombre || 'Producto',
-        quantity: item.cantidad || 1,
-        price: parseFloat(item.precioTotal || item.precio || item.price || 0),
-        tipo: item.tipo || null
-      }))
-      const total = carritoSnapshot.reduce((sum, item) => {
-        if (item.tipo === 'pieza' || item.tipo === 'preparado' || item.tipo === 'milanesa') return sum
-        if (item.precioTotal !== undefined) return sum + parseFloat(item.precioTotal || 0)
-        const precio = parseFloat(item.precioTotal || item.precio || item.price || 0)
-        const cantidad = parseInt(item.cantidad || 1)
-        return sum + (precio * cantidad)
-      }, 0)
-      const orden = await createOrder({
-        branch_id: sucursalActiva.id,
-        customer_name: datosCliente?.nombre || 'Cliente',
-        customer_phone: datosCliente?.telefono || '',
-        customer_notes: datosCliente?.notas || '',
-        pickup_time: asap ? null : horaEntrega,
-        asap,
-        items,
-        total
-      })
+      const orden = await registrarPedido({ horaEntrega, datosCliente, asap })
       setUltimoNumeroOrden(orden.order_number)
       setUltimaHora(asap ? 'Lo antes posible' : horaEntrega)
       setModoWhatsapp(false)
@@ -214,39 +237,14 @@ export function AppProvider({ children }) {
   // el sistema, se arma como mensaje de WhatsApp pre-redactado al teléfono
   // de la sucursal — el cliente solo tiene que darle "Enviar" en WhatsApp.
   const enviarPedidoPorWhatsapp = (horaEntrega, datosCliente, asap = false) => {
-    const carritoSnapshot = [...carrito]
-    const esAlPesar = (item) => item.tipo === 'pieza' || item.tipo === 'preparado' || item.tipo === 'milanesa'
-
-    // `resumen` ya trae el precio/kg o "(se pesa al entregar)" incluido en
-    // el texto (mismo campo que usa confirmarPedido como product_name) —
-    // agregar el precio aparte lo duplicaría.
-    const lineas = carritoSnapshot.map(item => {
-      const cantidad = item.cantidad || 1
-      return `- ${cantidad}x ${item.resumen || item.nombre || 'Producto'}`
-    })
-    const total = carritoSnapshot.reduce((sum, item) => {
-      if (esAlPesar(item)) return sum
-      return sum + parseFloat(item.precioTotal || item.precio || item.price || 0)
-    }, 0)
-
-    const mensaje = [
-      '🐔 *Nuevo pedido - Casa del Pollo*',
-      `📍 Sucursal: ${sucursalActiva?.name || ''}`,
-      `👤 Cliente: ${datosCliente?.nombre || ''}`,
-      `📱 Tel: ${datosCliente?.telefono || ''}`,
-      `🕐 ${asap ? 'Lo antes posible' : `Recoger a las ${horaEntrega}`}`,
-      '',
-      '*Pedido:*',
-      ...lineas,
-      '',
-      datosCliente?.notas ? `📝 Notas: ${datosCliente.notas}` : null,
-      `Total estimado: $${total.toFixed(2)}`,
-    ].filter(Boolean).join('\n')
+    const mensaje = armarMensajeWhatsapp({ carrito, sucursal: sucursalActiva, horaEntrega, datosCliente, asap })
 
     // El WhatsApp real de la sucursal puede ser distinto al teléfono local
     // (ej. El Parque) — se prefiere branches.whatsapp y solo se cae a
     // branches.phone si esa sucursal no tiene un número de WhatsApp propio.
-    const telefonoSucursal = (sucursalActiva?.whatsapp || sucursalActiva?.phone || '').replace(/\D/g, '')
+    const digitosSucursal = (sucursalActiva?.whatsapp || sucursalActiva?.phone || '').replace(/\D/g, '')
+    // El número puede venir guardado como "+52 668 123 4567": se le quita el 52 para no duplicarlo en wa.me/52…
+    const telefonoSucursal = digitosSucursal.length === 12 && digitosSucursal.startsWith('52') ? digitosSucursal.slice(2) : digitosSucursal
     const url = `https://wa.me/${telefonoSucursal ? `52${telefonoSucursal}` : ''}?text=${encodeURIComponent(mensaje)}`
     window.open(url, '_blank')
 
@@ -267,7 +265,7 @@ export function AppProvider({ children }) {
   return (
     <AppContext.Provider value={{
   sucursalActiva, setSucursalActiva,
-  carrito, agregarAlCarrito, eliminarDelCarrito, limpiarCarrito, confirmarPedido,
+  carrito, agregarAlCarrito, eliminarDelCarrito, limpiarCarrito, confirmarPedido, registrarPedido,
   enviarPedidoPorWhatsapp,
   vista, setVista,
   totalItems,

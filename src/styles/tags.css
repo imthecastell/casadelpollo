@@ -1,0 +1,8 @@
+/* Chips de ingredientes visibles (TagsChips) */
+.tc-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.tc-tag {
+  display: inline-block; font-size: 12px; font-weight: 600; line-height: 1;
+  color: var(--cafe, #1A0806); background: var(--crema, #FBF6EF); border: 1px solid rgba(0,0,0,.08);
+  border-radius: 20px; padding: 5px 10px; white-space: nowrap;
+}
+.tc-tag::first-letter { text-transform: uppercase; }
