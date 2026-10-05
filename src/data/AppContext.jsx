@@ -187,7 +187,7 @@ export function AppProvider({ children }) {
   // Arma el pedido con el carrito actual y lo registra en el sistema, sin
   // tocar la navegación — lo usan confirmarPedido (flujo actual) y la V2
   // (/preview-v2), que maneja su propia pantalla de confirmación.
-  const registrarPedido = async ({ horaEntrega, datosCliente, asap = false, esPrueba = false }) => {
+  const registrarPedido = async ({ horaEntrega, datosCliente, asap = false, esPrueba = false, entrega = null }) => {
     const carritoSnapshot = [...carrito]
     const items = carritoSnapshot.map(item => ({
       product_name: item.resumen || item.nombre || 'Producto',
@@ -212,6 +212,9 @@ export function AppProvider({ children }) {
       items,
       total,
       ...(esPrueba ? { es_prueba: true } : {}),
+      ...(entrega?.tipo === 'domicilio'
+        ? { tipo_entrega: 'domicilio', direccion_entrega: entrega.direccion, numero_casa: entrega.numeroCasa, referencia_entrega: entrega.referencia || '' }
+        : {}),
     })
   }
 

@@ -442,6 +442,7 @@ export default function HomeV2Preview() {
     gramos: 300, cantidad: 1, recogida: 'crudo', complementos: {},
     bowlBaseId: '', bowlMarinadoId: '', bowlMarinadoCat: '', bowlExtraBase: 0, bowlExtraMarinado: 0,
     hora: null, asap: false, nombre: '', telefono: '', numeroOrden: null,
+    entrega: 'recoger', direccion: '', numeroCasa: '', referencia: '',
     agregado: false, mostrarAviso: false, confirmado: false,
   })
   const [toast, setToast] = useState('')
@@ -978,6 +979,7 @@ export default function HomeV2Preview() {
       gramos: 300, cantidad: 1, recogida: 'crudo', complementos: {},
       bowlBaseId: '', bowlMarinadoId: '', bowlMarinadoCat: '', bowlExtraBase: 0, bowlExtraMarinado: 0,
       hora: null, asap: false, nombre: '', telefono: '', numeroOrden: null,
+      entrega: 'recoger', direccion: '', numeroCasa: '', referencia: '',
       agregado: false, mostrarAviso: false, confirmado: false,
     })
   }
@@ -1005,6 +1007,7 @@ export default function HomeV2Preview() {
       gramos: 300, cantidad: 1, recogida: 'crudo', complementos: {},
       bowlBaseId: '', bowlMarinadoId: '', bowlMarinadoCat: '', bowlExtraBase: 0, bowlExtraMarinado: 0,
       hora: null, asap: false, nombre: '', telefono: '', numeroOrden: null,
+      entrega: 'recoger', direccion: '', numeroCasa: '', referencia: '',
       agregado: false, mostrarAviso: false, confirmado: false, desdeCarrito: true,
     })
   }
@@ -1031,6 +1034,7 @@ export default function HomeV2Preview() {
       gramos: 300, cantidad: 1, recogida: 'crudo', complementos: {},
       bowlMarinadoCat: '', bowlExtraBase: 0, bowlExtraMarinado: 0,
       hora: null, asap: false, nombre: '', telefono: '', numeroOrden: null,
+      entrega: 'recoger', direccion: '', numeroCasa: '', referencia: '',
       agregado: false, mostrarAviso: false, confirmado: false,
       ...idsBowlPorDefecto(),
     })
@@ -1292,7 +1296,16 @@ export default function HomeV2Preview() {
     patchAsistente({ asap: true, hora: null })
   }
 
+  // Entrega: se recoge en la sucursal o llega a domicilio (servicio externo).
+  const aDomicilio = asistente.entrega === 'domicilio'
+  const datosDomicilioCompletos = !aDomicilio || (asistente.direccion.trim().length > 0 && asistente.numeroCasa.trim().length > 0)
+  const telefonoValidoDomicilio = !aDomicilio || digitosLocales(asistente.telefono).length === 10
+  const entregaParaPedido = aDomicilio
+    ? { tipo: 'domicilio', direccion: asistente.direccion.trim(), numeroCasa: asistente.numeroCasa.trim(), referencia: asistente.referencia.trim() }
+    : null
+
   const puedeConfirmarAsistente = asistente.nombre.trim().length > 0 && (asistente.hora || asistente.asap)
+    && datosDomicilioCompletos && telefonoValidoDomicilio
 
   async function confirmarAsistente() {
     if (!puedeConfirmarAsistente || asistente.enviando) return
@@ -1303,10 +1316,10 @@ export default function HomeV2Preview() {
     // mandarle nada real a la tienda) y se muestra el mensaje que llegaría.
     const porWhatsapp = sucursalActiva?.pedidos_en_linea === false
     const mensajeWhatsapp = porWhatsapp
-      ? armarMensajeWhatsapp({ carrito, sucursal: sucursalActiva, horaEntrega: asistente.hora, datosCliente, asap: asistente.asap })
+      ? armarMensajeWhatsapp({ carrito, sucursal: sucursalActiva, horaEntrega: asistente.hora, datosCliente, asap: asistente.asap, entrega: entregaParaPedido })
       : ''
     try {
-      const orden = await registrarPedido({ horaEntrega: asistente.hora, datosCliente, asap: asistente.asap, esPrueba: PEDIDOS_DE_PRUEBA })
+      const orden = await registrarPedido({ horaEntrega: asistente.hora, datosCliente, asap: asistente.asap, esPrueba: PEDIDOS_DE_PRUEBA, entrega: entregaParaPedido })
       limpiarCarrito()
       patchAsistente({ enviando: false, confirmado: true, numeroOrden: orden.order_number, mensajeWhatsapp, paso: 8 })
     } catch {
@@ -2039,10 +2052,17 @@ export default function HomeV2Preview() {
                 <p>{asistente.numeroOrden}</p>
               </div>
               <div className="v2-asistente-recibo-hora">
-                <span>Hora de recogida</span>
+                <span>{aDomicilio ? 'Hora de entrega' : 'Hora de recogida'}</span>
                 <span>{asistente.asap ? '⚡ Lo antes posible' : formatearHora12(asistente.hora)}</span>
               </div>
-              <p className="v2-asistente-recibo-pago">Pago en el local al recoger</p>
+              {aDomicilio ? (
+                <>
+                  <p className="v2-asistente-recibo-envio"><b>Servicio a domicilio</b><br />{asistente.direccion} #{asistente.numeroCasa}</p>
+                  <p className="v2-asistente-recibo-pago">*Servicio externo: el costo de envío se agrega a tu orden al entregar.</p>
+                </>
+              ) : (
+                <p className="v2-asistente-recibo-pago">Pago en el local al recoger</p>
+              )}
             </div>
 
             {PEDIDOS_DE_PRUEBA && (
@@ -2415,7 +2435,32 @@ export default function HomeV2Preview() {
 
             {asistente.paso === 6 && (
               <>
-                <div className="v2-asistente-titulo">¿A qué hora recoges?</div>
+                <div className="v2-asistente-titulo">¿Cómo quieres tu pedido?</div>
+                <div className="v2-entrega" role="radiogroup" aria-label="Forma de entrega">
+                  <button type="button" role="radio" aria-checked={!aDomicilio} className={`v2-entrega-op${!aDomicilio ? ' on' : ''}`} onClick={() => patchAsistente({ entrega: 'recoger' })}>
+                    <b>Recoger en tienda</b>
+                    <span>{sucursalActiva?.name}</span>
+                  </button>
+                  <button type="button" role="radio" aria-checked={aDomicilio} className={`v2-entrega-op${aDomicilio ? ' on' : ''}`} onClick={() => patchAsistente({ entrega: 'domicilio' })}>
+                    <b>Servicio a domicilio</b>
+                    <span>Te lo llevamos</span>
+                  </button>
+                </div>
+                {aDomicilio && (
+                  <div className="v2-entrega-campos">
+                    <label className="config-label" htmlFor="v2-ent-dir">Dirección</label>
+                    <input id="v2-ent-dir" className="v2-entrega-input" type="text" autoComplete="street-address" placeholder="Calle y colonia"
+                      value={asistente.direccion} onChange={(e) => patchAsistente({ direccion: e.target.value })} maxLength={300} />
+                    <label className="config-label" htmlFor="v2-ent-num">Número de casa</label>
+                    <input id="v2-ent-num" className="v2-entrega-input" type="text" placeholder="Ej. 245 o 12-B"
+                      value={asistente.numeroCasa} onChange={(e) => patchAsistente({ numeroCasa: e.target.value })} maxLength={50} />
+                    <label className="config-label" htmlFor="v2-ent-ref">Referencia</label>
+                    <textarea id="v2-ent-ref" className="v2-entrega-input" rows={2} placeholder="Entre qué calles, color de la casa, portón…"
+                      value={asistente.referencia} onChange={(e) => patchAsistente({ referencia: e.target.value })} maxLength={300} />
+                    <p className="v2-entrega-nota">*Servicio externo: el costo de envío se agrega a tu orden al entregar.</p>
+                  </div>
+                )}
+                <div className="v2-asistente-titulo">{aDomicilio ? '¿A qué hora lo quieres?' : '¿A qué hora recoges?'}</div>
                 <div style={{ background: 'var(--card-bg)', borderRadius: 'var(--radio-lg)', padding: 18, boxShadow: 'var(--sombra)' }}>
                   {ahoraPasadoElLimiteAsistente ? (
                     <p style={{ fontSize: 13, color: 'var(--rojo)', margin: 0 }}>
@@ -2461,7 +2506,7 @@ export default function HomeV2Preview() {
                 {/* La ruleta muestra la primera hora como elegida aunque no se
                     haya movido (sin scroll no dispara onCambiar) — si no se
                     tocó, esa es la hora que se usa. */}
-                <button className="btn-primario" disabled={!asistente.hora && !asistente.asap && horariosAsistente.length === 0}
+                <button className="btn-primario" disabled={(!asistente.hora && !asistente.asap && horariosAsistente.length === 0) || !datosDomicilioCompletos}
                   onClick={() => patchAsistente({ paso: 7, ...(!asistente.hora && !asistente.asap ? { hora: horariosAsistente[0] } : {}) })}>
                   Continuar →
                 </button>
@@ -2483,7 +2528,7 @@ export default function HomeV2Preview() {
                     />
                   </div>
                   <div>
-                    <label className="config-label">Teléfono (opcional)</label>
+                    <label className="config-label">{aDomicilio ? 'Teléfono (para contactarte en la entrega)' : 'Teléfono (opcional)'}</label>
                     <input
                       type="tel"
                       inputMode="numeric"
@@ -2494,7 +2539,7 @@ export default function HomeV2Preview() {
                     />
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff5eb', border: '1.5px solid #e85d0433', borderRadius: 'var(--radio)', padding: '12px 16px' }}>
-                    <span style={{ fontSize: 14, color: 'var(--cafe-medio)' }}>Hora de recogida</span>
+                    <span style={{ fontSize: 14, color: 'var(--cafe-medio)' }}>{aDomicilio ? 'Hora de entrega' : 'Hora de recogida'}</span>
                     <span style={{ fontFamily: 'var(--font-title)', fontWeight: 800, fontSize: 18, color: 'var(--rojo)' }}>
                       {asistente.asap ? '⚡ Lo antes posible' : formatearHora12(asistente.hora)}
                     </span>
@@ -2506,7 +2551,11 @@ export default function HomeV2Preview() {
                     <div className="v2-resumen-titulo">Resumen de tu pedido</div>
                     <button type="button" className="v2-resumen-editar" onClick={() => { cerrarAsistente(); setMostrarCarrito(true) }}>Editar</button>
                   </div>
-                  <div className="v2-resumen-suc">Recoges en {sucursalActiva?.name}</div>
+                  <div className="v2-resumen-suc">
+                    {aDomicilio
+                      ? `Servicio a domicilio desde ${sucursalActiva?.name} · ${asistente.direccion.trim()} #${asistente.numeroCasa.trim()}`
+                      : `Recoges en ${sucursalActiva?.name}`}
+                  </div>
                   <div className="v2-resumen-items">
                   {carrito.map(item => (
                     <div key={item.id} className="v2-carrito-item">
@@ -2529,6 +2578,9 @@ export default function HomeV2Preview() {
                   </div>
                   {carrito.some(esAlPesar) && (
                     <p className="v2-resumen-nota">Los productos por kg se confirman al pesar en tienda.</p>
+                  )}
+                  {aDomicilio && (
+                    <p className="v2-resumen-nota">*Servicio externo: el costo de envío se agrega a tu orden al entregar.</p>
                   )}
                 </div>
 
