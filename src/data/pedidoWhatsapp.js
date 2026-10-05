@@ -1,7 +1,8 @@
 // Mensaje pre-redactado de un pedido para sucursales sin pedidos en línea
 // (branches.pedidos_en_linea = false). Lo usa AppContext para abrir
 // WhatsApp, y la V2 para mostrar cómo se habría visto en modo prueba.
-export function armarMensajeWhatsapp({ carrito, sucursal, horaEntrega, datosCliente, asap = false }) {
+export function armarMensajeWhatsapp({ carrito, sucursal, horaEntrega, datosCliente, asap = false, entrega = null }) {
+  const aDomicilio = entrega?.tipo === 'domicilio'
   const esAlPesar = (item) => item.tipo === 'pieza' || item.tipo === 'preparado' || item.tipo === 'milanesa'
 
   // `resumen` ya trae el precio/kg o "(se pesa al entregar)" incluido en
@@ -21,7 +22,11 @@ export function armarMensajeWhatsapp({ carrito, sucursal, horaEntrega, datosClie
     `📍 Sucursal: ${sucursal?.name || ''}`,
     `👤 Cliente: ${datosCliente?.nombre || ''}`,
     `📱 Tel: ${datosCliente?.telefono || ''}`,
-    `🕐 ${asap ? 'Lo antes posible' : `Recoger a las ${horaEntrega}`}`,
+    `🕐 ${asap ? 'Lo antes posible' : `${aDomicilio ? 'Entregar' : 'Recoger'} a las ${horaEntrega}`}`,
+    aDomicilio ? '🛵 *Servicio a domicilio*' : null,
+    aDomicilio ? `🏠 Dirección: ${entrega.direccion} #${entrega.numeroCasa}` : null,
+    aDomicilio && entrega.referencia ? `📌 Referencia: ${entrega.referencia}` : null,
+    aDomicilio ? '*Servicio externo: el costo de envío se agrega a la orden al entregar.' : null,
     '',
     '*Pedido:*',
     ...lineas,
