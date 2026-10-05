@@ -124,10 +124,10 @@ function generarCodigoCliente() {
 
 const API_URL = 'https://casadelpollo-backend.onrender.com'
 
-// Mientras la V2 no sea pública, cada pedido llega al admin marcado como
-// prueba: numeración aparte (PA01…), oculto por defecto en Pedidos y nunca
-// se imprime solo. Al publicar la V2, esto pasa a false.
-const PEDIDOS_DE_PRUEBA = true
+// Con la V2 pública los pedidos son reales. En true, cada pedido llegaría al
+// admin marcado como prueba: numeración aparte (PA01…), oculto por defecto en
+// Pedidos y nunca se imprime solo.
+const PEDIDOS_DE_PRUEBA = false
 
 // A diferencia del flujo real (que siempre pide elegir sucursal al entrar),
 // aquí se recuerda en este dispositivo — se pide una sola vez y las
