@@ -824,3 +824,9 @@
 .v2-evento-poster { display: block; width: auto; max-width: 100%; max-height: calc(100dvh - 32px - 56px - 12px); margin: 0 auto; border-radius: 18px; box-shadow: 0 12px 40px rgba(0,0,0,.45); object-fit: contain; }
 .v2-evento-cerrar { flex: none; width: 100%; min-height: 56px; border: 0; border-radius: 16px; background: var(--rojo, #C62A1B); color: #fff; font-family: var(--font-title, sans-serif); font-weight: 800; font-size: 19px; letter-spacing: .02em; cursor: pointer; box-shadow: 0 6px 18px rgba(198,42,27,.4); }
 .v2-evento-cerrar:focus-visible { outline: 3px solid var(--dorado, #F0A020); outline-offset: 3px; }
+
+/* Pollo fresco: pedir por gramos o por piezas */
+.v2-modo { display: flex; gap: 4px; padding: 4px; background: var(--gris-claro, #eee6dc); border-radius: 14px; margin-bottom: 14px; }
+.v2-modo-op { flex: 1; min-height: 42px; border: 0; border-radius: 11px; background: transparent; color: var(--texto-suave); font-family: var(--font-title, sans-serif); font-weight: 800; font-size: 14px; cursor: pointer; }
+.v2-modo-op.on { background: var(--card-bg, #fff); color: var(--rojo); box-shadow: 0 1px 4px rgba(26,8,6,.15); }
+.v2-modo-op:focus-visible { outline: 3px solid var(--dorado, #F0A020); outline-offset: 1px; }
