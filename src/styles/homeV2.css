@@ -830,3 +830,19 @@
 .v2-modo-op { flex: 1; min-height: 42px; border: 0; border-radius: 11px; background: transparent; color: var(--texto-suave); font-family: var(--font-title, sans-serif); font-weight: 800; font-size: 14px; cursor: pointer; }
 .v2-modo-op.on { background: var(--card-bg, #fff); color: var(--rojo); box-shadow: 0 1px 4px rgba(26,8,6,.15); }
 .v2-modo-op:focus-visible { outline: 3px solid var(--dorado, #F0A020); outline-offset: 1px; }
+
+/* Milanesas empapeladas: tarjeta desplegable con el menú de sabores */
+.v2-empapeladas { grid-column: 1 / -1; background: var(--card-bg, #fff); border: 1.5px solid var(--gris, #ddd); border-radius: 16px; overflow: hidden; }
+.v2-empapeladas.abierto { border-color: var(--rojo); }
+.v2-empapeladas-cab { width: 100%; min-height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; border: 0; background: transparent; color: var(--texto); font-family: var(--font-body); text-align: left; cursor: pointer; }
+.v2-empapeladas-cab span:first-child { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.v2-empapeladas-cab b { font-family: var(--font-title); font-weight: 800; font-size: 15px; }
+.v2-empapeladas-cab small { font-size: 12px; color: var(--texto-suave); }
+.v2-empapeladas-flecha { font-size: 18px; color: var(--rojo); transition: transform .15s; }
+.v2-empapeladas.abierto .v2-empapeladas-flecha { transform: rotate(180deg); }
+.v2-empapeladas-cab:focus-visible { outline: 3px solid var(--dorado, #F0A020); outline-offset: -3px; }
+.v2-empapeladas-cuerpo { display: flex; flex-direction: column; gap: 6px; padding: 0 16px 14px; }
+.v2-empapeladas-select { width: 100%; min-height: 48px; padding: 10px 12px; border: 1.5px solid var(--gris, #ddd); border-radius: 12px; background: var(--crema); color: var(--texto); font-family: var(--font-body); font-size: 15px; }
+.v2-empapeladas-select:focus { outline: none; border-color: var(--rojo); }
+.v2-empapeladas-nota { margin: 0; font-size: 12px; color: var(--texto-suave); }
+@media (prefers-reduced-motion: reduce) { .v2-empapeladas-flecha { transition: none; } }
