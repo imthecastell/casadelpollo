@@ -7,6 +7,7 @@ import Icono from '../Components/Icono.jsx'
 import PieV2 from '../Components/PieV2.jsx'
 import EncuestaPedido from '../Components/EncuestaPedido.jsx'
 import AvisoAirfryer from '../Components/AvisoAirfryer.jsx'
+import AvisoEvento from '../Components/AvisoEvento.jsx'
 import { tagsDe } from '../data/productTags'
 import { MarimadoImg } from '../Components/SeccionMarinados.jsx'
 import { GuiaCocinaPanel, guiaDisponible } from '../Components/GuiaCocina.jsx'
@@ -1336,6 +1337,7 @@ export default function HomeV2Preview() {
     // al no tener position/opacity/transform no crea un stacking context
     // nuevo, así que no reintroduce ese bug.
     <div className="v2-shell-root">
+    <AvisoEvento />
     <div className="v2-shell" style={colorTopbar ? { '--cab-color': colorTopbar } : undefined}>
 
       <div className="v2-topbar" ref={topbarRef}>
