@@ -60,6 +60,33 @@ const varianteMilanesa = p =>
   p?.category_name === 'Milanesas' ? MILANESAS_VARIANTES.findIndex(v => v.match(normalizarNombre(p.name))) : -1
 const esMilanesaOfrecida = p => varianteMilanesa(p) >= 0
 const esMilanesaNatural = p => varianteMilanesa(p) === 0
+// Milanesas empapeladas: las de sabor (Ajo con especias, Buffalo, Chipotle…). Se piden dentro de Milanesas
+// eligiendo el sabor en un menú desplegable.
+const esMilanesaEmpapelada = p => p?.category_name === 'Milanesas' && p.active !== false && varianteMilanesa(p) < 0
+const nombreMilanesaEmpapelada = p => (/^milanesa/i.test(p.name) ? p.name : `Milanesa ${p.name}`)
+
+function EmpapeladasSelector({ sabores, onElegir }) {
+  const [abierto, setAbierto] = useState(false)
+  return (
+    <div className={`v2-empapeladas${abierto ? ' abierto' : ''}`}>
+      <button type="button" className="v2-empapeladas-cab" aria-expanded={abierto} onClick={() => setAbierto(a => !a)}>
+        <span><b>Empapeladas</b><small>Milanesas con sabor · elige el tuyo</small></span>
+        <span className="v2-empapeladas-flecha" aria-hidden="true">▾</span>
+      </button>
+      {abierto && (
+        <div className="v2-empapeladas-cuerpo">
+          <label className="config-label" htmlFor="v2-sabor-empapelada">Sabor</label>
+          <select id="v2-sabor-empapelada" className="v2-empapeladas-select" defaultValue=""
+            onChange={e => { const p = sabores.find(x => String(x.id) === e.target.value); if (p) onElegir(p) }}>
+            <option value="" disabled>Elige un sabor</option>
+            {sabores.map(p => <option key={p.id} value={p.id}>{p.name} · ${Number(p.price)}/kg</option>)}
+          </select>
+          <p className="v2-empapeladas-nota">Por pieza · precio por kg, se cobra al pesar.</p>
+        </div>
+      )}
+    </div>
+  )
+}
 
 function calcularTiempoMarinado(gramos) {
   const base = 20
@@ -297,7 +324,7 @@ const GRUPOS_PREPARADOS = [
   {
     id: 'milanesas',
     nombre: 'Milanesas',
-    desc: 'Naturales o empanizadas',
+    desc: 'Naturales, empanizadas y empapeladas',
     match: esMilanesaOfrecida,
     shortName: p => MILANESAS_VARIANTES[varianteMilanesa(p)]?.corto ?? p.name,
     orden: varianteMilanesa,
@@ -724,6 +751,7 @@ export default function HomeV2Preview() {
   const preparadosItems = agruparPreparados(
     productos.filter(p => (p.category_name === 'Preparados' || esMilanesaOfrecida(p)) && p.active !== false)
   )
+  const milanesasEmpapeladas = productos.filter(esMilanesaEmpapelada).sort((a, b) => a.name.localeCompare(b.name, 'es'))
   // Igual que MenuPrincipal: sucursales sin bowls (diseno.bowls_enabled =
   // false, ej. El Parque) no muestran ningún acceso a "Arma tu Bowl".
   const bowlsActivo = diseno?.bowls_enabled !== false
@@ -962,7 +990,7 @@ export default function HomeV2Preview() {
       : usaPiezasSel
       ? {
           tipo: seleccionProducto.category_name === 'Milanesas' ? 'milanesa' : 'preparado',
-          nombre: seleccionProducto.name,
+          nombre: esMilanesaEmpapelada(seleccionProducto) ? nombreMilanesaEmpapelada(seleccionProducto) : seleccionProducto.name,
           cantidad: gramosSel,
           precioKg: seleccionProducto.price,
           precio: seleccionProducto.price,
@@ -970,7 +998,7 @@ export default function HomeV2Preview() {
           tiempoEstimado: cocinado ? tiempoEstimadoSel : null,
           necesitaHora: true,
           imagen_url: img(seleccionProducto),
-          resumen: `${seleccionProducto.name} × ${gramosSel} pz${cocinado ? ` · Cocinado ~${tiempoEstimadoSel} min` : ''} · $${Number(seleccionProducto.price)}/kg · precio al pesar`,
+          resumen: `${esMilanesaEmpapelada(seleccionProducto) ? nombreMilanesaEmpapelada(seleccionProducto) : seleccionProducto.name} × ${gramosSel} pz${cocinado ? ` · Cocinado ~${tiempoEstimadoSel} min` : ''} · $${Number(seleccionProducto.price)}/kg · precio al pesar`,
         }
       : {
           tipo: 'marinado',
@@ -2684,6 +2712,10 @@ export default function HomeV2Preview() {
                   </div>
                 </div>
               ))}
+              {grupoAbierto.id === 'milanesas' && milanesasEmpapeladas.length > 0 && (
+                <EmpapeladasSelector sabores={milanesasEmpapeladas}
+                  onElegir={(p) => { abrirSeleccion(p); setGrupoAbierto(null) }} />
+              )}
             </div>
           </div>
         </div>
