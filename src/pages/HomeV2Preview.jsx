@@ -30,6 +30,22 @@ const PZ_PASO = 10
 const PREP_MIN = 1
 const PREP_MAX = 10
 const PREP_PASO = 1
+// Pollo fresco se pide por gramos o por piezas (5 muslos): por piezas el precio es por kg y se cobra al pesar al empacar.
+const FRESCO_PZ_MIN = 1
+const FRESCO_PZ_MAX = 20
+const FRESCO_PZ_INICIAL = 4
+const esFresco = p => p?.category_name === 'Pollo Fresco'
+
+function SelectorModoFresco({ modo, onCambiar }) {
+  return (
+    <div className="v2-modo" role="radiogroup" aria-label="Cómo quieres pedirlo">
+      {[['gramos', 'Por gramos'], ['piezas', 'Por piezas']].map(([clave, texto]) => (
+        <button key={clave} type="button" role="radio" aria-checked={modo === clave}
+          className={`v2-modo-op${modo === clave ? ' on' : ''}`} onClick={() => onCambiar(clave)}>{texto}</button>
+      ))}
+    </div>
+  )
+}
 const esPorPiezas = p => /alb[oó]ndigas/i.test(p?.name || '')
 const esPreparado = p => (p?.category_name === 'Preparados' || p?.category_name === 'Milanesas') && !esPorPiezas(p)
 
@@ -415,6 +431,7 @@ export default function HomeV2Preview() {
   const [categoria, setCategoria] = useState('marinados')
   const [seleccionProducto, setSeleccionProducto] = useState(null)
   const [gramosSel, setGramosSel] = useState(300)
+  const [modoFrescoSel, setModoFrescoSel] = useState('gramos')   // 'gramos' | 'piezas' (solo Pollo fresco)
   // "¿Cuántos son?" del Home: solo cambia los gramos con los que se abre un marinado.
   const [personasHome, setPersonasHome] = useState(1)
   const [recogidaSel, setRecogidaSel] = useState('crudo')
@@ -853,7 +870,9 @@ export default function HomeV2Preview() {
   const esPreparadoSel = esPreparado(seleccionProducto)
   const tieneGuia = guiaDisponible(seleccionProducto) && recogidaSel !== 'cocinado'
   const verGuia = tieneGuia && guiaAbierta
-  const usaPiezasSel   = esPorPiezasSel || esPreparadoSel
+  const esFrescoSel = esFresco(seleccionProducto)
+  const frescoPiezasSel = esFrescoSel && modoFrescoSel === 'piezas'
+  const usaPiezasSel   = esPorPiezasSel || esPreparadoSel || frescoPiezasSel
   // Preparados y albóndigas se eligen por pieza pero el precio es por kg: se cobran al pesar.
   const precioTotalSel = seleccionProducto
     ? usaPiezasSel
@@ -865,6 +884,7 @@ export default function HomeV2Preview() {
     setSeleccionProducto(p)
     setGramosSel(esPorPiezas(p) ? 20 : esPreparado(p) ? 1 : Math.min(MARINADO_MAX, Math.max(MARINADO_MIN, Math.round((personasHome * 300) / MARINADO_PASO) * MARINADO_PASO)))
     setRecogidaSel('crudo')
+    setModoFrescoSel('gramos')
     setAgregadoSel(false)
     setStepComplementos(false)
     setComplementosSel([])
@@ -875,6 +895,7 @@ export default function HomeV2Preview() {
     setSeleccionProducto(null)
     setGramosSel(300)
     setRecogidaSel('crudo')
+    setModoFrescoSel('gramos')
     setStepComplementos(false)
     setComplementosSel([])
     setGuiaAbierta(false)
@@ -904,9 +925,16 @@ export default function HomeV2Preview() {
     cerrarModal()
   }
 
+  function cambiarModoFrescoSel(modo) {
+    setModoFrescoSel(modo)
+    setGramosSel(modo === 'piezas'
+      ? FRESCO_PZ_INICIAL
+      : Math.min(MARINADO_MAX, Math.max(MARINADO_MIN, Math.round((personasHome * 300) / MARINADO_PASO) * MARINADO_PASO)))
+  }
+
   function cambiarGramosSel(delta) {
-    const min = esPorPiezasSel ? PZ_MIN : esPreparadoSel ? PREP_MIN : MARINADO_MIN
-    const max = esPorPiezasSel ? PZ_MAX : esPreparadoSel ? PREP_MAX : MARINADO_MAX
+    const min = esPorPiezasSel ? PZ_MIN : frescoPiezasSel ? FRESCO_PZ_MIN : esPreparadoSel ? PREP_MIN : MARINADO_MIN
+    const max = esPorPiezasSel ? PZ_MAX : frescoPiezasSel ? FRESCO_PZ_MAX : esPreparadoSel ? PREP_MAX : MARINADO_MAX
     setGramosSel(prev => Math.min(max, Math.max(min, prev + delta)))
   }
 
@@ -920,7 +948,18 @@ export default function HomeV2Preview() {
   function handleAgregarSel() {
     if (!seleccionProducto) return
     const cocinado = recogidaSel === 'cocinado'
-    agregarAlCarrito(usaPiezasSel
+    agregarAlCarrito(frescoPiezasSel
+      ? {
+          tipo: 'pieza',
+          nombre: seleccionProducto.name,
+          cantidad: gramosSel,
+          precioKg: seleccionProducto.price,
+          precio: seleccionProducto.price,
+          necesitaHora: true,
+          imagen_url: img(seleccionProducto),
+          resumen: `${seleccionProducto.name} × ${gramosSel} pz · $${Number(seleccionProducto.price)}/kg · se pesa al empacar`,
+        }
+      : usaPiezasSel
       ? {
           tipo: seleccionProducto.category_name === 'Milanesas' ? 'milanesa' : 'preparado',
           nombre: seleccionProducto.name,
@@ -1084,6 +1123,9 @@ export default function HomeV2Preview() {
   }
 
   const productoAsistente = asistente.producto
+  // Pollo fresco: por piezas (como siempre en el asistente) o por gramos.
+  const modoFrescoAsistente = asistente.modoFresco || 'piezas'
+  const frescoGramosAsistente = asistente.categoria === 'fresco' && modoFrescoAsistente === 'gramos'
   const tiempoEstimadoAsistente = calcularTiempoMarinado(asistente.gramos)
   const precioTotalAsistenteMarinado = productoAsistente ? (asistente.gramos / 1000) * parseFloat(productoAsistente.price || 0) : 0
 
@@ -1197,6 +1239,22 @@ export default function HomeV2Preview() {
 
   function confirmarConfigAsistente() {
     if (!productoAsistente) return
+    if (asistente.categoria === 'fresco' && modoFrescoAsistente === 'gramos') {
+      agregarAlCarrito({
+        tipo: 'marinado',
+        nombre: productoAsistente.name,
+        gramos: asistente.gramos,
+        recogida: 'crudo',
+        tiempoEstimado: null,
+        necesitaHora: true,
+        precio: productoAsistente.price,
+        precioTotal: precioTotalAsistenteMarinado,
+        imagen_url: img(productoAsistente),
+        resumen: `${productoAsistente.name} ${asistente.gramos}g · Crudo · $${precioTotalAsistenteMarinado.toFixed(2)}`,
+      })
+      patchAsistente({ paso: 5 })
+      return
+    }
     if (asistente.categoria === 'marinados') {
       agregarAlCarrito({
         tipo: 'marinado',
@@ -1232,7 +1290,7 @@ export default function HomeV2Preview() {
         precioKg: productoAsistente.price,
         precio: productoAsistente.price,
         imagen_url: productoAsistente.image_url,
-        resumen: `${productoAsistente.name} × ${asistente.cantidad} pz · $${productoAsistente.price}/kg (se pesa al entregar)`,
+        resumen: `${productoAsistente.name} × ${asistente.cantidad} pz · $${productoAsistente.price}/kg · se pesa al empacar`,
       })
     }
     patchAsistente({ paso: 5 })
@@ -1861,20 +1919,23 @@ export default function HomeV2Preview() {
               </>)}
             </div>
 
+            {esFrescoSel && <SelectorModoFresco modo={modoFrescoSel} onCambiar={cambiarModoFrescoSel} />}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
               <label className="config-label" style={{ marginBottom: 0 }}>Cantidad</label>
               <span style={{ fontSize: 11, color: 'var(--texto-suave)' }}>
-                {esPorPiezasSel ? 'charola 20 pz' : esPreparadoSel ? '' : 'sugerido 300 g por persona'}
+                {esPorPiezasSel ? 'charola 20 pz' : (esPreparadoSel || frescoPiezasSel) ? '' : 'sugerido 300 g por persona'}
               </span>
             </div>
             <div className="cantidad-ctrl">
-              <button className="cantidad-btn" onClick={() => cambiarGramosSel(usaPiezasSel ? -(esPorPiezasSel ? PZ_PASO : PREP_PASO) : -MARINADO_PASO)} disabled={gramosSel <= (esPorPiezasSel ? PZ_MIN : esPreparadoSel ? PREP_MIN : MARINADO_MIN)}>−</button>
+              <button className="cantidad-btn" onClick={() => cambiarGramosSel(usaPiezasSel ? -(esPorPiezasSel ? PZ_PASO : PREP_PASO) : -MARINADO_PASO)} disabled={gramosSel <= (esPorPiezasSel ? PZ_MIN : frescoPiezasSel ? FRESCO_PZ_MIN : esPreparadoSel ? PREP_MIN : MARINADO_MIN)}>−</button>
               <span className="cantidad-num" style={{ fontSize: 20, minWidth: 60, textAlign: 'center' }}>{gramosSel}{usaPiezasSel ? ' pz' : 'g'}</span>
-              <button className="cantidad-btn" onClick={() => cambiarGramosSel(usaPiezasSel ? (esPorPiezasSel ? PZ_PASO : PREP_PASO) : MARINADO_PASO)} disabled={gramosSel >= (esPorPiezasSel ? PZ_MAX : esPreparadoSel ? PREP_MAX : MARINADO_MAX)}>+</button>
+              <button className="cantidad-btn" onClick={() => cambiarGramosSel(usaPiezasSel ? (esPorPiezasSel ? PZ_PASO : PREP_PASO) : MARINADO_PASO)} disabled={gramosSel >= (esPorPiezasSel ? PZ_MAX : frescoPiezasSel ? FRESCO_PZ_MAX : esPreparadoSel ? PREP_MAX : MARINADO_MAX)}>+</button>
             </div>
             <div style={{ fontSize: 12, color: 'var(--texto-suave)', margin: '6px 0 16px' }}>
               {esPorPiezasSel
                 ? `Mín. ${PZ_MIN} pz · charola ${PZ_PASO * 2} pz · de ${PZ_PASO} en ${PZ_PASO} · precio final al pesar`
+                : frescoPiezasSel
+                  ? `De 1 en 1 · máx. ${FRESCO_PZ_MAX} pz · se pesa al empacar, el precio final se confirma al pesar`
                 : esPreparadoSel
                   ? 'De 1 en 1 · precio final al pesar'
                   : `${MARINADO_MIN}g — ${MARINADO_MAX}g · intervalos de ${MARINADO_PASO}g`}
@@ -2331,14 +2392,17 @@ export default function HomeV2Preview() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div className="producto-nombre">{productoAsistente.name}</div>
                       <div className="producto-precio">
-                        ${productoAsistente.price}{asistente.categoria === 'fresco' ? '/kg (se pesa al entregar)' : '/kg (por pieza)'}
+                        ${productoAsistente.price}{asistente.categoria === 'fresco' ? '/kg (se pesa al empacar)' : '/kg (por pieza)'}
                       </div>
                     </div>
                   </div>
                 )}
 
                 <div className="configurador-card" style={{ marginTop: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0 }}>
-                  {asistente.categoria === 'marinados' ? (
+                  {asistente.categoria === 'fresco' && (
+                    <SelectorModoFresco modo={modoFrescoAsistente} onCambiar={(modo) => patchAsistente({ modoFresco: modo })} />
+                  )}
+                  {asistente.categoria === 'marinados' || frescoGramosAsistente ? (
                     <div>
                       <label className="config-label">Cantidad</label>
                       <div className="cantidad-ctrl">
