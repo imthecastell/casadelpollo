@@ -2294,7 +2294,7 @@ export default function HomeV2Preview() {
                     <div className="v2-asistente-bowl-seleccionado">
                       <img src={bowlMarinadoAsistente.image_cooked_url || bowlMarinadoAsistente.image_url} alt="" />
                       <span>{bowlMarinadoAsistente.name}{bowlMarinadoAsistente.category_name === 'Milanesas' ? ' · 1 pz' : ''}</span>
-                      <button onClick={() => patchAsistente({ bowlMarinadoId: '' })}>cambiar ✕</button>
+                      <button type="button" onClick={() => patchAsistente({ bowlMarinadoId: '' })}>Cambiar</button>
                     </div>
                   ) : (
                     Object.entries(bowlMarinadoGroupsAsistente).map(([catName, items]) => {
