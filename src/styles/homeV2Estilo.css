@@ -191,3 +191,13 @@
 .v2-enc-error { color: #b3261e; font-size: 13px; margin: 0; }
 .v2-enc-gracias { gap: 4px; background: #E4F3EA; color: #1F5C34; }
 .v2-enc-gracias span { font-size: 13px; }
+
+/* Bowl (asistente): los botones y textos de marinado heredan la tipografía y el estilo del resto de la tienda
+   (antes salían con la fuente y el borde por defecto del navegador). */
+.v2-asistente-bowl-seleccionado > span { flex: 1; min-width: 0; font-family: var(--font-title); font-weight: 800; font-size: 15px; line-height: 1.25; color: var(--texto); }
+.v2-asistente-bowl-seleccionado > button { flex: none; border: 0; border-radius: 99px; background: #fff; color: var(--rojo); font-family: var(--font-body); font-weight: 700; font-size: 13px; padding: 8px 16px; min-height: 40px; cursor: pointer; box-shadow: 0 1px 4px rgba(26,8,6,.12); }
+.v2-asistente-bowl-seleccionado > button:focus-visible { outline: 3px solid var(--dorado, #F0A020); outline-offset: 2px; }
+.v2-asistente-bowl-grupo-head { font-family: var(--font-title); min-height: 46px; }
+.v2-asistente-bowl-grupo-head span:last-child { font-family: var(--font-body); }
+.v2-asistente-bowl-grupo-sabores button { font-family: var(--font-body); font-size: 14px; min-height: 46px; padding: 12px 14px; }
+.v2-asistente-bowl-grupo-sabores button:hover, .v2-asistente-bowl-grupo-sabores button:focus-visible { background: var(--crema); color: var(--rojo); outline: none; }
