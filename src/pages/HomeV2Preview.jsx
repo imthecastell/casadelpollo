@@ -487,7 +487,7 @@ export default function HomeV2Preview() {
     gramos: 300, cantidad: 1, recogida: 'crudo', complementos: {},
     bowlBaseId: '', bowlMarinadoId: '', bowlMarinadoCat: '', bowlExtraBase: 0, bowlExtraMarinado: 0,
     hora: null, asap: false, nombre: '', telefono: '', numeroOrden: null,
-    entrega: 'recoger', direccion: '', numeroCasa: '', referencia: '',
+    entrega: 'recoger', direccion: '', numeroCasa: '', referencia: '', notas: '',
     agregado: false, mostrarAviso: false, confirmado: false,
   })
   const [toast, setToast] = useState('')
@@ -1047,7 +1047,7 @@ export default function HomeV2Preview() {
       gramos: 300, cantidad: 1, recogida: 'crudo', complementos: {},
       bowlBaseId: '', bowlMarinadoId: '', bowlMarinadoCat: '', bowlExtraBase: 0, bowlExtraMarinado: 0,
       hora: null, asap: false, nombre: '', telefono: '', numeroOrden: null,
-      entrega: 'recoger', direccion: '', numeroCasa: '', referencia: '',
+      entrega: 'recoger', direccion: '', numeroCasa: '', referencia: '', notas: '',
       agregado: false, mostrarAviso: false, confirmado: false,
     })
   }
@@ -1075,7 +1075,7 @@ export default function HomeV2Preview() {
       gramos: 300, cantidad: 1, recogida: 'crudo', complementos: {},
       bowlBaseId: '', bowlMarinadoId: '', bowlMarinadoCat: '', bowlExtraBase: 0, bowlExtraMarinado: 0,
       hora: null, asap: false, nombre: '', telefono: '', numeroOrden: null,
-      entrega: 'recoger', direccion: '', numeroCasa: '', referencia: '',
+      entrega: 'recoger', direccion: '', numeroCasa: '', referencia: '', notas: '',
       agregado: false, mostrarAviso: false, confirmado: false, desdeCarrito: true,
     })
   }
@@ -1102,7 +1102,7 @@ export default function HomeV2Preview() {
       gramos: 300, cantidad: 1, recogida: 'crudo', complementos: {},
       bowlMarinadoCat: '', bowlExtraBase: 0, bowlExtraMarinado: 0,
       hora: null, asap: false, nombre: '', telefono: '', numeroOrden: null,
-      entrega: 'recoger', direccion: '', numeroCasa: '', referencia: '',
+      entrega: 'recoger', direccion: '', numeroCasa: '', referencia: '', notas: '',
       agregado: false, mostrarAviso: false, confirmado: false,
       ...idsBowlPorDefecto(),
     })
@@ -1397,7 +1397,7 @@ export default function HomeV2Preview() {
   async function confirmarAsistente() {
     if (!puedeConfirmarAsistente || asistente.enviando) return
     patchAsistente({ enviando: true, errorEnvio: '' })
-    const datosCliente = { nombre: asistente.nombre.trim(), telefono: asistente.telefono.trim() }
+    const datosCliente = { nombre: asistente.nombre.trim(), telefono: asistente.telefono.trim(), notas: (asistente.notas || '').trim() }
     // Sucursales sin pedidos en línea reciben el pedido por WhatsApp; en modo
     // prueba igual se registra en el sistema (no se abre WhatsApp, para no
     // mandarle nada real a la tienda) y se muestra el mensaje que llegaría.
@@ -2146,6 +2146,9 @@ export default function HomeV2Preview() {
                 <span>{aDomicilio ? 'Hora de entrega' : 'Hora de recogida'}</span>
                 <span>{asistente.asap ? '⚡ Lo antes posible' : formatearHora12(asistente.hora)}</span>
               </div>
+              {asistente.notas && asistente.notas.trim() && (
+                <p className="v2-asistente-recibo-envio"><b>Tus instrucciones</b><br />{asistente.notas.trim()}</p>
+              )}
               {aDomicilio ? (
                 <>
                   <p className="v2-asistente-recibo-envio"><b>Servicio a domicilio</b><br />{asistente.direccion} #{asistente.numeroCasa}</p>
@@ -2631,6 +2634,19 @@ export default function HomeV2Preview() {
                       onChange={(e) => patchAsistente({ telefono: e.target.value })}
                       style={{ width: '100%', padding: '11px 14px', border: '1.5px solid var(--gris)', borderRadius: 'var(--radio)', fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--texto)', background: 'var(--crema)', outline: 'none' }}
                     />
+                  </div>
+                  <div>
+                    <label className="config-label" htmlFor="v2-notas-pedido">Instrucciones especiales (opcional)</label>
+                    <textarea
+                      id="v2-notas-pedido"
+                      className="v2-entrega-input"
+                      rows={3}
+                      maxLength={300}
+                      placeholder="Ej. sin picante, bien dorado, la salsa aparte…"
+                      value={asistente.notas || ''}
+                      onChange={(e) => patchAsistente({ notas: e.target.value })}
+                    />
+                    <div className="v2-notas-contador" aria-hidden="true">{(asistente.notas || '').length}/300</div>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff5eb', border: '1.5px solid #e85d0433', borderRadius: 'var(--radio)', padding: '12px 16px' }}>
                     <span style={{ fontSize: 14, color: 'var(--cafe-medio)' }}>{aDomicilio ? 'Hora de entrega' : 'Hora de recogida'}</span>
