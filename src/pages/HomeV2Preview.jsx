@@ -738,6 +738,14 @@ export default function HomeV2Preview() {
     setTab(t)
   }
 
+  // El logo de la barra superior lleva al inicio: vuelve a la pestaña Home y sube al principio.
+  function irAlInicio(e) {
+    e.preventDefault()
+    cambiarTab('home')
+    // Después de que el Home se pinte: antes, el contenido de la otra pestaña conserva su scroll.
+    setTimeout(() => contenidoRef.current?.scrollTo({ top: 0 }), 60)
+  }
+
   function elegirSucursal(s) {
     setSucursalActiva(s)
     try { localStorage.setItem(SUCURSAL_CLAVE, String(s.id)) } catch { /* modo privado */ }
@@ -1434,7 +1442,7 @@ export default function HomeV2Preview() {
             <span className="v2-tb-pill-suc">{sucursalActiva.name}</span>
           </button>
         </div>
-        <div className="v2-tb-logo-wrap">
+        <a className="v2-tb-logo-wrap" href="/" onClick={irAlInicio} aria-label="Casa del Pollo, ir al inicio">
           <div className="v2-tb-logo-crop">
             <LogoSlot
               type="logotipo"
@@ -1444,7 +1452,7 @@ export default function HomeV2Preview() {
               imgStyle={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
             />
           </div>
-        </div>
+        </a>
         <div className="v2-tb-derecha">
           <button className="v2-tb-btn" onClick={() => setMostrarBuscador(true)}>
             <span className="v2-tb-btn-icono" aria-hidden="true"><Icono nombre="magnifying-glass" /></span>

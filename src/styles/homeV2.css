@@ -108,7 +108,8 @@
   font-family: var(--font-title); font-weight: 700; font-size: 12px; line-height: 1.1; color: var(--texto);
   white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis;
 }
-.v2-tb-logo-wrap { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; }
+.v2-tb-logo-wrap { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; padding: 6px 8px; border-radius: 10px; text-decoration: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.v2-tb-logo-wrap:focus-visible { outline: 3px solid var(--dorado, #F0A020); outline-offset: 2px; }
 .v2-tb-logo-crop { position: relative; overflow: hidden; height: 32px; aspect-ratio: 6859 / 1743; }
 .v2-tb-derecha { display: flex; align-items: center; gap: 6px; }
 .v2-tb-badge {
