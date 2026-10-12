@@ -194,6 +194,9 @@
 /* Bowl: la foto termina justo encima de la tarjeta flotante para que la base no quede tapada. */
 .v2-promo-slide-bowl { background: #cdb794; }
 .v2-promo-slide-bowl .v2-promo-foto-completa { bottom: auto; height: calc(100% - 116px); }
+/* Lealtad: la ilustración termina encima de la tarjeta flotante, con el rojo de la ilustración de fondo. */
+.v2-promo-slide-lealtad { background: #A41F10; }
+.v2-promo-slide-lealtad .v2-promo-foto-completa { bottom: auto; height: calc(100% - 116px); }
 .v2-promo-badge {
   display: inline-block; background: #fff; color: var(--rojo);
   font-family: var(--font-title); font-weight: 800; font-size: 10.5px; letter-spacing: .04em;
