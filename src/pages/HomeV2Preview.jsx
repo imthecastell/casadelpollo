@@ -800,7 +800,7 @@ export default function HomeV2Preview() {
     // Invitación al programa de lealtad: solo para quien aún no tiene tarjeta en este dispositivo.
     !lealtad && {
       badge: 'LEALTAD', titulo: 'Únete al programa de lealtad', desc: '2 visitas de regalo y hasta 15% de descuento.',
-      cta: 'Crear mi tarjeta', imagen: `${import.meta.env.BASE_URL}promo/lealtad.svg`,
+      cta: 'Crear mi tarjeta', imagen: `${import.meta.env.BASE_URL}promo/lealtad.jpg`,
       clase: 'v2-promo-slide-lealtad',
       accion: () => cambiarTab('lealtad'),
     },
