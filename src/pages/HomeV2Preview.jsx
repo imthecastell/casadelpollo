@@ -797,6 +797,13 @@ export default function HomeV2Preview() {
       cta: 'Ver todos', imagen: img(marinadosImg[2]),
       accion: () => { cambiarTab('productos'); setCategoria('marinados') },
     },
+    // Invitación al programa de lealtad: solo para quien aún no tiene tarjeta en este dispositivo.
+    !lealtad && {
+      badge: 'LEALTAD', titulo: 'Únete al programa de lealtad', desc: '2 visitas de regalo y hasta 15% de descuento.',
+      cta: 'Crear mi tarjeta', imagen: `${import.meta.env.BASE_URL}promo/lealtad.svg`,
+      clase: 'v2-promo-slide-lealtad',
+      accion: () => cambiarTab('lealtad'),
+    },
   ].filter(Boolean)
 
   // Sucursales con catálogo corto (ej. El Parque: 2 marinados y sin bowls)
@@ -1473,7 +1480,7 @@ export default function HomeV2Preview() {
             {promos.length > 0 && (
               <div className="v2-carrusel v2-carrusel-promo">
                 {promos.map((p, i) => (
-                  <div key={p.titulo} className={`v2-promo-slide${i === idxHero ? ' on' : ''}${p.objectPos ? ' v2-promo-slide-bowl' : ''}`} onClick={p.accion}>
+                  <div key={p.titulo} className={`v2-promo-slide${i === idxHero ? ' on' : ''}${p.objectPos ? ' v2-promo-slide-bowl' : ''}${p.clase ? ` ${p.clase}` : ''}`} onClick={p.accion}>
                     <img className="v2-promo-foto-completa" src={p.imagen} alt={p.titulo} />
                     <div className="v2-promo-tarjeta">
                       <div className="v2-promo-texto">
