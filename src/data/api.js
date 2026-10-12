@@ -30,6 +30,11 @@ export function getBanners(tipo) {
   return apiFetch(`${API_URL}/api/banners?tipo=${tipo}`);
 }
 
+// Galería (pública): fotos por categoría, p. ej. 'bowls'.
+export function getMedia(categoria) {
+  return apiFetch(`${API_URL}/api/media?categoria=${encodeURIComponent(categoria)}`);
+}
+
 export function getSchedule(branchId) {
   const url = branchId
     ? `${API_URL}/api/schedule/${branchId}`
