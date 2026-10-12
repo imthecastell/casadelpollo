@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect, useMemo, useRef } from 'react'
 import QRCode from 'qrcode'
 import { useApp } from '../data/AppContext.jsx'
-import { getDesign } from '../data/api.js'
+import { getDesign, getMedia } from '../data/api.js'
 import LogoSlot from '../Components/LogoSlot.jsx'
 import Icono from '../Components/Icono.jsx'
 import PieV2 from '../Components/PieV2.jsx'
@@ -95,6 +95,33 @@ function calcularTiempoMarinado(gramos) {
 }
 
 const BOWL_PORTADA_CDN = 'https://res.cloudinary.com/do4juvxio/image/upload/c_limit,w_900/design/bowl_portada.webp'
+
+// Fotos de la galería (categoría Bowls, etiqueta "bowl") para el slideshow de "Arma tu Bowl": primero las de arroz,
+// luego pasta y ensalada, para que se vea la variedad de bases. Se piden ya optimizadas (ancho 900, formato automático).
+const ORDEN_BASE_BOWL = ['arroz', 'pasta', 'ensalada']
+function fotosDeBowls(items) {
+  const rank = (m) => { const i = ORDEN_BASE_BOWL.findIndex(b => (m.etiquetas || []).includes(b)); return i < 0 ? 99 : i }
+  return (Array.isArray(items) ? items : [])
+    .filter(m => m.url && (m.etiquetas || []).includes('bowl'))
+    .sort((a, b) => rank(a) - rank(b) || String(a.nombre).localeCompare(String(b.nombre), 'es'))
+    .map(m => m.url.replace('/upload/', '/upload/c_limit,w_900,f_auto,q_auto/'))
+}
+
+// Varias fotos apiladas que se alternan con un fundido; solo avanza mientras `activa` (p. ej. el slide visible).
+// Con "reducir movimiento" se queda en la primera. Las imágenes heredan la clase/posición del contenedor.
+function FotosRotativas({ fotos, alt, className, activa = true, intervalo = 3800, posicion = '50% 55%' }) {
+  const [actual, setActual] = useState(0)
+  const reducido = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  useEffect(() => {
+    if (fotos.length < 2 || !activa || reducido) return undefined
+    const t = setInterval(() => setActual(n => (n + 1) % fotos.length), intervalo)
+    return () => clearInterval(t)
+  }, [fotos.length, activa, intervalo, reducido])
+  return fotos.map((src, k) => (
+    <img key={src} className={className} src={src} alt={k === actual ? alt : ''} aria-hidden={k !== actual}
+      style={{ opacity: k === actual ? 1 : 0, transition: reducido ? 'none' : 'opacity .9s ease', objectPosition: posicion }} />
+  ))
+}
 
 // Elige `cantidad` productos "al azar" pero estables durante todo el día:
 // la semilla sale de la fecha (YYYY-MM-DD), así que todos ven los mismos
@@ -495,6 +522,12 @@ export default function HomeV2Preview() {
   const [selectorSucursalAbierto, setSelectorSucursalAbierto] = useState(false)
   const [links, setLinks] = useState(null)
   const [heroIdx, setHeroIdx] = useState(0)
+  const [fotosBowl, setFotosBowl] = useState([])   // URLs de la galería para el slideshow de "Arma tu Bowl"
+  useEffect(() => {
+    let vigente = true
+    getMedia('bowls').then(m => { if (vigente) setFotosBowl(fotosDeBowls(m)) }).catch(() => {})
+    return () => { vigente = false }
+  }, [])
   const [bowlsPorSuc, setBowlsPorSuc] = useState({})
   const [avisoBowl, setAvisoBowl] = useState(null)
   const [menuInfoAbierto, setMenuInfoAbierto] = useState(false)
@@ -789,7 +822,7 @@ export default function HomeV2Preview() {
     },
     bowlsActivo && {
       badge: 'BOWLS', titulo: 'Arma tu Bowl', desc: 'Base + marinado + tu toque, listo en minutos.',
-      cta: 'Empezar', imagen: bowlImg, objectPos: 'bottom center',
+      cta: 'Empezar', imagen: bowlImg, fotos: fotosBowl, objectPos: 'bottom center',
       accion: () => abrirBowlDirecto(),
     },
     marinadosImg[2] && {
@@ -1481,7 +1514,9 @@ export default function HomeV2Preview() {
               <div className="v2-carrusel v2-carrusel-promo">
                 {promos.map((p, i) => (
                   <div key={p.titulo} className={`v2-promo-slide${i === idxHero ? ' on' : ''}${p.objectPos ? ' v2-promo-slide-bowl' : ''}${p.clase ? ` ${p.clase}` : ''}`} onClick={p.accion}>
-                    <img className="v2-promo-foto-completa" src={p.imagen} alt={p.titulo} />
+                    {p.fotos?.length > 1
+                      ? <FotosRotativas fotos={p.fotos} alt={p.titulo} className="v2-promo-foto-completa" activa={i === idxHero} />
+                      : <img className="v2-promo-foto-completa" src={p.imagen} alt={p.titulo} />}
                     <div className="v2-promo-tarjeta">
                       <div className="v2-promo-texto">
                         <div className="v2-promo-badge">{p.badge}</div>
@@ -1557,7 +1592,11 @@ export default function HomeV2Preview() {
               <div className="v2-banda v2-banda-verde" data-color="#2a7a4b">
                 <div className="v2-seccion-titulo">Arma tu Bowl</div>
                 <div className="v2-bowl-hibrido" onClick={() => abrirBowlDirecto()}>
-                  <div className="v2-bowl-hibrido-foto"><img src={BOWL_PORTADA_CDN} alt="Bowl" /></div>
+                  <div className="v2-bowl-hibrido-foto">
+                    {fotosBowl.length > 1
+                      ? <FotosRotativas fotos={fotosBowl} alt="Bowls de Casa del Pollo" />
+                      : <img src={BOWL_PORTADA_CDN} alt="Bowl" />}
+                  </div>
                   <div className="v2-bowl-hibrido-panel">
                     <div className="v2-promo-badge">BOWLS</div>
                     <h3>Arma tu Bowl</h3>
@@ -1577,7 +1616,11 @@ export default function HomeV2Preview() {
                 <div className="v2-banda v2-banda-verde" data-color="#2a7a4b">
                   <div className="v2-seccion-titulo">Arma tu Bowl</div>
                   <div className="v2-bowl-hibrido v2-bowl-anuncio">
-                    <div className="v2-bowl-hibrido-foto"><img src={BOWL_PORTADA_CDN} alt="Bowl" /></div>
+                    <div className="v2-bowl-hibrido-foto">
+                    {fotosBowl.length > 1
+                      ? <FotosRotativas fotos={fotosBowl} alt="Bowls de Casa del Pollo" />
+                      : <img src={BOWL_PORTADA_CDN} alt="Bowl" />}
+                  </div>
                     <div className="v2-bowl-hibrido-panel">
                       <div className="v2-promo-badge">BOWLS</div>
                       <h3>Arma tu Bowl</h3>
