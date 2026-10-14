@@ -1136,8 +1136,7 @@ export default function HomeV2Preview() {
   // completo) ya están listos — el orden de declaración no importa aquí.
   function idsBowlPorDefecto() {
     const base = bowlBasesAsistente.find(x => x.etiqueta === 'Arroz del día')?.producto || bowlBasesAsistente[0]?.producto
-    const marinado = bowlMarinadosAsistente.find(p => p.category_name === 'Marinados') || bowlMarinadosAsistente[0]
-    return { bowlBaseId: base ? String(base.id) : '', bowlMarinadoId: marinado ? String(marinado.id) : '' }
+    return { bowlBaseId: base ? String(base.id) : '', bowlMarinadoId: '' }
   }
 
   // Accesos directos a "Arma tu Bowl" fuera del asistente (Home, banda
@@ -1253,6 +1252,18 @@ export default function HomeV2Preview() {
     if (!bowlMarinadoGroupsAsistente[cat]) bowlMarinadoGroupsAsistente[cat] = []
     bowlMarinadoGroupsAsistente[cat].push(p)
   })
+
+  // Se muestran 5 marinados con foto (primero los favoritos marcados con estrella, luego por nombre); el resto
+  // de marinados, milanesas y preparados entra por "Mostrar más opciones", en un menú desplegable.
+  const bowlMarinadosDestacados = [...(bowlMarinadoGroupsAsistente['Marinados'] || [])]
+    .sort((a, b) => (b.is_nuevo ? 1 : 0) - (a.is_nuevo ? 1 : 0) || a.name.localeCompare(b.name, 'es'))
+    .slice(0, 5)
+  const idsDestacadosBowl = new Set(bowlMarinadosDestacados.map(p => p.id))
+  const bowlMarinadosRestoPorGrupo = Object.entries(bowlMarinadoGroupsAsistente)
+    .map(([cat, items]) => [cat, items.filter(p => !idsDestacadosBowl.has(p.id))])
+    .filter(([, items]) => items.length > 0)
+  const bowlMarinadosRestoTotal = bowlMarinadosRestoPorGrupo.reduce((n, [, items]) => n + items.length, 0)
+  const bowlMasOpciones = asistente.bowlMarinadoCat === 'mas'
 
   const bowlBaseAsistente = bowlBasesAsistente.find(x => String(x.producto.id) === asistente.bowlBaseId)?.producto
   const bowlMarinadoAsistente = bowlMarinadosAsistente.find(p => String(p.id) === asistente.bowlMarinadoId)
@@ -2347,57 +2358,47 @@ export default function HomeV2Preview() {
                       <button type="button" onClick={() => patchAsistente({ bowlMarinadoId: '' })}>Cambiar</button>
                     </div>
                   ) : (
-                    Object.entries(bowlMarinadoGroupsAsistente).map(([catName, items]) => {
-                      const abierto = asistente.bowlMarinadoCat === catName
-                      return (
-                        <div key={catName} className="v2-asistente-bowl-grupo">
-                          <button className={`v2-asistente-bowl-grupo-head${abierto ? ' on' : ''}`} onClick={() => patchAsistente({ bowlMarinadoCat: abierto ? '' : catName })}>
-                            <span>{catName}</span>
-                            <span>{items.length} opciones {abierto ? '▲' : '▼'}</span>
+                    <>
+                      <p className="v2-bowl-pista">Elige tu marinado</p>
+                      <div className="v2-grid-simple">
+                        {bowlMarinadosDestacados.map(item => (
+                          <button
+                            key={item.id}
+                            type="button"
+                            className="v2-tarjeta-simple v2-asistente-producto"
+                            onClick={() => patchAsistente({ bowlMarinadoId: String(item.id), bowlMarinadoCat: '' })}
+                          >
+                            <img src={img(item)} alt={item.name} />
+                            <div className="v2-ts-scrim" />
+                            <div className="v2-ts-overlay">
+                              <div className="v2-ts-nombre">{item.name}</div>
+                            </div>
                           </button>
-                          {/* Marinados: cada sabor se ve muy distinto en foto (adobado,
-                              pesto, teriyaki...), así que vale la pena una cuadrícula de
-                              fotos grandes. Milanesas y Preparados son variantes de un
-                              mismo corte/producto (solo cambia el sazonado o la salsa) y
-                              comparten prácticamente la misma foto — mostrar 19 fotos
-                              casi idénticas de milanesas no aporta nada, así que ahí se
-                              deja una sola foto grande representativa y se listan los
-                              sabores como texto. */}
-                          {abierto && (
-                            catName === 'Marinados' ? (
-                              <div className="v2-grid-simple" style={{ marginTop: 8 }}>
-                                {items.map(item => (
-                                  <button
-                                    key={item.id}
-                                    className="v2-tarjeta-simple v2-asistente-producto"
-                                    onClick={() => patchAsistente({ bowlMarinadoId: String(item.id), bowlMarinadoCat: '' })}
-                                  >
-                                    <img src={img(item)} alt={item.name} />
-                                    <div className="v2-ts-scrim" />
-                                    <div className="v2-ts-overlay">
-                                      <div className="v2-ts-nombre">{item.name}</div>
-                                    </div>
-                                  </button>
-                                ))}
-                              </div>
-                            ) : (
-                              <div style={{ marginTop: 8 }}>
-                                <div className="v2-asistente-bowl-grupo-foto">
-                                  <img src={img(items[0])} alt={catName} />
-                                </div>
-                                <div className="v2-asistente-bowl-grupo-sabores">
+                        ))}
+                      </div>
+                      {bowlMarinadosRestoTotal > 0 && (
+                        <div className="v2-bowl-mas">
+                          <button type="button" className="v2-bowl-mas-btn" aria-expanded={bowlMasOpciones}
+                            onClick={() => patchAsistente({ bowlMarinadoCat: bowlMasOpciones ? '' : 'mas' })}>
+                            {bowlMasOpciones ? 'Ocultar más opciones' : `Mostrar más opciones (${bowlMarinadosRestoTotal})`}
+                            <span aria-hidden="true">{bowlMasOpciones ? '▲' : '▼'}</span>
+                          </button>
+                          {bowlMasOpciones && (
+                            <select className="v2-bowl-mas-select" aria-label="Más opciones de marinado" defaultValue=""
+                              onChange={e => { if (e.target.value) patchAsistente({ bowlMarinadoId: e.target.value, bowlMarinadoCat: '' }) }}>
+                              <option value="" disabled>Elige una opción</option>
+                              {bowlMarinadosRestoPorGrupo.map(([cat, items]) => (
+                                <optgroup key={cat} label={cat}>
                                   {items.map(item => (
-                                    <button key={item.id} onClick={() => patchAsistente({ bowlMarinadoId: String(item.id), bowlMarinadoCat: '' })}>
-                                      {item.name}{catName === 'Milanesas' ? ' · 1 pz' : ''}
-                                    </button>
+                                    <option key={item.id} value={item.id}>{item.name}{cat === 'Milanesas' ? ' · 1 pz' : ''}</option>
                                   ))}
-                                </div>
-                              </div>
-                            )
+                                </optgroup>
+                              ))}
+                            </select>
                           )}
                         </div>
-                      )
-                    })
+                      )}
+                    </>
                   )}
 
                   {bowlMarinadoAsistente && (
@@ -2422,7 +2423,8 @@ export default function HomeV2Preview() {
                     </div>
                   </div>
                   <button className="btn-primario" disabled={!bowlListoAsistente} onClick={confirmarBowlAsistente}>
-                    {cantidadBowl > 1 ? `Agregar ${cantidadBowl} bowls y continuar →` : 'Agregar bowl y continuar →'}
+                    {!bowlMarinadoAsistente ? 'Elige tu marinado para continuar'
+                      : cantidadBowl > 1 ? `Agregar ${cantidadBowl} bowls y continuar →` : 'Agregar bowl y continuar →'}
                   </button>
                 </div>
               </>
