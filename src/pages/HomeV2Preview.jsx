@@ -2360,29 +2360,28 @@ export default function HomeV2Preview() {
                   ) : (
                     <>
                       <p className="v2-bowl-pista">Elige tu marinado</p>
-                      <div className="v2-grid-simple">
+                      <div className="v2-bowl-mini-grid">
                         {bowlMarinadosDestacados.map(item => (
                           <button
                             key={item.id}
                             type="button"
-                            className="v2-tarjeta-simple v2-asistente-producto"
+                            className="v2-bowl-mini"
                             onClick={() => patchAsistente({ bowlMarinadoId: String(item.id), bowlMarinadoCat: '' })}
                           >
-                            <img src={img(item)} alt={item.name} />
-                            <div className="v2-ts-scrim" />
-                            <div className="v2-ts-overlay">
-                              <div className="v2-ts-nombre">{item.name}</div>
-                            </div>
+                            <img src={img(item)} alt="" />
+                            <span className="v2-bowl-mini-nombre">{item.name}</span>
                           </button>
                         ))}
+                        {bowlMarinadosRestoTotal > 0 && (
+                          <button type="button" className={`v2-bowl-mini v2-bowl-mini-mas${bowlMasOpciones ? ' on' : ''}`} aria-expanded={bowlMasOpciones}
+                            onClick={() => patchAsistente({ bowlMarinadoCat: bowlMasOpciones ? '' : 'mas' })}>
+                            <b>+{bowlMarinadosRestoTotal}</b>
+                            <span>{bowlMasOpciones ? 'Ocultar opciones' : 'Mostrar más opciones'}</span>
+                          </button>
+                        )}
                       </div>
                       {bowlMarinadosRestoTotal > 0 && (
                         <div className="v2-bowl-mas">
-                          <button type="button" className="v2-bowl-mas-btn" aria-expanded={bowlMasOpciones}
-                            onClick={() => patchAsistente({ bowlMarinadoCat: bowlMasOpciones ? '' : 'mas' })}>
-                            {bowlMasOpciones ? 'Ocultar más opciones' : `Mostrar más opciones (${bowlMarinadosRestoTotal})`}
-                            <span aria-hidden="true">{bowlMasOpciones ? '▲' : '▼'}</span>
-                          </button>
                           {bowlMasOpciones && (
                             <select className="v2-bowl-mas-select" aria-label="Más opciones de marinado" defaultValue=""
                               onChange={e => { if (e.target.value) patchAsistente({ bowlMarinadoId: e.target.value, bowlMarinadoCat: '' }) }}>
