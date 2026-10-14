@@ -1255,15 +1255,14 @@ export default function HomeV2Preview() {
 
   // Se muestran 5 marinados con foto (primero los favoritos marcados con estrella, luego por nombre); el resto
   // de marinados, milanesas y preparados entra por "Mostrar más opciones", en un menú desplegable.
-  const bowlMarinadosDestacados = [...(bowlMarinadoGroupsAsistente['Marinados'] || [])]
+  const bowlMarinadosOrdenados = [...(bowlMarinadoGroupsAsistente['Marinados'] || [])]
     .sort((a, b) => (b.is_nuevo ? 1 : 0) - (a.is_nuevo ? 1 : 0) || a.name.localeCompare(b.name, 'es'))
-    .slice(0, 5)
-  const idsDestacadosBowl = new Set(bowlMarinadosDestacados.map(p => p.id))
-  const bowlMarinadosRestoPorGrupo = Object.entries(bowlMarinadoGroupsAsistente)
-    .map(([cat, items]) => [cat, items.filter(p => !idsDestacadosBowl.has(p.id))])
-    .filter(([, items]) => items.length > 0)
-  const bowlMarinadosRestoTotal = bowlMarinadosRestoPorGrupo.reduce((n, [, items]) => n + items.length, 0)
-  const bowlMasOpciones = asistente.bowlMarinadoCat === 'mas'
+  const BOWL_MARINADOS_A_LA_VISTA = 5
+  const bowlMarinadosRestoTotal = Math.max(0, bowlMarinadosOrdenados.length - BOWL_MARINADOS_A_LA_VISTA)
+  const bowlVerTodos = asistente.bowlVerTodos === true
+  const bowlMarinadosVisibles = bowlVerTodos ? bowlMarinadosOrdenados : bowlMarinadosOrdenados.slice(0, BOWL_MARINADOS_A_LA_VISTA)
+  // Debajo de la cuadrícula quedan las otras dos categorías (Milanesas y Preparados), cada una con sus sabores.
+  const bowlOtrasCategorias = Object.entries(bowlMarinadoGroupsAsistente).filter(([cat]) => cat !== 'Marinados')
 
   const bowlBaseAsistente = bowlBasesAsistente.find(x => String(x.producto.id) === asistente.bowlBaseId)?.producto
   const bowlMarinadoAsistente = bowlMarinadosAsistente.find(p => String(p.id) === asistente.bowlMarinadoId)
@@ -2361,42 +2360,58 @@ export default function HomeV2Preview() {
                     <>
                       <p className="v2-bowl-pista">Elige tu marinado</p>
                       <div className="v2-bowl-mini-grid">
-                        {bowlMarinadosDestacados.map(item => (
+                        {bowlMarinadosVisibles.map(item => (
                           <button
                             key={item.id}
                             type="button"
                             className="v2-bowl-mini"
-                            onClick={() => patchAsistente({ bowlMarinadoId: String(item.id), bowlMarinadoCat: '' })}
+                            onClick={() => patchAsistente({ bowlMarinadoId: String(item.id), bowlMarinadoCat: '', bowlVerTodos: false })}
                           >
                             <img src={img(item)} alt="" />
                             <span className="v2-bowl-mini-nombre">{item.name}</span>
                           </button>
                         ))}
-                        {bowlMarinadosRestoTotal > 0 && (
-                          <button type="button" className={`v2-bowl-mini v2-bowl-mini-mas${bowlMasOpciones ? ' on' : ''}`} aria-expanded={bowlMasOpciones}
-                            onClick={() => patchAsistente({ bowlMarinadoCat: bowlMasOpciones ? '' : 'mas' })}>
+                        {!bowlVerTodos && bowlMarinadosRestoTotal > 0 && (
+                          <button type="button" className="v2-bowl-mini v2-bowl-mini-mas" aria-expanded="false"
+                            onClick={() => patchAsistente({ bowlVerTodos: true })}>
                             <b>+{bowlMarinadosRestoTotal}</b>
-                            <span>{bowlMasOpciones ? 'Ocultar opciones' : 'Mostrar más opciones'}</span>
+                            <span>Mostrar más opciones</span>
                           </button>
                         )}
                       </div>
-                      {bowlMarinadosRestoTotal > 0 && (
-                        <div className="v2-bowl-mas">
-                          {bowlMasOpciones && (
-                            <select className="v2-bowl-mas-select" aria-label="Más opciones de marinado" defaultValue=""
-                              onChange={e => { if (e.target.value) patchAsistente({ bowlMarinadoId: e.target.value, bowlMarinadoCat: '' }) }}>
-                              <option value="" disabled>Elige una opción</option>
-                              {bowlMarinadosRestoPorGrupo.map(([cat, items]) => (
-                                <optgroup key={cat} label={cat}>
-                                  {items.map(item => (
-                                    <option key={item.id} value={item.id}>{item.name}{cat === 'Milanesas' ? ' · 1 pz' : ''}</option>
-                                  ))}
-                                </optgroup>
-                              ))}
-                            </select>
-                          )}
-                        </div>
+                      {bowlVerTodos && (
+                        <button type="button" className="v2-bowl-menos" aria-expanded="true" onClick={() => patchAsistente({ bowlVerTodos: false })}>
+                          Mostrar menos <span aria-hidden="true">▲</span>
+                        </button>
                       )}
+
+                      {bowlOtrasCategorias.length > 0 && <p className="v2-bowl-pista v2-bowl-pista-otras">O elige de otra categoría</p>}
+                      {bowlOtrasCategorias.map(([catName, items]) => {
+                        const abierto = asistente.bowlMarinadoCat === catName
+                        return (
+                          <div key={catName} className="v2-asistente-bowl-grupo">
+                            <button type="button" className={`v2-asistente-bowl-grupo-head${abierto ? ' on' : ''}`} aria-expanded={abierto}
+                              onClick={() => patchAsistente({ bowlMarinadoCat: abierto ? '' : catName })}>
+                              <span>{catName}</span>
+                              <span>{items.length} opciones {abierto ? '▲' : '▼'}</span>
+                            </button>
+                            {abierto && (
+                              <div style={{ marginTop: 8 }}>
+                                <div className="v2-asistente-bowl-grupo-foto">
+                                  <img src={img(items[0])} alt={catName} />
+                                </div>
+                                <div className="v2-asistente-bowl-grupo-sabores">
+                                  {items.map(item => (
+                                    <button key={item.id} type="button" onClick={() => patchAsistente({ bowlMarinadoId: String(item.id), bowlMarinadoCat: '', bowlVerTodos: false })}>
+                                      {item.name}{catName === 'Milanesas' ? ' · 1 pz' : ''}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
                     </>
                   )}
 
