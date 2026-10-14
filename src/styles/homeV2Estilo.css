@@ -204,9 +204,6 @@
 
 /* Armador de bowl: 5 marinados con foto + "Mostrar más opciones" con menú desplegable */
 .v2-bowl-pista { margin: 0 0 8px; font-size: 13px; color: var(--texto-suave); }
-.v2-bowl-mas { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
-.v2-bowl-mas-select:focus-visible { outline: 3px solid var(--dorado, #F0A020); outline-offset: 2px; }
-.v2-bowl-mas-select { width: 100%; min-height: 48px; padding: 10px 12px; border: 1.5px solid var(--gris); border-radius: 12px; background: #fff; color: var(--texto); font-family: var(--font-body); font-size: 15px; }
 
 /* Marinados del armador de bowl en cuadrícula de 3 columnas (3 x 2: 5 fotos + "más opciones") para verlos sin hacer scroll */
 .v2-bowl-mini-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
@@ -219,5 +216,9 @@
 .v2-bowl-mini-mas::after { display: none; }
 .v2-bowl-mini-mas b { font-family: var(--font-title); font-weight: 800; font-size: 22px; color: var(--rojo); line-height: 1; }
 .v2-bowl-mini-mas span { font-size: 11.5px; font-weight: 700; line-height: 1.15; }
-.v2-bowl-mini-mas.on { border-color: var(--rojo); background: #fff5f5; }
-.v2-bowl-mas { margin-top: 10px; }
+
+/* "Mostrar menos" y título de las otras categorías del armador de bowl */
+.v2-bowl-menos { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 44px; margin-top: 8px; border: 1.5px dashed var(--gris); border-radius: 12px; background: var(--crema); color: var(--texto); font-family: var(--font-title); font-weight: 700; font-size: 13.5px; cursor: pointer; }
+.v2-bowl-menos span { font-size: 10px; color: var(--texto-suave); }
+.v2-bowl-menos:focus-visible { outline: 3px solid var(--dorado, #F0A020); outline-offset: 2px; }
+.v2-bowl-pista-otras { margin-top: 14px; }
