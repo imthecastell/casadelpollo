@@ -852,3 +852,8 @@
 @media (prefers-reduced-motion: reduce) { .v2-empapeladas-flecha { transition: none; } }
 
 .v2-notas-contador { text-align: right; font-size: 11px; color: var(--texto-suave); margin-top: 3px; font-variant-numeric: tabular-nums; }
+
+/* Recuperar el código de la tarjeta de lealtad */
+.v2-lealtad-recuperar { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--gris, #ddd); }
+.v2-lealtad-recuperar .v2-lealtad-link { align-self: flex-start; min-height: 40px; }
+.v2-lealtad-error { margin: 0; padding: 10px 12px; border-radius: 10px; background: #FDECEC; color: #a4161a; font-size: 13px; line-height: 1.4; font-weight: 600; }
