@@ -506,6 +506,10 @@ export default function HomeV2Preview() {
   // false } = aún no la escanean en caja; { error: true } = sin conexión.
   const [estadoLealtad, setEstadoLealtad] = useState(null)
   const [consultaLealtad, setConsultaLealtad] = useState(0)
+  const [recuperarAbierto, setRecuperarAbierto] = useState(false)
+  const [telefonoRecuperar, setTelefonoRecuperar] = useState('')
+  const [recuperando, setRecuperando] = useState(false)
+  const [errorRecuperar, setErrorRecuperar] = useState('')
   const canvasLealtadRef = useRef(null)
   const [mostrarBuscador, setMostrarBuscador] = useState(false)
   const [consultaBusqueda, setConsultaBusqueda] = useState('')
@@ -653,6 +657,31 @@ export default function HomeV2Preview() {
   function guardarLealtad(siguiente) {
     setLealtad(siguiente)
     try { localStorage.setItem(LEALTAD_CLAVE, JSON.stringify(siguiente)) } catch { /* modo privado */ }
+  }
+
+  // "Recuperar mi código": si el teléfono ya tiene una tarjeta que se escaneó en tienda, el servidor devuelve su
+  // código y la tarjeta vuelve a este celular (sin nombre: el nombre solo vive en el celular que la creó).
+  async function recuperarTarjetaLealtad() {
+    const telefono = digitosLocales(telefonoRecuperar)
+    if (telefono.length !== 10 || recuperando) return
+    setRecuperando(true); setErrorRecuperar('')
+    try {
+      const res = await fetch(`${API_URL}/api/lealtad/publico/recuperar`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ telefono }),
+      })
+      const datos = await res.json().catch(() => ({}))
+      if (res.status === 404) return setErrorRecuperar('No encontramos una tarjeta escaneada en tienda con ese teléfono. Si nunca la han escaneado, créala aquí y muéstrala en caja.')
+      if (res.status === 429) return setErrorRecuperar(datos.error || 'Demasiados intentos. Espera unos minutos o pide ayuda en caja.')
+      if (!res.ok || !datos.codigo) return setErrorRecuperar('No pudimos buscar tu tarjeta. Revisa tu conexión e intenta de nuevo.')
+      setEstadoLealtad(null)
+      guardarLealtad({ codigoCliente: datos.codigo, telefono, nombre: '', apellido: '' })
+      setTelefonoRecuperar(''); setRecuperarAbierto(false)
+      mostrarToast(`✅ Tarjeta recuperada — ${datos.visitas} ${datos.visitas === 1 ? 'visita' : 'visitas'}`)
+    } catch {
+      setErrorRecuperar('No pudimos buscar tu tarjeta. Revisa tu conexión e intenta de nuevo.')
+    } finally {
+      setRecuperando(false)
+    }
   }
 
   function crearTarjetaLealtad() {
@@ -1847,9 +1876,32 @@ export default function HomeV2Preview() {
                   Crear mi tarjeta
                 </button>
 
-                <p className="v2-lealtad-nota" style={{ marginTop: 14 }}>
-                  <b>¿Ya tenías tarjeta y la perdiste?</b> Si ya la escanearon en tienda, da tu número en caja y seguirás sumando tus visitas.
-                </p>
+                <div className="v2-lealtad-recuperar">
+                  <button type="button" className="v2-lealtad-link" aria-expanded={recuperarAbierto}
+                    onClick={() => { setRecuperarAbierto(v => !v); setErrorRecuperar('') }}>
+                    ¿Ya tenías tarjeta? Recuperar mi código
+                  </button>
+                  {recuperarAbierto && (
+                    <>
+                      <label className="config-label" htmlFor="v2-tel-recuperar">Tu número de celular</label>
+                      <input
+                        id="v2-tel-recuperar"
+                        className="v2-lealtad-input"
+                        type="tel"
+                        inputMode="numeric"
+                        autoComplete="tel-national"
+                        placeholder="10 dígitos"
+                        value={telefonoRecuperar}
+                        onChange={e => { setTelefonoRecuperar(e.target.value); setErrorRecuperar('') }}
+                      />
+                      <p className="v2-lealtad-nota">Solo se puede recuperar una tarjeta que ya fue escaneada en tienda con ese número.</p>
+                      {errorRecuperar && <p className="v2-lealtad-error" role="alert">{errorRecuperar}</p>}
+                      <button type="button" className="btn-primario" disabled={digitosLocales(telefonoRecuperar).length !== 10 || recuperando} onClick={recuperarTarjetaLealtad}>
+                        {recuperando ? 'Buscando…' : 'Recuperar mi tarjeta'}
+                      </button>
+                    </>
+                  )}
+                </div>
               </>
             ) : (() => {
               const registrada = estadoLealtad?.registrada === true
