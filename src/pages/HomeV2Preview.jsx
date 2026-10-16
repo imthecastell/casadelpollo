@@ -178,13 +178,15 @@ function precioExtraBowlAsistente(producto, gramosExtra) {
 // registro solo existe en el servidor desde que la escanean por primera vez
 // en caja (2 visitas de regalo); de ahí, 1 visita por día, 10% de 10 a 14
 // visitas y 15% desde 15; cada visita exige una compra mínima de $150 (la
-// confirma el cajero al escanear). El canje y la recuperación se hacen en caja. Aquí
+// confirma el cajero al escanear); en días de quincena (15, 16, último día del mes y día 1) una compra de
+// más de $350 suma 2 visitas. El canje y la recuperación se hacen en caja. Aquí
 // solo se consultan las visitas reales por código — nunca se manda el nombre.
 const LEALTAD_CLAVE = 'cdp_lealtad'
 const LEALTAD_VISITAS_REGALO = 2
 const LEALTAD_META_10 = 10
 const LEALTAD_META_15 = 15
 const LEALTAD_COMPRA_MINIMA = 150
+const LEALTAD_COMPRA_DOBLE = 350
 
 function generarCodigoCliente() {
   return Math.floor(100000 + Math.random() * 900000).toString()
@@ -1850,6 +1852,7 @@ export default function HomeV2Preview() {
                     <div><b>10 visitas</b><span>10% de descuento</span></div>
                     <div><b>15 visitas</b><span>15% de descuento</span></div>
                   </div>
+                  <p className="v2-lealtad-doble">✨ <b>Visitas dobles:</b> los días 15 y 16, el último día del mes y el día 1, una compra de más de ${LEALTAD_COMPRA_DOBLE} pesos suma 2 visitas.</p>
                 </div>
                 <div className="v2-lealtad-fila2">
                   <div>
@@ -1969,7 +1972,8 @@ export default function HomeV2Preview() {
                     )}
                   </div>
 
-                  <p className="v2-lealtad-nota">Cada visita cuenta con una compra mínima de ${LEALTAD_COMPRA_MINIMA} pesos.</p>
+                  {estadoLealtad?.dia_doble && <p className="v2-lealtad-doble">✨ <b>Hoy son visitas dobles:</b> con una compra de más de ${LEALTAD_COMPRA_DOBLE} pesos tu visita suma 2.</p>}
+                  <p className="v2-lealtad-nota">Cada visita cuenta con una compra mínima de ${LEALTAD_COMPRA_MINIMA} pesos. Los días 15 y 16, el último día del mes y el día 1, una compra de más de ${LEALTAD_COMPRA_DOBLE} pesos suma 2 visitas.</p>
                   <button className="v2-lealtad-link" onClick={() => setConsultaLealtad(n => n + 1)}>Actualizar mis visitas</button>
                   <button className="v2-lealtad-link" onClick={borrarTarjetaLealtad}>Borrar tarjeta de este celular</button>
                 </>

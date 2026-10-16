@@ -857,3 +857,5 @@
 .v2-lealtad-recuperar { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--gris, #ddd); }
 .v2-lealtad-recuperar .v2-lealtad-link { align-self: flex-start; min-height: 40px; }
 .v2-lealtad-error { margin: 0; padding: 10px 12px; border-radius: 10px; background: #FDECEC; color: #a4161a; font-size: 13px; line-height: 1.4; font-weight: 600; }
+
+.v2-lealtad-doble { margin: 10px 0 0; padding: 10px 12px; border-radius: 12px; background: #E4F3EA; color: #1f6b3e; font-size: 12.5px; line-height: 1.45; }
