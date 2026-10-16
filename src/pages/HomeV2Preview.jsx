@@ -841,62 +841,78 @@ export default function HomeV2Preview() {
   // Productos estrella del periodo (la estrella del admin, máximo 6 a la vez): se
   // muestran juntos en "Favoritos del momento" y uno de ellos abre el carrusel.
   const estrellas = productosBuscables.filter(p => p.is_nuevo).slice(0, 6)
-  const estrellaHero = destacadosDelDia(estrellas, 1, semillaCarga + 3)[0]
+  // ── Carrusel de bienvenida ──────────────────────────────────────────────
+  // Láminas: Favorito (productos con estrella), Bowls (fotos de la galería), Temporada (solo Preparados),
+  // Marinados y, si el dispositivo aún no tiene tarjeta, Lealtad. Las láminas de producto no muestran
+  // siempre el mismo: cada vez que el carrusel da la vuelta pasan al siguiente de su lista (el orden
+  // cambia en cada visita). Un producto (o una imagen) que ya sale como Favorito no se repite en
+  // Temporada ni en Marinados: esos grupos se arman con lo que queda. Si un grupo se queda sin
+  // productos, su lámina simplemente no aparece. La regla es solo del carrusel; las secciones de abajo
+  // no cambian.
+  const barajar = (lista, semilla) => {
+    const copia = [...lista]
+    const azar = aleatorioConSemilla(semilla)
+    for (let k = copia.length - 1; k > 0; k--) {
+      const m = Math.floor(azar() * (k + 1))
+      ;[copia[k], copia[m]] = [copia[m], copia[k]]
+    }
+    return copia
+  }
+  const unicosPorImagen = (lista) => {
+    const vistas = new Set()
+    return lista.filter(p => { const f = img(p); if (!f || vistas.has(f)) return false; vistas.add(f); return true })
+  }
+  const imagenesFavoritas = new Set(estrellas.map(p => img(p)))
+  const idsFavoritos = new Set(estrellas.map(p => p.id))
+  const libreDeFavoritos = (p) => !idsFavoritos.has(p.id) && !imagenesFavoritas.has(img(p))
+  const poolFavoritos = barajar(unicosPorImagen(estrellas), semillaCarga + 3)
+  const poolTemporada = barajar(unicosPorImagen(preparadosImg.filter(libreDeFavoritos)), semillaCarga + 2)
+  const poolMarinadosHero = barajar(unicosPorImagen(marinadosImg.filter(libreDeFavoritos)), semillaCarga + 4)
 
-  const promos = [
-    estrellaHero && {
-      badge: 'FAVORITO', titulo: estrellaHero.name, desc: 'Favorito del momento. Pruébalo hoy.',
-      cta: 'Elegir', imagen: img(estrellaHero),
-      accion: () => abrirSeleccion(estrellaHero),
-    },
-    bowlsActivo && {
+  const slotsHero = [
+    { id: 'favorito', pool: poolFavoritos, armar: (p) => ({
+      badge: 'FAVORITO', titulo: p.name, desc: 'Favorito del momento. Pruébalo hoy.',
+      cta: 'Elegir', imagen: img(p), accion: () => abrirSeleccion(p),
+    }) },
+    bowlsActivo && { id: 'bowls', fija: {
       badge: 'BOWLS', titulo: 'Arma tu Bowl', desc: 'Base + marinado + tu toque, listo en minutos.',
       cta: 'Empezar', imagen: bowlImg, fotos: fotosBowl, objectPos: 'bottom center',
       accion: () => abrirBowlDirecto(),
-    },
-    marinadosImg[2] && {
-      badge: 'TEMPORADA', titulo: 'Marinados listos para la sartén', desc: 'Sazonados en casa, cocina en minutos.',
-      cta: 'Ver todos', imagen: img(marinadosImg[2]),
-      accion: () => { cambiarTab('productos'); setCategoria('marinados') },
-    },
+    } },
+    { id: 'temporada', pool: poolTemporada, armar: (p) => ({
+      badge: 'TEMPORADA', titulo: p.name, desc: `$${Number(p.price)}/kg. Disponible hoy en ${sucursalActiva?.name || 'tu sucursal'}.`,
+      cta: 'Ver preparado', imagen: img(p), accion: () => abrirSeleccion(p),
+    }) },
+    { id: 'marinados', pool: poolMarinadosHero, armar: (p) => ({
+      badge: 'MARINADOS', titulo: p.name, desc: `Marinado listo para cocinar. $${Number(p.price)}/kg.`,
+      cta: 'Elegir gramos', imagen: img(p), accion: () => abrirSeleccion(p),
+    }) },
     // Invitación al programa de lealtad: solo para quien aún no tiene tarjeta en este dispositivo.
-    !lealtad && {
+    !lealtad && { id: 'lealtad', fija: {
       badge: 'LEALTAD', titulo: 'Únete al programa de lealtad', desc: '2 visitas de regalo y hasta 15% de descuento.',
       cta: 'Crear mi tarjeta', imagen: `${import.meta.env.BASE_URL}promo/lealtad.jpg`,
       clase: 'v2-promo-slide-lealtad',
       accion: () => cambiarTab('lealtad'),
-    },
-  ].filter(Boolean)
+    } },
+  ].filter(Boolean).filter(sl => sl.fija || sl.pool.length > 0)
 
-  // Sucursales con catálogo corto (ej. El Parque: 2 marinados y sin bowls)
-  // quedaban con un carrusel casi vacío. Se completa con sus propios marinados
-  // y con fotos de cocinado de sus preparados, hasta 4 slides.
-  if (promos.length < 4) {
-    const titulosUsados = new Set(promos.map(p => p.titulo))
-    const deMarinado = marinadosImg
-      .filter(p => p.name !== estrellaHero?.name)
-      .map(p => ({
-        badge: 'MARINADO', titulo: p.name, desc: `Listo para cocinar. $${Number(p.price)}/kg.`,
-        cta: 'Elegir gramos', imagen: img(p), accion: () => abrirSeleccion(p),
-      }))
-    const dePreparado = destacadosDelDia(preparadosItems.individuales.filter(img), 4, semillaCarga + 2)
-      .map(p => ({
-        badge: 'PREPARADO', titulo: p.name, desc: `$${Number(p.price)}/kg. Disponible hoy en ${sucursalActiva?.name || 'tu sucursal'}.`,
-        cta: 'Ver preparado', imagen: img(p), accion: () => abrirSeleccion(p),
-      }))
-    ;[...deMarinado, ...dePreparado].forEach(s => {
-      if (promos.length < 4 && !titulosUsados.has(s.titulo)) { promos.push(s); titulosUsados.add(s.titulo) }
-    })
-  }
-  // El índice guardado puede quedar fuera de rango al cambiar de sucursal.
-  const idxHero = promos.length ? heroIdx % promos.length : 0
+  // heroIdx cuenta los avances (no se reinicia a 0 al dar la vuelta). El contenido de una lámina de
+  // producto cambia justo después de que se oculta —no mientras se desvanece ni cuando reaparece—,
+  // así la foto nueva ya cargó antes de mostrarse.
+  const nSlides = slotsHero.length
+  const promos = slotsHero.map((sl, k) => {
+    if (sl.fija) return { id: sl.id, ...sl.fija }
+    const ciclo = Math.max(0, Math.floor((heroIdx - k + nSlides - 2) / nSlides))
+    return { id: sl.id, ...sl.armar(sl.pool[ciclo % sl.pool.length]) }
+  })
+  const idxHero = nSlides ? heroIdx % nSlides : 0
 
   useEffect(() => {
     clearInterval(timerRef.current)
-    if (promos.length < 2) return
-    timerRef.current = setInterval(() => setHeroIdx(i => (i + 1) % promos.length), 4500)
+    if (nSlides < 2) return
+    timerRef.current = setInterval(() => setHeroIdx(n => n + 1), 4500)
     return () => clearInterval(timerRef.current)
-  }, [promos.length])
+  }, [nSlides])
 
   if (cargando) {
     return (
@@ -1552,7 +1568,7 @@ export default function HomeV2Preview() {
             {promos.length > 0 && (
               <div className="v2-carrusel v2-carrusel-promo">
                 {promos.map((p, i) => (
-                  <div key={p.titulo} className={`v2-promo-slide${i === idxHero ? ' on' : ''}${p.objectPos ? ' v2-promo-slide-bowl' : ''}${p.clase ? ` ${p.clase}` : ''}`} onClick={p.accion}>
+                  <div key={p.id} className={`v2-promo-slide${i === idxHero ? ' on' : ''}${p.objectPos ? ' v2-promo-slide-bowl' : ''}${p.clase ? ` ${p.clase}` : ''}`} onClick={p.accion}>
                     {p.fotos?.length > 1
                       ? <FotosRotativas fotos={p.fotos} alt={p.titulo} className="v2-promo-foto-completa" activa={i === idxHero} />
                       : <img className="v2-promo-foto-completa" src={p.imagen} alt={p.titulo} />}
