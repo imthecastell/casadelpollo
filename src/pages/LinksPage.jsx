@@ -133,7 +133,13 @@ function Sucursal({ suc, horario }) {
         )}
         {suc.googleBusiness && (
           <a className="lk-btn" href={suc.googleBusiness} target="_blank" rel="noopener noreferrer">
-            <Icono nombre="google-logo" tam="20px" />Reseñas
+            <Icono nombre="google-logo" tam="20px" />Ver reseñas
+          </a>
+        )}
+        {suc.googleResena && (
+          <a className="lk-btn resena" href={suc.googleResena} target="_blank" rel="noopener noreferrer">
+            <span aria-hidden="true">⭐</span>
+            <span className="lk-resena-txt"><b>Déjanos tu comentario</b><small>Tu reseña en Google nos ayuda mucho</small></span>
           </a>
         )}
       </div>
