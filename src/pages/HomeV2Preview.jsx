@@ -13,6 +13,7 @@ import { MarimadoImg } from '../Components/SeccionMarinados.jsx'
 import { GuiaCocinaPanel, guiaDisponible } from '../Components/GuiaCocina.jsx'
 import { fotoIngrediente } from '../data/fotosIngrediente.js'
 import { generarHorariosDisponibles, ventanaPreparacion, obtenerCocFinEfectivo } from '../data/slots.js'
+import { estadoHorario } from '../data/horario.js'
 import { armarMensajeWhatsapp } from '../data/pedidoWhatsapp.js'
 import { codificarQR } from '../data/lealtadQR.js'
 import { fotoCruda, fotoCocinada } from '../data/fotos.js'
@@ -1478,6 +1479,12 @@ export default function HomeV2Preview() {
   const horariosAsistente = ahoraPasadoElLimiteAsistente
     ? []
     : generarHorariosDisponibles(carrito, schedule, cocInicio, cocFin, cocFinSabado).filter(h => h <= ULTIMO_HORARIO_ASISTENTE)
+  // "Lo antes posible" solo si la sucursal está abierta ahora y todavía hay horarios hoy. Si está cerrada (hoy no
+  // abre, ya cerró o aún no abre) no se ofrece; antes de abrir sí se puede programar una hora.
+  const estadoSucursalAsistente = estadoHorario(schedule)
+  const cerradaAhoraAsistente = estadoSucursalAsistente ? !estadoSucursalAsistente.abierto : false
+  const asapDisponible = !cerradaAhoraAsistente && horariosAsistente.length > 0
+  const asapValido = asistente.asap && asapDisponible
   const tieneCocinadosAsistente = ventanaPreparacion(carrito) === 40
   const cocFinMostradoAsistente = obtenerCocFinEfectivo(cocFin, cocFinSabado)
 
@@ -1496,7 +1503,7 @@ export default function HomeV2Preview() {
     ? { tipo: 'domicilio', direccion: asistente.direccion.trim(), numeroCasa: asistente.numeroCasa.trim(), referencia: asistente.referencia.trim() }
     : null
 
-  const puedeConfirmarAsistente = asistente.nombre.trim().length > 0 && (asistente.hora || asistente.asap)
+  const puedeConfirmarAsistente = asistente.nombre.trim().length > 0 && (asistente.hora || asapValido)
     && datosDomicilioCompletos && telefonoValidoDomicilio
 
   async function confirmarAsistente() {
@@ -1514,8 +1521,11 @@ export default function HomeV2Preview() {
       const orden = await registrarPedido({ horaEntrega: asistente.hora, datosCliente, asap: asistente.asap, esPrueba: PEDIDOS_DE_PRUEBA, entrega: entregaParaPedido })
       limpiarCarrito()
       patchAsistente({ enviando: false, confirmado: true, numeroOrden: orden.order_number, mensajeWhatsapp, paso: 8 })
-    } catch {
-      patchAsistente({ enviando: false, errorEnvio: 'No pudimos registrar tu pedido. Revisa tu conexión e intenta de nuevo.' })
+    } catch (e) {
+      const cerrada = e?.status === 409 && e?.body?.error === 'sucursal_cerrada'
+      patchAsistente({ enviando: false, errorEnvio: cerrada
+        ? `${e.body.mensaje || 'Esta sucursal no está recibiendo pedidos ahora.'} Revisa el horario de la sucursal.`
+        : 'No pudimos registrar tu pedido. Revisa tu conexión e intenta de nuevo.' })
     }
   }
 
@@ -2716,25 +2726,33 @@ export default function HomeV2Preview() {
                           🍗 Tu pedido incluye productos cocinados · disponible entre <b>{formatearHora12(cocInicio)}</b> y <b>{formatearHora12(cocFinMostradoAsistente)}</b>
                         </div>
                       )}
-                      <button
-                        onClick={elegirAsapAsistente}
-                        style={{
-                          width: '100%', padding: '12px 14px', marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 2, textAlign: 'left',
-                          border: `2px solid ${asistente.asap ? 'var(--rojo)' : 'var(--gris)'}`, borderRadius: 'var(--radio)',
-                          background: asistente.asap ? '#fff5f5' : 'var(--crema)', cursor: 'pointer',
-                        }}
-                      >
-                        <span style={{ fontFamily: 'var(--font-title)', fontWeight: 800, fontSize: 15, color: asistente.asap ? 'var(--rojo)' : 'var(--texto)' }}>
-                          ⚡ Lo antes posible
-                        </span>
-                        <span style={{ fontSize: 11, color: 'var(--texto-suave)' }}>Te avisamos en cuanto esté listo</span>
-                      </button>
+                      {asapDisponible ? (
+                        <button
+                          onClick={elegirAsapAsistente}
+                          style={{
+                            width: '100%', padding: '12px 14px', marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 2, textAlign: 'left',
+                            border: `2px solid ${asapValido ? 'var(--rojo)' : 'var(--gris)'}`, borderRadius: 'var(--radio)',
+                            background: asapValido ? '#fff5f5' : 'var(--crema)', cursor: 'pointer',
+                          }}
+                        >
+                          <span style={{ fontFamily: 'var(--font-title)', fontWeight: 800, fontSize: 15, color: asapValido ? 'var(--rojo)' : 'var(--texto)' }}>
+                            ⚡ Lo antes posible
+                          </span>
+                          <span style={{ fontSize: 11, color: 'var(--texto-suave)' }}>Te avisamos en cuanto esté listo</span>
+                        </button>
+                      ) : cerradaAhoraAsistente && (
+                        <p style={{ fontSize: 13, color: 'var(--rojo)', margin: '0 0 10px' }}>
+                          🔒 {estadoSucursalAsistente.texto}. «Lo antes posible» no está disponible ahora.
+                        </p>
+                      )}
 
                       {horariosAsistente.length === 0 ? (
-                        <p style={{ fontSize: 13, color: 'var(--rojo)' }}>No hay horarios disponibles con el tiempo de preparación requerido.</p>
+                        <p style={{ fontSize: 13, color: 'var(--rojo)' }}>
+                          {cerradaAhoraAsistente ? 'La sucursal no está recibiendo pedidos por ahora.' : 'No hay horarios disponibles con el tiempo de preparación requerido.'}
+                        </p>
                       ) : (
                         <>
-                          <div className={`v2-asistente-ruleta-label${asistente.asap ? ' apagado' : ''}`}>O elige tu hora</div>
+                          <div className={`v2-asistente-ruleta-label${asapValido ? ' apagado' : ''}`}>O elige tu hora</div>
                           <RuletaHoras
                             horas={horariosAsistente}
                             valor={asistente.hora || horariosAsistente[0]}
@@ -2749,8 +2767,8 @@ export default function HomeV2Preview() {
                 {/* La ruleta muestra la primera hora como elegida aunque no se
                     haya movido (sin scroll no dispara onCambiar) — si no se
                     tocó, esa es la hora que se usa. */}
-                <button className="btn-primario" disabled={(!asistente.hora && !asistente.asap && horariosAsistente.length === 0) || !datosDomicilioCompletos}
-                  onClick={() => patchAsistente({ paso: 7, ...(!asistente.hora && !asistente.asap ? { hora: horariosAsistente[0] } : {}) })}>
+                <button className="btn-primario" disabled={(!asistente.hora && !asapValido && horariosAsistente.length === 0) || !datosDomicilioCompletos}
+                  onClick={() => patchAsistente({ paso: 7, ...(!asistente.hora && !asapValido ? { hora: horariosAsistente[0], asap: false } : {}) })}>
                   Continuar →
                 </button>
               </>

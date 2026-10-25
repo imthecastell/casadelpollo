@@ -231,7 +231,11 @@ export function AppProvider({ children }) {
       setVista('confirmado')
     } catch (e) {
       console.error('Error al crear pedido:', e)
-      alert('Hubo un problema al registrar tu pedido. Por favor intenta de nuevo.')
+      if (e?.status === 409 && e?.body?.error === 'sucursal_cerrada') {
+        alert(`${e.body.mensaje || 'Esta sucursal no está recibiendo pedidos ahora.'} Revisa el horario de la sucursal.`)
+      } else {
+        alert('Hubo un problema al registrar tu pedido. Por favor intenta de nuevo.')
+      }
     }
   }
 
