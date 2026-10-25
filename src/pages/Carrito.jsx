@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import LogoSlot from '../Components/LogoSlot.jsx'
 import { generarHorariosDisponibles, ventanaPreparacion, obtenerCocFinEfectivo } from '../data/slots.js'
+import { estadoHorario } from '../data/horario.js'
 
 function soloDigitos(valor) {
   return valor.replace(/\D/g, '').slice(0, 10)
@@ -48,7 +49,13 @@ export default function Carrito() {
   const elegirHora = (hora) => { setHoraSeleccionada(hora); setAsapSeleccionado(false) }
   const elegirAsap = () => { setAsapSeleccionado(true); setHoraSeleccionada(null) }
 
-  const puedeConfirmar = nombre.trim().length > 0 && telefonoDigitos.length === 10 && (horaSeleccionada || asapSeleccionado)
+  // "Lo antes posible" solo con la sucursal abierta ahora y con horarios hoy.
+  const estadoSucursal = estadoHorario(schedule)
+  const cerradaAhora = estadoSucursal ? !estadoSucursal.abierto : false
+  const asapDisponible = !cerradaAhora && horariosDisponibles.length > 0
+  const asapValido = asapSeleccionado && asapDisponible
+
+  const puedeConfirmar = nombre.trim().length > 0 && telefonoDigitos.length === 10 && (horaSeleccionada || asapValido)
 
   const totalEstimado = carrito.reduce((sum, item) => {
     if (item.tipo === 'pieza' || item.tipo === 'preparado' || item.tipo === 'milanesa') return sum
@@ -62,12 +69,12 @@ export default function Carrito() {
     // Sin setTimeout acá: window.open() necesita dispararse dentro del
     // mismo gesto de clic para que el navegador no lo bloquee como popup.
     if (pedidosPorWhatsapp) {
-      enviarPedidoPorWhatsapp(horaSeleccionada, { nombre, telefono: telefonoDigitos, notas }, asapSeleccionado)
+      enviarPedidoPorWhatsapp(horaSeleccionada, { nombre, telefono: telefonoDigitos, notas }, asapValido)
       return
     }
     setConfirmando(true)
     setTimeout(() => {
-      confirmarPedido(horaSeleccionada, { nombre, telefono: telefonoDigitos, notas }, asapSeleccionado)
+      confirmarPedido(horaSeleccionada, { nombre, telefono: telefonoDigitos, notas }, asapValido)
     }, 800)
   }
 
@@ -192,22 +199,28 @@ export default function Carrito() {
                 </div>
               )}
 
-              <button
-                onClick={elegirAsap}
-                style={{
-                  width: '100%', padding: '12px 14px', marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 2, textAlign: 'left',
-                  border: `2px solid ${asapSeleccionado ? 'var(--rojo)' : 'var(--gris)'}`, borderRadius: 'var(--radio)',
-                  background: asapSeleccionado ? '#fff5f5' : 'var(--crema)', cursor: 'pointer', transition: 'all 0.15s',
-                }}
-              >
-                <span style={{ fontFamily: 'var(--font-title), sans-serif', fontWeight: 800, fontSize: 15, color: asapSeleccionado ? 'var(--rojo)' : 'var(--texto)' }}>
-                  ⚡ Lo antes posible
-                </span>
-                <span style={{ fontSize: 11, color: 'var(--texto-suave)' }}>Te avisamos en cuanto esté listo</span>
-              </button>
+              {asapDisponible ? (
+                <button
+                  onClick={elegirAsap}
+                  style={{
+                    width: '100%', padding: '12px 14px', marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 2, textAlign: 'left',
+                    border: `2px solid ${asapValido ? 'var(--rojo)' : 'var(--gris)'}`, borderRadius: 'var(--radio)',
+                    background: asapValido ? '#fff5f5' : 'var(--crema)', cursor: 'pointer', transition: 'all 0.15s',
+                  }}
+                >
+                  <span style={{ fontFamily: 'var(--font-title), sans-serif', fontWeight: 800, fontSize: 15, color: asapValido ? 'var(--rojo)' : 'var(--texto)' }}>
+                    ⚡ Lo antes posible
+                  </span>
+                  <span style={{ fontSize: 11, color: 'var(--texto-suave)' }}>Te avisamos en cuanto esté listo</span>
+                </button>
+              ) : cerradaAhora && (
+                <p style={{ fontSize: 13, color: 'var(--rojo)', margin: '0 0 10px' }}>🔒 {estadoSucursal.texto}. «Lo antes posible» no está disponible ahora.</p>
+              )}
 
               {horariosDisponibles.length === 0 ? (
-                <p style={{ fontSize: 13, color: 'var(--rojo)' }}>No hay horarios disponibles con el tiempo de preparacion requerido.</p>
+                <p style={{ fontSize: 13, color: 'var(--rojo)' }}>
+                  {cerradaAhora ? 'La sucursal no está recibiendo pedidos por ahora.' : 'No hay horarios disponibles con el tiempo de preparacion requerido.'}
+                </p>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
                   {horariosDisponibles.map(hora => (
@@ -223,11 +236,11 @@ export default function Carrito() {
               )}
             </div>
 
-            {(horaSeleccionada || asapSeleccionado) && (
+            {(horaSeleccionada || asapValido) && (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff5eb', border: '1.5px solid #e85d0433', borderRadius: 'var(--radio)', padding: '12px 16px', marginBottom: 16 }}>
                 <span style={{ fontSize: 14, color: 'var(--cafe-medio)' }}>Hora de recogida</span>
                 <span style={{ fontFamily: 'var(--font-title), sans-serif', fontWeight: 800, fontSize: 20, color: 'var(--rojo)' }}>
-                  {asapSeleccionado ? '⚡ Lo antes posible' : horaSeleccionada}
+                  {asapValido ? '⚡ Lo antes posible' : horaSeleccionada}
                 </span>
               </div>
             )}
@@ -258,7 +271,7 @@ export default function Carrito() {
               <div style={{ fontSize: 12, color: 'var(--texto-suave)', textAlign: 'center', marginBottom: 10 }}>
                 {!nombre.trim() ? 'Escribe tu nombre · ' : ''}
                 {telefonoDigitos.length !== 10 ? 'Escribe tu telefono a 10 digitos · ' : ''}
-                {!horaSeleccionada && !asapSeleccionado ? 'Elige una hora de recogida' : ''}
+                {!horaSeleccionada && !asapValido ? 'Elige una hora de recogida' : ''}
               </div>
             )}
 

@@ -2,7 +2,12 @@ const API_URL = 'https://casadelpollo-backend.onrender.com';
 
 async function apiFetch(url, options) {
   const res = await fetch(url, options);
-  if (!res.ok) throw new Error(`HTTP ${res.status} — ${url}`);
+  if (!res.ok) {
+    const error = new Error(`HTTP ${res.status} — ${url}`);
+    error.status = res.status;
+    error.body = await res.json().catch(() => null);   // p. ej. { error: 'sucursal_cerrada', mensaje }
+    throw error;
+  }
   return res.json();
 }
 
