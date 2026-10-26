@@ -12,7 +12,7 @@ import { tagsDe } from '../data/productTags'
 import { MarimadoImg } from '../Components/SeccionMarinados.jsx'
 import { GuiaCocinaPanel, guiaDisponible } from '../Components/GuiaCocina.jsx'
 import { fotoIngrediente } from '../data/fotosIngrediente.js'
-import { generarHorariosDisponibles, ventanaPreparacion, obtenerCocFinEfectivo } from '../data/slots.js'
+import { generarHorariosDisponibles, ventanaPreparacion, obtenerCocFinEfectivo, ventanaDePedidos } from '../data/slots.js'
 import { estadoHorario } from '../data/horario.js'
 import { armarMensajeWhatsapp } from '../data/pedidoWhatsapp.js'
 import { codificarQR } from '../data/lealtadQR.js'
@@ -1466,19 +1466,13 @@ export default function HomeV2Preview() {
     patchAsistente({ complementos: nuevosComplementos })
   }
 
-  // Reglas del negocio para hoy: el último turno de recogida es a las
-  // 3:40pm y a partir de las 3:30pm ya no se toman más pedidos (aunque
-  // técnicamente quedaran huecos de preparación antes de esa hora).
-  const HORA_MAXIMA_PEDIDO_ASISTENTE = '15:30'
-  const ULTIMO_HORARIO_ASISTENTE = '15:40'
-  const ahoraPasadoElLimiteAsistente = (() => {
-    const ahora = new Date()
-    const [h, m] = HORA_MAXIMA_PEDIDO_ASISTENTE.split(':').map(Number)
-    return ahora.getHours() * 60 + ahora.getMinutes() >= h * 60 + m
-  })()
+  // La ventana de pedidos sigue el horario de cada sucursal (ver ventanaDePedidos en slots.js): se cierra 30 min
+  // antes de la hora de cierre y el último turno de recogida es 20 min antes.
+  const ventanaAsistente = ventanaDePedidos(schedule)
+  const ahoraPasadoElLimiteAsistente = ventanaAsistente.cerrada
   const horariosAsistente = ahoraPasadoElLimiteAsistente
     ? []
-    : generarHorariosDisponibles(carrito, schedule, cocInicio, cocFin, cocFinSabado).filter(h => h <= ULTIMO_HORARIO_ASISTENTE)
+    : generarHorariosDisponibles(carrito, schedule, cocInicio, cocFin, cocFinSabado)
   // "Lo antes posible" solo si la sucursal está abierta ahora y todavía hay horarios hoy. Si está cerrada (hoy no
   // abre, ya cerró o aún no abre) no se ofrece; antes de abrir sí se puede programar una hora.
   const estadoSucursalAsistente = estadoHorario(schedule)
@@ -2717,7 +2711,9 @@ export default function HomeV2Preview() {
                 <div style={{ background: 'var(--card-bg)', borderRadius: 'var(--radio-lg)', padding: 18, boxShadow: 'var(--sombra)' }}>
                   {ahoraPasadoElLimiteAsistente ? (
                     <p style={{ fontSize: 13, color: 'var(--rojo)', margin: 0 }}>
-                      Ya no se están tomando pedidos por hoy — el horario de pedidos cierra a las {formatearHora12(HORA_MAXIMA_PEDIDO_ASISTENTE)}.
+                      {ventanaAsistente.hasta
+                        ? `Ya no se están tomando pedidos por hoy — esta sucursal recibe pedidos hasta las ${formatearHora12(ventanaAsistente.hasta)}.`
+                        : `${estadoSucursalAsistente?.texto || 'Esta sucursal no abre hoy'}.`}
                     </p>
                   ) : (
                     <>
