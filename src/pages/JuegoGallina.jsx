@@ -3,18 +3,19 @@ import { PERSONAJES, cargarImagenes, crearJuego } from '../data/juegoGallina.js'
 import '../styles/juego.css'
 
 /* Página /juego: "El Salto del Pollo", minijuego para entretener al cliente mientras espera su pedido (se llega
-   escaneando un QR). Portada con el póster oficial (se toca a la gallina para elegirla) → correr → resultado.
+   escaneando un QR). Portada con el fondo del póster oficial y las gallinas como botones individuales → correr →
+   resultado.
    Todo vive en este dispositivo: el mejor récord y el personaje se guardan en localStorage; no hay backend ni cuenta. */
 const BASE = import.meta.env.BASE_URL
 const POSTER = { ancho: 941, alto: 1672 }
 
-// zona tocable de cada gallina sobre el póster (centro y radios, en píxeles del póster)
+// cada gallina sobre el fondo: centro y radios de su zona tocable, y ancho del dibujo (todo en píxeles del póster)
 const ZONAS = {
-  bruja: { cx: 490, cy: 690, rx: 140, ry: 170 },
-  calabaza: { cx: 270, cy: 830, rx: 150, ry: 160 },
-  fantasma: { cx: 690, cy: 840, rx: 150, ry: 160 },
-  esqueleto: { cx: 360, cy: 1075, rx: 125, ry: 140 },
-  catrina: { cx: 615, cy: 1085, rx: 145, ry: 160 },
+  bruja: { cx: 490, cy: 690, rx: 140, ry: 170, w: 350 },
+  calabaza: { cx: 270, cy: 835, rx: 150, ry: 160, w: 325 },
+  fantasma: { cx: 690, cy: 840, rx: 150, ry: 160, w: 335 },
+  esqueleto: { cx: 360, cy: 1075, rx: 125, ry: 140, w: 295 },
+  catrina: { cx: 615, cy: 1085, rx: 145, ry: 160, w: 325 },
 }
 
 const leer = (k, def) => { try { const v = localStorage.getItem(k); return v == null ? def : v } catch { return def } }
@@ -99,8 +100,14 @@ export default function JuegoGallina() {
 
         {pantalla === 'elegir' && (
           <div className="jg-portada">
-            <div className="jg-poster" style={{ width: poster.w, height: poster.h, left: (caja.w - poster.w) / 2 }}>
-              <img className="jg-poster-img" src={`${BASE}juego/poster.webp`} alt="El Salto del Pollo: ¡aletea, esquiva y llega más lejos!" draggable="false" />
+            <div className="jg-poster" style={{ width: poster.w, height: poster.h, left: (caja.w - poster.w) / 2, '--e': escala }}>
+              <img className="jg-poster-img" src={`${BASE}juego/fondo.webp`} alt="" draggable="false" />
+              <h1 className="jg-titulo" style={{ left: pct(112, POSTER.ancho), top: pct(103, POSTER.alto), width: pct(732, POSTER.ancho) }}>
+                <img src={`${BASE}juego/titulo.png`} alt="El Salto del Pollo" draggable="false" />
+              </h1>
+              <div className="jg-cinta" style={{ left: pct(150, POSTER.ancho), top: pct(396, POSTER.alto), width: pct(640, POSTER.ancho), height: pct(96, POSTER.alto) }}>
+                <span>¡Aletea, esquiva y llega más lejos!</span>
+              </div>
               {PERSONAJES.map(p => {
                 const z = ZONAS[p.id]
                 const on = p.id === personaje
@@ -108,13 +115,17 @@ export default function JuegoGallina() {
                   <button key={p.id} type="button" aria-pressed={on} aria-label={`Elegir a ${p.nombre}`}
                     className={`jg-zona${on ? ' on' : ''}`} onClick={() => setPersonaje(p.id)}
                     style={{ left: pct(z.cx - z.rx, POSTER.ancho), top: pct(z.cy - z.ry, POSTER.alto), width: pct(z.rx * 2, POSTER.ancho), height: pct(z.ry * 2, POSTER.alto) }}>
+                    <img src={`${BASE}juego/pj-${p.id}.png`} alt="" draggable="false" style={{ width: `${(z.w / (z.rx * 2)) * 100}%` }} />
                     {on && <span className="jg-zona-nombre">{p.nombre} ✓</span>}
                   </button>
                 )
               })}
-              <button type="button" className="jg-cta jg-cta-poster" disabled={!imgs} onClick={correr} style={{ top: pct(1262, POSTER.alto) }}>
+              <button type="button" className="jg-cta jg-cta-poster" disabled={!imgs} onClick={correr} style={{ top: pct(1256, POSTER.alto) }}>
                 {imgs ? `¡A correr con ${actual.nombre}!` : 'Cargando…'}
               </button>
+              <div className="jg-tabla" style={{ left: pct(100, POSTER.ancho), top: pct(1372, POSTER.alto), width: pct(745, POSTER.ancho), height: pct(180, POSTER.alto) }}>
+                <span>Disponible solo<br />en tiendas</span>
+              </div>
             </div>
             {mejor && <div className="jg-mejor">🏆 {mejor.metros} m</div>}
           </div>
