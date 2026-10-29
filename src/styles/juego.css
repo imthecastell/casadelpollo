@@ -1,80 +1,80 @@
-/* Minijuego "Corre, Gallina" (/juego). Pantalla completa, columna de máx. 480 px. */
+/* Minijuego "El Salto del Pollo" (/juego). Pantalla completa, columna de máx. 480 px. Paleta del póster oficial:
+   madera oscura, crema, naranja de cempasúchil. */
 .jg-raiz {
-  position: fixed; inset: 0; background: #140a1a; display: flex; justify-content: center;
+  position: fixed; inset: 0; background: #2a1209; display: flex; justify-content: center;
   font-family: 'DM Sans', system-ui, sans-serif; color: #FFE9B8;
   -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
 }
-.jg-marco { position: relative; width: 100%; max-width: 480px; height: 100%; overflow: hidden; background: #1c0f2e; display: flex; flex-direction: column; }
+.jg-marco { position: relative; width: 100%; max-width: 480px; height: 100%; overflow: hidden; background: #6fb1dc; display: flex; flex-direction: column; }
 .jg-canvas { flex: 2 1 0; min-height: 0; width: 100%; display: block; touch-action: none; }
 
-/* tercio inferior: zona de toque para saltar */
+/* tercio inferior: zona de toque para saltar (tablón de madera) */
 .jg-tap {
-  flex: 1 1 0; min-height: 0; width: 100%; border: none; border-top: 3px solid #F28C1B; padding: 0 0 env(safe-area-inset-bottom, 0px);
+  flex: 1 1 0; min-height: 0; width: 100%; border: none; border-top: 4px solid #d9954f; padding: 0 0 env(safe-area-inset-bottom, 0px);
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; cursor: pointer;
-  background: radial-gradient(ellipse 80% 90% at 50% 40%, #5a2347 0%, #2a1232 70%); color: #FFE9B8; touch-action: none;
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 800;
+  background: repeating-linear-gradient(90deg, rgba(0,0,0,0) 0 62px, rgba(0,0,0,.18) 62px 64px), linear-gradient(180deg, #7a4524, #4b2012);
+  color: #FFE9B8; touch-action: none; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 800;
 }
-.jg-tap:active { background: radial-gradient(ellipse 80% 90% at 50% 40%, #8a3a5f 0%, #3a1a42 75%); }
+.jg-tap:active { filter: brightness(1.25); }
 .jg-tap-flecha {
   width: 76px; height: 76px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 34px;
   background: #F28C1B; color: #2A0F0B; box-shadow: 0 5px 0 #a8560c, 0 10px 22px rgba(0,0,0,.35); animation: jg-pulso 1.2s ease-in-out infinite alternate;
 }
 .jg-tap:active .jg-tap-flecha { transform: translateY(3px); box-shadow: 0 2px 0 #a8560c; animation: none; }
-.jg-tap-txt { font-size: 15px; letter-spacing: .02em; opacity: .85; }
+.jg-tap-txt { font-size: 15px; letter-spacing: .02em; opacity: .9; }
 @keyframes jg-pulso { from { transform: scale(1); } to { transform: scale(1.07); } }
 
 .jg-sonido {
-  position: absolute; top: calc(env(safe-area-inset-top, 0px) + 100px); right: 12px; z-index: 5; width: 38px; height: 38px;
-  border: none; border-radius: 50%; background: rgba(20,8,24,.55); font-size: 17px; cursor: pointer; color: #fff;
+  position: absolute; top: calc(env(safe-area-inset-top, 0px) + 58px); right: 12px; z-index: 6; width: 38px; height: 38px;
+  border: 2px solid #d9954f; border-radius: 50%; background: #4b2012; font-size: 16px; cursor: pointer; color: #fff;
 }
-.jg-menu {
-  position: absolute; inset: 0; z-index: 4; display: flex; flex-direction: column; align-items: center; gap: 14px;
-  padding: calc(env(safe-area-inset-top, 0px) + 74px) 20px calc(env(safe-area-inset-bottom, 0px) + 22px);
-  background: radial-gradient(ellipse 120% 70% at 50% 110%, #e07a30 0%, #4a1d3a 45%, #1c0f2e 100%);
-  overflow-y: auto; text-align: center;
-}
-.jg-papel {
-  position: absolute; left: 0; right: 0; top: 0; height: 54px;
-  background: url('/skins/muertos/papel-picado.png') repeat-x 0 0 / auto 54px;
-}
-.jg-titulo { margin: 8px 0 0; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 800; font-size: 34px; line-height: 1.05; color: #FFB347; text-shadow: 0 3px 0 #7a2a12, 0 6px 18px rgba(0,0,0,.4); }
-.jg-sub { margin: 0; max-width: 300px; font-size: 14.5px; line-height: 1.4; color: #FFE9B8; opacity: .92; }
 
-.jg-personajes { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; width: 100%; margin-top: 4px; }
-.jg-pj {
-  flex: 0 0 calc(33.333% - 7px); display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 4px 8px;
-  border-radius: 18px; border: 2.5px solid rgba(255,233,184,.18); background: rgba(20,8,24,.45); color: #FFE9B8; cursor: pointer;
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 700; font-size: 12.5px;
+/* ---- portada: el póster oficial a pantalla completa; las gallinas del póster se tocan para elegir ---- */
+.jg-portada { position: absolute; inset: 0; z-index: 4; overflow: hidden; background: #2a1209; }
+.jg-poster { position: absolute; top: 0; }
+.jg-poster-img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
+.jg-zona {
+  position: absolute; border: none; background: transparent; border-radius: 50%; cursor: pointer; padding: 0; outline: none;
+  display: flex; align-items: flex-start; justify-content: center;
 }
-.jg-pj img { width: 68px; height: 72px; object-fit: contain; pointer-events: none; }
-.jg-pj.on { border-color: #FFB347; background: rgba(255,179,71,.2); box-shadow: 0 0 0 3px rgba(255,179,71,.25); }
-.jg-pj.on img { animation: jg-bota .7s ease-in-out infinite alternate; }
-@keyframes jg-bota { from { transform: translateY(0) rotate(-3deg); } to { transform: translateY(-6px) rotate(3deg); } }
+.jg-zona.on { border: 4px solid #FFE066; box-shadow: 0 0 0 3px rgba(255,255,255,.8), 0 0 26px 6px rgba(255,224,102,.7); animation: jg-aro 1s ease-in-out infinite alternate; }
+@keyframes jg-aro { from { transform: scale(1); } to { transform: scale(1.04); } }
+.jg-zona-nombre {
+  position: absolute; top: -16px; background: #4b2012; color: #FFE9B8; border: 2px solid #FFE066; border-radius: 99px; padding: 4px 12px;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 800; font-size: 13px; white-space: nowrap;
+}
+.jg-mejor {
+  position: absolute; top: calc(env(safe-area-inset-top, 0px) + 12px); right: 12px; z-index: 5; background: #4b2012; border: 2px solid #d9954f;
+  color: #FFE9B8; border-radius: 99px; padding: 6px 12px; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 800; font-size: 14px;
+}
 
+/* botón de madera/cempasúchil */
 .jg-cta {
-  width: 100%; max-width: 320px; min-height: 56px; border: none; border-radius: 18px; background: #F28C1B; color: #2A0F0B;
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 800; font-size: 18px; cursor: pointer;
-  box-shadow: 0 5px 0 #a8560c, 0 10px 24px rgba(0,0,0,.35); margin-top: 6px;
+  width: 100%; max-width: 340px; min-height: 58px; border: 3px solid #5a2a1a; border-radius: 18px; background: linear-gradient(180deg, #ffc65a, #f28c1b); color: #3a1608;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 800; font-size: 19px; cursor: pointer; padding: 6px 12px;
+  box-shadow: 0 5px 0 #7a3a10, 0 10px 24px rgba(0,0,0,.4); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
 }
-.jg-cta:active { transform: translateY(3px); box-shadow: 0 2px 0 #a8560c; }
+.jg-cta:active { transform: translateY(3px); box-shadow: 0 2px 0 #7a3a10; }
 .jg-cta:disabled { opacity: .6; }
+.jg-cta-chico { min-height: 52px; }
+.jg-cta-poster { position: absolute; left: 50%; transform: translateX(-50%); width: 78%; max-width: 330px; min-height: 52px; font-size: 18px; z-index: 3; }
+.jg-cta-poster:active { transform: translateX(-50%) translateY(3px); }
 .jg-sec {
-  width: 100%; max-width: 320px; min-height: 46px; border: 2px solid rgba(255,233,184,.4); border-radius: 14px; background: transparent;
-  color: #FFE9B8; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 700; font-size: 15px; cursor: pointer;
+  width: 100%; max-width: 340px; min-height: 46px; border: 2.5px solid #5a2a1a; border-radius: 14px; background: transparent;
+  color: #4b2012; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 800; font-size: 15px; cursor: pointer;
 }
-.jg-mejor { font-size: 14px; opacity: .9; }
-.jg-link { color: #FFE9B8; font-size: 14px; font-weight: 700; text-decoration: underline; margin-top: auto; padding: 8px; }
+.jg-link { color: #4b2012; font-size: 14px; font-weight: 800; text-decoration: underline; padding: 8px; }
 
-.jg-fin { position: absolute; inset: 0; z-index: 4; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(14,6,20,.7); }
+/* ---- resultado: tablón claro como el letrero del póster ---- */
+.jg-fin { position: absolute; inset: 0; z-index: 4; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(42,18,9,.62); }
 .jg-fin-card {
-  width: 100%; max-width: 340px; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 22px 20px 14px;
-  border-radius: 26px; background: linear-gradient(180deg, #3a1736, #24102c); border: 2px solid rgba(255,179,71,.5); text-align: center;
-  box-shadow: 0 20px 50px rgba(0,0,0,.5);
+  width: 100%; max-width: 340px; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 18px 20px 12px;
+  border-radius: 26px; background: linear-gradient(180deg, #fbe9bd, #ecc98a); border: 4px solid #5a2a1a; text-align: center; color: #4b2012;
+  box-shadow: 0 20px 50px rgba(0,0,0,.5), inset 0 0 0 3px rgba(255,255,255,.35);
 }
-.jg-fin-pj { width: 86px; height: 90px; object-fit: contain; transform: rotate(-12deg); }
-.jg-record { background: #F5C518; color: #2A0F0B; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 800; font-size: 13px; padding: 4px 12px; border-radius: 99px; }
-.jg-fin-metros { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 800; font-size: 52px; line-height: 1; color: #FFB347; font-variant-numeric: tabular-nums; }
-.jg-fin-det { font-size: 15px; margin-bottom: 8px; }
-.jg-fin-card .jg-link { margin-top: 4px; }
+.jg-fin-pj { width: 86px; height: 90px; object-fit: contain; transform: rotate(-10deg); filter: drop-shadow(0 0 0 #fff) drop-shadow(0 0 2px #fff) drop-shadow(0 0 2px #fff); }
+.jg-fin-titulo { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 800; font-size: 20px; color: #a8350f; }
+.jg-fin-metros { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 800; font-size: 56px; line-height: 1; color: #5a2a1a; font-variant-numeric: tabular-nums; }
+.jg-fin-det { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
 
-@media (prefers-reduced-motion: reduce) { .jg-pj.on img, .jg-tap-flecha { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .jg-tap-flecha, .jg-zona.on { animation: none; } }
