@@ -24,15 +24,14 @@ export const PERSONAJES = [
 ]
 
 const OBSTACULOS = [
-  { img: 'calabaza-blanca', h: 52 },
-  { img: 'velas', h: 70 },
-  { img: 'linterna', h: 74 },
-  { img: 'calavera-1', h: 62 },
-  { img: 'calavera-2', h: 62 },
-  { img: 'calabazar', h: 58 },
-  { img: 'cerca', h: 62 },
-  { img: 'paca', h: 54 },
-  { img: 'letrero', h: 74 },
+  { img: 'plat-calabaza', h: 62 },
+  { img: 'plat-paja', h: 60 },
+  { img: 'plat-letrero', h: 74 },
+  { img: 'cerca-calabaza', h: 46 },
+  { img: 'barril', h: 70 },
+  { img: 'caja', h: 58 },
+  { img: 'rocas', h: 40 },
+  { img: 'hongos', h: 48 },
 ]
 const COLORES_DULCE = ['#FF8A1F', '#F5C518', '#B04CFF', '#E5383B', '#2EC4B6']
 const ADORNOS_SUELO = [
@@ -45,14 +44,15 @@ const NUBES = [{ x: 40, y: 0.1, s: 1 }, { x: 250, y: 0.2, s: 0.7 }, { x: 480, y:
 const COLORES_ARBOL = ['#2f5a3a', '#d9792a', '#c24a1e', '#e0a32e', '#3d6b3f', '#b5452a']
 const ARBOLES = Array.from({ length: 13 }, (_, i) => ({ x: i * 44 + ((i * 17) % 20), h: 48 + ((i * 29) % 34), c: COLORES_ARBOL[(i * 5) % COLORES_ARBOL.length] }))
 const PERIODO_BOSQUE = 13 * 44
-const HOJAS_CAYENDO = Array.from({ length: 9 }, (_, i) => ({ img: i % 2 ? 'hoja-3' : 'hoja-2', w: 14 + (i % 3) * 5, vx: 24 + (i % 4) * 7, vy: 30 + (i % 5) * 6, f: i * 91 }))
+const LISTA_HOJAS = ['hoja-a', 'hoja-b', 'hoja-c', 'hoja-d', 'hoja-e', 'hoja-f', 'hoja-g', 'hoja-h']
+const HOJAS_CAYENDO = Array.from({ length: 9 }, (_, i) => ({ img: LISTA_HOJAS[i % LISTA_HOJAS.length], w: 14 + (i % 3) * 5, vx: 24 + (i % 4) * 7, vy: 30 + (i % 5) * 6, f: i * 91 }))
 
-// archivos que no están en la carpeta de la hoja de stickers
-const EN_JUEGO = new Set(['cerca', 'paca', 'letrero'])
+// piezas de la hoja de elementos del juego (public/juego/); el resto viene de la hoja de stickers (public/skins/muertos/)
+const EN_JUEGO = new Set([...OBSTACULOS.map(o => o.img), ...LISTA_HOJAS, 'murcielago-a', 'murcielago-b'])
 const IMAGENES = [
   ...PERSONAJES.map(p => p.img),
-  ...OBSTACULOS.map(o => o.img),
-  'hoja-2', 'hoja-3', 'hoja-grande', 'cempasuchil', 'murcielago-2', 'murcielago-1', 'fantasma-3',
+  ...EN_JUEGO,
+  'hoja-2', 'hoja-3', 'hoja-grande', 'cempasuchil', 'fantasma-3',
 ]
 
 export function cargarImagenes(base) {
@@ -313,7 +313,7 @@ export function crearJuego(canvas, imgs, personajeId, { onFin, sonidoActivo }) {
     }
     // murciélagos y fantasma de fondo
     for (let i = 0; i < 2; i++) {
-      const im = imgs[i ? 'murcielago-1' : 'murcielago-2']
+      const im = imgs[i ? 'murcielago-b' : 'murcielago-a']
       if (!im) continue
       const ancho = i ? 34 : 44
       const bx = ((e.t * (28 + i * 14) + i * 210) % (W + 120)) - 60

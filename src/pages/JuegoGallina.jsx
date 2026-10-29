@@ -18,6 +18,10 @@ const ZONAS = {
   catrina: { cx: 615, cy: 1085, rx: 145, ry: 160, w: 325 },
 }
 
+// hojas que caen y murciélagos que cruzan la portada (posición, tamaño y ritmo de cada una)
+const HOJAS = ['hoja-a', 'hoja-d', 'hoja-g', 'hoja-b', 'hoja-h', 'hoja-e', 'hoja-c', 'hoja-f'].map((n, i) => ({ n, x: 6 + i * 12.5, w: 26 + (i % 3) * 9, dur: 9 + (i % 4) * 2.2, retraso: -i * 1.7 }))
+const CHISPAS = [{ n: 'chispa-a', x: 110, y: 85, w: 34 }, { n: 'chispa-b', x: 805, y: 150, w: 28 }, { n: 'chispa-c', x: 760, y: 430, w: 32 }]
+
 const leer = (k, def) => { try { const v = localStorage.getItem(k); return v == null ? def : v } catch { return def } }
 const guardar = (k, v) => { try { localStorage.setItem(k, v) } catch { /* sin almacenamiento */ } }
 const leerMejor = () => { try { return JSON.parse(leer('cdp_juego_mejor', 'null')) } catch { return null } }
@@ -96,38 +100,54 @@ export default function JuegoGallina() {
           </>
         )}
 
-        <button type="button" className="jg-sonido" onClick={() => setSonido(s => !s)} aria-label={sonido ? 'Silenciar' : 'Activar sonido'}>{sonido ? '🔊' : '🔇'}</button>
+        <button type="button" className={`jg-sonido${sonido ? '' : ' mudo'}${pantalla === 'elegir' ? ' arriba' : ''}`} onClick={() => setSonido(s => !s)} aria-label={sonido ? 'Silenciar' : 'Activar sonido'} aria-pressed={!sonido}>
+          <img src={`${BASE}juego/btn-sonido.png`} alt="" draggable="false" />
+        </button>
 
         {pantalla === 'elegir' && (
           <div className="jg-portada">
             <div className="jg-poster" style={{ width: poster.w, height: poster.h, left: (caja.w - poster.w) / 2, '--e': escala }}>
               <img className="jg-poster-img" src={`${BASE}juego/fondo.webp`} alt="" draggable="false" />
-              <h1 className="jg-titulo" style={{ left: pct(112, POSTER.ancho), top: pct(103, POSTER.alto), width: pct(732, POSTER.ancho) }}>
-                <img src={`${BASE}juego/titulo.png`} alt="El Salto del Pollo" draggable="false" />
-              </h1>
-              <div className="jg-cinta" style={{ left: pct(150, POSTER.ancho), top: pct(396, POSTER.alto), width: pct(640, POSTER.ancho), height: pct(96, POSTER.alto) }}>
-                <span>¡Aletea, esquiva y llega más lejos!</span>
+              <div className="jg-ambiente" aria-hidden="true">
+                {HOJAS.map(h => (
+                  <img key={h.n} className="jg-hoja" src={`${BASE}juego/${h.n}.png`} alt="" draggable="false"
+                    style={{ left: `${h.x}%`, width: `${(h.w / POSTER.ancho) * 100 * 1.6}%`, animationDuration: `${h.dur}s`, animationDelay: `${h.retraso}s` }} />
+                ))}
+                <span className="jg-bat jg-bat-1"><img src={`${BASE}juego/murcielago-a.png`} alt="" draggable="false" /></span>
+                <span className="jg-bat jg-bat-2"><img src={`${BASE}juego/murcielago-b.png`} alt="" draggable="false" /></span>
               </div>
-              {PERSONAJES.map(p => {
+              <h1 className="jg-titulo" style={{ left: pct(150, POSTER.ancho), top: pct(52, POSTER.alto), width: pct(640, POSTER.ancho) }}>
+                <img src={`${BASE}juego/titulo.png`} alt="El Salto del Pollo: ¡aletea, esquiva y llega más lejos!" draggable="false" />
+              </h1>
+              {CHISPAS.map((c, i) => (
+                <img key={c.n} className="jg-chispa" src={`${BASE}juego/${c.n}.png`} alt="" aria-hidden="true" draggable="false"
+                  style={{ left: pct(c.x, POSTER.ancho), top: pct(c.y, POSTER.alto), width: pct(c.w, POSTER.ancho), animationDelay: `${i * 0.7}s` }} />
+              ))}
+              {PERSONAJES.map((p, i) => {
                 const z = ZONAS[p.id]
                 const on = p.id === personaje
                 return (
                   <button key={p.id} type="button" aria-pressed={on} aria-label={`Elegir a ${p.nombre}`}
                     className={`jg-zona${on ? ' on' : ''}`} onClick={() => setPersonaje(p.id)}
                     style={{ left: pct(z.cx - z.rx, POSTER.ancho), top: pct(z.cy - z.ry, POSTER.alto), width: pct(z.rx * 2, POSTER.ancho), height: pct(z.ry * 2, POSTER.alto) }}>
-                    <img src={`${BASE}juego/pj-${p.id}.png`} alt="" draggable="false" style={{ width: `${(z.w / (z.rx * 2)) * 100}%` }} />
+                    <img src={`${BASE}juego/pj-${p.id}.png`} alt="" draggable="false" style={{ width: `${(z.w / (z.rx * 2)) * 100}%`, animationDelay: `${-i * 0.5}s` }} />
                     {on && <span className="jg-zona-nombre">{p.nombre} ✓</span>}
                   </button>
                 )
               })}
-              <button type="button" className="jg-cta jg-cta-poster" disabled={!imgs} onClick={correr} style={{ top: pct(1256, POSTER.alto) }}>
-                {imgs ? `¡A correr con ${actual.nombre}!` : 'Cargando…'}
+              <button type="button" className="jg-jugar" disabled={!imgs} onClick={correr} aria-label={`Jugar con ${actual.nombre}`}
+                style={{ left: pct(210, POSTER.ancho), top: pct(1232, POSTER.alto), width: pct(520, POSTER.ancho) }}>
+                <img src={`${BASE}juego/jugar.png`} alt="" draggable="false" />
               </button>
-              <div className="jg-tabla" style={{ left: pct(100, POSTER.ancho), top: pct(1372, POSTER.alto), width: pct(745, POSTER.ancho), height: pct(180, POSTER.alto) }}>
-                <span>Disponible solo<br />en tiendas</span>
-              </div>
+              <img className="jg-tabla" src={`${BASE}juego/tabla.png`} alt="Disponible solo en tiendas" draggable="false"
+                style={{ left: pct(235, POSTER.ancho), top: pct(1470, POSTER.alto), width: pct(470, POSTER.ancho) }} />
             </div>
-            {mejor && <div className="jg-mejor">🏆 {mejor.metros} m</div>}
+            {mejor && (
+              <div className="jg-mejor" aria-label={`Tu mejor carrera: ${mejor.metros} metros`}>
+                <img src={`${BASE}juego/btn-record.png`} alt="" draggable="false" />
+                <span>{mejor.metros} m</span>
+              </div>
+            )}
           </div>
         )}
 
