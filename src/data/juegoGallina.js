@@ -66,7 +66,7 @@ export function cargarImagenes(base) {
 }
 
 let audio = null
-function tono(activo, f1, f2, dur, tipo = 'square', vol = 0.05) {
+export function tono(activo, f1, f2, dur, tipo = 'square', vol = 0.05) {
   if (!activo()) return
   try {
     audio = audio || new (window.AudioContext || window.webkitAudioContext)()
