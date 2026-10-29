@@ -66,20 +66,28 @@ export function cargarImagenes(base) {
 }
 
 let audio = null
-export function tono(activo, f1, f2, dur, tipo = 'square', vol = 0.05) {
+// un solo contexto de audio para los efectos y la música (src/data/musicaJuego.js)
+export function contextoAudio() {
+  if (!audio) {
+    try { audio = new (window.AudioContext || window.webkitAudioContext)() } catch { audio = null }
+  }
+  return audio
+}
+export function tono(activo, f1, f2, dur, tipo = 'square', vol = 0.08) {
   if (!activo()) return
   try {
-    audio = audio || new (window.AudioContext || window.webkitAudioContext)()
-    if (audio.state === 'suspended') audio.resume()
-    const o = audio.createOscillator()
-    const g = audio.createGain()
-    const t = audio.currentTime
+    const ctx = contextoAudio()
+    if (!ctx) return
+    if (ctx.state === 'suspended') ctx.resume()
+    const o = ctx.createOscillator()
+    const g = ctx.createGain()
+    const t = ctx.currentTime
     o.type = tipo
     o.frequency.setValueAtTime(f1, t)
     o.frequency.exponentialRampToValueAtTime(f2, t + dur)
     g.gain.setValueAtTime(vol, t)
     g.gain.exponentialRampToValueAtTime(0.0001, t + dur)
-    o.connect(g); g.connect(audio.destination)
+    o.connect(g); g.connect(ctx.destination)
     o.start(t); o.stop(t + dur)
   } catch { /* sin audio */ }
 }
@@ -172,7 +180,7 @@ export function crearJuego(canvas, imgs, personajeId, { onFin, sonidoActivo }) {
 
   function morir() {
     e.vivo = false; e.vy = 430; e.enSuelo = false
-    tono(sonidoActivo, 300, 60, 0.45, 'sawtooth', 0.07)
+    tono(sonidoActivo, 300, 60, 0.45, 'sawtooth', 0.1)
   }
 
   function paso(dt) {
@@ -216,7 +224,7 @@ export function crearJuego(canvas, imgs, personajeId, { onFin, sonidoActivo }) {
         if (Math.abs(sx - cx) < 34 && Math.abs(sueloY - c.h - cy) < 40) {
           e.dulcesLista.splice(i, 1)
           e.dulces++
-          tono(sonidoActivo, 880, 1500, 0.12, 'sine', 0.07)
+          tono(sonidoActivo, 880, 1500, 0.12, 'sine', 0.11)
           for (let k = 0; k < 7; k++) {
             const a = Math.random() * 6.283
             e.particulas.push({ x: sx, y: sueloY - c.h, vx: Math.cos(a) * 130, vy: Math.sin(a) * 130, vida: 0.45, c: c.c })

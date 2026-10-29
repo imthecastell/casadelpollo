@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { PERSONAJES, cargarImagenes, crearJuego, tono } from '../data/juegoGallina.js'
+import { activarMusica, atenuarMusica, desbloquear, ponerPista, precargar } from '../data/musicaJuego.js'
 import '../styles/juego.css'
 
 /* Página /juego: "El Salto del Pollo", minijuego para entretener al cliente mientras espera su pedido (se llega
@@ -57,6 +58,20 @@ export default function JuegoGallina() {
     return () => meta.remove()
   }, [])
   useEffect(() => { cargarImagenes(BASE).then(setImgs) }, [])
+  // música de ambiente: se precarga, arranca con el primer toque y cambia de pista según la pantalla
+  useEffect(() => {
+    precargar(BASE)
+    const eventos = ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown']
+    const intentar = () => { if (desbloquear()) eventos.forEach(e => window.removeEventListener(e, intentar)) }
+    eventos.forEach(e => window.addEventListener(e, intentar))
+    return () => eventos.forEach(e => window.removeEventListener(e, intentar))
+  }, [])
+  useEffect(() => { activarMusica(sonido) }, [sonido])
+  useEffect(() => {
+    ponerPista(pantalla === 'elegir' ? 'menu' : 'juego')
+    atenuarMusica(pantalla === 'fin')
+  }, [pantalla])
+
 
   // el póster cubre toda la pantalla (alineado arriba); sus zonas tocables se calculan sobre ese rectángulo
   useLayoutEffect(() => {
@@ -107,7 +122,7 @@ export default function JuegoGallina() {
         const k = Math.min(1, (ahora - anim.t0) / anim.dur)
         pos.v = anim.desde + (anim.hasta - anim.desde) * anim.ease(k)
         const cruce = Math.round(pos.v)
-        if (cruce !== ultimoCruce) { ultimoCruce = cruce; if (anim.dur > 1000) tono(() => sonidoRef.current, 760, 560, 0.04, 'square', 0.03) }
+        if (cruce !== ultimoCruce) { ultimoCruce = cruce; if (anim.dur > 1000) tono(() => sonidoRef.current, 760, 560, 0.04, 'square', 0.05) }
         if (k >= 1) { const fin = anim.alTerminar; anim = null; pos.v = envolver(pos.v); ultimoCruce = Math.round(pos.v); fin?.() }
       }
       pintar()
@@ -126,7 +141,7 @@ export default function JuegoGallina() {
         setGirando(false)
         const el = itemsRef.current[objetivo]
         if (el) { el.classList.remove('aterriza'); void el.offsetWidth; el.classList.add('aterriza') }
-        tono(() => sonidoRef.current, 520, 1040, 0.22, 'triangle', 0.06)
+        tono(() => sonidoRef.current, 520, 1040, 0.22, 'triangle', 0.1)
         setAviso(`¡Te tocó ${PERSONAJES[objetivo].nombre}!`)
         avisoT = setTimeout(() => setAviso(''), 2400)
       })
