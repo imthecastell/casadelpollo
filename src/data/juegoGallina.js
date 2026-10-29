@@ -1,11 +1,13 @@
-/* Motor del minijuego "Corre, Gallina": carrera infinita de un solo botón. La gallina corre sola; un toque la
+/* Motor del minijuego "El Salto del Pollo": carrera infinita de un solo botón. La gallina corre sola; un toque la
    hace saltar los obstáculos y recoge dulces en el aire. La velocidad sube con la distancia.
 
    El mundo se dibuja en un lienzo de ancho fijo (W unidades) y alto variable según la pantalla, así el tiempo
-   de reacción es el mismo en cualquier teléfono. Todo lo que se ve vive en public/skins/muertos/. */
+   de reacción es el mismo en cualquier teléfono. La ambientación sigue el póster oficial: tarde de otoño con luna,
+   bosque, piso de tablones con paja y las gallinas con borde de sticker. Los dibujos viven en public/skins/muertos/
+   (hoja de stickers) y public/juego/ (cerca, paca y letrero). */
 
 const W = 400
-const SUELO = 110            // alto de la franja de suelo
+const SUELO = 96             // alto de la franja de suelo
 const X_JUGADOR = 78         // posición fija de la gallina en pantalla
 const GRAV = 2000
 const SALTO = 780            // altura máxima ≈ 152, tiempo en el aire ≈ 0.78 s
@@ -27,20 +29,29 @@ const OBSTACULOS = [
   { img: 'calavera-1', h: 62 },
   { img: 'calavera-2', h: 62 },
   { img: 'calabazar', h: 58 },
+  { img: 'cerca', h: 62 },
+  { img: 'paca', h: 54 },
+  { img: 'letrero', h: 74 },
 ]
 const COLORES_DULCE = ['#FF8A1F', '#F5C518', '#B04CFF', '#E5383B', '#2EC4B6']
-const ESTRELLAS = Array.from({ length: 26 }, (_, i) => ({ x: (i * 0.618 * 997) % 1, y: ((i * 0.381 * 613) % 1) * 0.55, r: 0.8 + (i % 3) * 0.5, f: i * 1.7 }))
 const ADORNOS_SUELO = [
-  { img: 'hoja-3', x: 30, y: 26, w: 26 }, { img: 'cempasuchil', x: 120, y: 34, w: 24 },
-  { img: 'hoja-2', x: 210, y: 22, w: 24 }, { img: 'hoja-3', x: 300, y: 48, w: 20 },
-  { img: 'cempasuchil', x: 390, y: 28, w: 26 }, { img: 'hoja-2', x: 470, y: 52, w: 20 },
+  { img: 'hoja-3', x: 30, y: 6, w: 24 }, { img: 'cempasuchil', x: 150, y: 4, w: 22 },
+  { img: 'hoja-2', x: 250, y: 8, w: 22 }, { img: 'hoja-3', x: 330, y: 2, w: 18 },
+  { img: 'cempasuchil', x: 430, y: 6, w: 24 }, { img: 'hoja-2', x: 500, y: 4, w: 20 },
 ]
-const PERIODO_SUELO = 540
+const PERIODO_SUELO = 560
+const NUBES = [{ x: 40, y: 0.1, s: 1 }, { x: 250, y: 0.2, s: 0.7 }, { x: 480, y: 0.07, s: 1.2 }, { x: 650, y: 0.26, s: 0.8 }]
+const COLORES_ARBOL = ['#2f5a3a', '#d9792a', '#c24a1e', '#e0a32e', '#3d6b3f', '#b5452a']
+const ARBOLES = Array.from({ length: 13 }, (_, i) => ({ x: i * 44 + ((i * 17) % 20), h: 48 + ((i * 29) % 34), c: COLORES_ARBOL[(i * 5) % COLORES_ARBOL.length] }))
+const PERIODO_BOSQUE = 13 * 44
+const HOJAS_CAYENDO = Array.from({ length: 9 }, (_, i) => ({ img: i % 2 ? 'hoja-3' : 'hoja-2', w: 14 + (i % 3) * 5, vx: 24 + (i % 4) * 7, vy: 30 + (i % 5) * 6, f: i * 91 }))
 
+// archivos que no están en la carpeta de la hoja de stickers
+const EN_JUEGO = new Set(['cerca', 'paca', 'letrero'])
 const IMAGENES = [
   ...PERSONAJES.map(p => p.img),
   ...OBSTACULOS.map(o => o.img),
-  'luna', 'papel-picado', 'hoja-2', 'hoja-3', 'cempasuchil', 'murcielago-2', 'murcielago-1', 'fantasma-1', 'fantasma-3',
+  'hoja-2', 'hoja-3', 'hoja-grande', 'cempasuchil', 'murcielago-2', 'murcielago-1', 'fantasma-3',
 ]
 
 export function cargarImagenes(base) {
@@ -49,7 +60,7 @@ export function cargarImagenes(base) {
     const im = new Image()
     im.onload = () => ok([n, im])
     im.onerror = () => ok([n, null])
-    im.src = `${base}skins/muertos/${n}.png`
+    im.src = EN_JUEGO.has(n) ? `${base}juego/${n}.png` : `${base}skins/muertos/${n}.png`
   }))).then(pares => Object.fromEntries(pares))
 }
 
@@ -72,12 +83,36 @@ function tono(activo, f1, f2, dur, tipo = 'square', vol = 0.05) {
   } catch { /* sin audio */ }
 }
 
+const azar = (i) => { const s = Math.sin(i * 12.9898) * 43758.5453; return s - Math.floor(s) }
+
+// la gallina con borde blanco, como los stickers del póster (se arma una sola vez en un lienzo aparte)
+function pegatina(im, ancho, alto) {
+  const k = 2
+  const borde = 3
+  const c = document.createElement('canvas')
+  c.width = Math.ceil((ancho + borde * 2) * k); c.height = Math.ceil((alto + borde * 2) * k)
+  const x = c.getContext('2d')
+  const t = document.createElement('canvas')
+  t.width = c.width; t.height = c.height
+  const tx = t.getContext('2d')
+  tx.drawImage(im, borde * k, borde * k, ancho * k, alto * k)
+  tx.globalCompositeOperation = 'source-in'
+  tx.fillStyle = '#fff'; tx.fillRect(0, 0, t.width, t.height)
+  for (let a = 0; a < 16; a++) {
+    const ang = (a / 16) * 6.283
+    x.drawImage(t, Math.cos(ang) * borde * k, Math.sin(ang) * borde * k)
+  }
+  x.drawImage(im, borde * k, borde * k, ancho * k, alto * k)
+  return { lienzo: c, borde }
+}
+
 export function crearJuego(canvas, imgs, personajeId, { onFin, sonidoActivo }) {
   const ctx = canvas.getContext('2d')
   const pj = PERSONAJES.find(p => p.id === personajeId) || PERSONAJES[0]
   const sprite = imgs[pj.img]
   const spriteAlto = J_ALTO
   const spriteAncho = sprite ? J_ALTO * sprite.width / sprite.height : 64
+  const sticker = sprite ? pegatina(sprite, spriteAncho, spriteAlto) : null
   let H = 600
   let escala = 1
 
@@ -155,7 +190,7 @@ export function crearJuego(canvas, imgs, personajeId, { onFin, sonidoActivo }) {
       if (e.y <= 0) {
         e.y = 0; e.vy = 0
         if (e.vivo) { e.enSuelo = true; if (e.buffer > 0) { e.buffer = 0; saltar() } }
-        else if (!e.enSuelo) e.enSuelo = true
+        else e.enSuelo = true
       }
     }
     if (e.vivo) {
@@ -194,14 +229,15 @@ export function crearJuego(canvas, imgs, personajeId, { onFin, sonidoActivo }) {
   function dulce(x, y, r, color, rot = 0) {
     ctx.save()
     ctx.translate(x, y); ctx.rotate(rot)
-    ctx.fillStyle = 'rgba(255,230,180,.22)'
+    ctx.fillStyle = 'rgba(255,245,220,.35)'
     ctx.beginPath(); ctx.arc(0, 0, r * 1.9, 0, 6.283); ctx.fill()
     ctx.fillStyle = color
+    ctx.strokeStyle = 'rgba(90,42,26,.6)'; ctx.lineWidth = 1.5
     for (const s of [-1, 1]) {
-      ctx.beginPath(); ctx.moveTo(s * r * 1.8, -r * 0.75); ctx.lineTo(s * r * 0.6, 0); ctx.lineTo(s * r * 1.8, r * 0.75); ctx.closePath(); ctx.fill()
+      ctx.beginPath(); ctx.moveTo(s * r * 1.8, -r * 0.75); ctx.lineTo(s * r * 0.6, 0); ctx.lineTo(s * r * 1.8, r * 0.75); ctx.closePath(); ctx.fill(); ctx.stroke()
     }
-    ctx.beginPath(); ctx.ellipse(0, 0, r, r * 0.78, 0, 0, 6.283); ctx.fill()
-    ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = r * 0.28; ctx.lineCap = 'round'
+    ctx.beginPath(); ctx.ellipse(0, 0, r, r * 0.78, 0, 0, 6.283); ctx.fill(); ctx.stroke()
+    ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = r * 0.28; ctx.lineCap = 'round'
     ctx.beginPath(); ctx.moveTo(-r * 0.45, -r * 0.4); ctx.lineTo(r * 0.1, r * 0.45); ctx.stroke()
     ctx.restore()
   }
@@ -216,63 +252,120 @@ export function crearJuego(canvas, imgs, personajeId, { onFin, sonidoActivo }) {
     ctx.lineTo(W, sueloY); ctx.closePath(); ctx.fill()
   }
 
-  function dibujar() {
-    ctx.setTransform(escala, 0, 0, escala, 0, 0)
-    const sueloY = H - SUELO
-    // cielo de noche con resplandor naranja en el horizonte
-    const g = ctx.createLinearGradient(0, 0, 0, sueloY)
-    g.addColorStop(0, '#1c0f2e'); g.addColorStop(0.55, '#4a1d3a'); g.addColorStop(1, '#e07a30')
-    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H)
-    for (const s of ESTRELLAS) {
-      ctx.globalAlpha = 0.35 + 0.45 * Math.abs(Math.sin(e.t * 1.5 + s.f))
-      ctx.fillStyle = '#FFE9B8'
-      ctx.beginPath(); ctx.arc(s.x * W, s.y * H, s.r, 0, 6.283); ctx.fill()
+  function nube(x, y, s) {
+    ctx.fillStyle = 'rgba(255,255,255,.93)'
+    for (const [dx, dy, r] of [[0, 0, 20], [24, -9, 26], [54, 0, 22], [30, 6, 24]]) {
+      ctx.beginPath(); ctx.arc(x + dx * s, y + dy * s, r * s, 0, 6.283); ctx.fill()
     }
-    ctx.globalAlpha = 1
-    if (imgs.luna) ctx.drawImage(imgs.luna, W * 0.68, H * 0.13, 64, 64 * imgs.luna.height / imgs.luna.width)
-    colina(sueloY, '#2b1230', e.dist * 0.12, 16, 46)
-    colina(sueloY, '#3a1736', e.dist * 0.28, 12, 14)
-    // murciélagos de fondo
+  }
+
+  function pino(x, base, h, color) {
+    ctx.fillStyle = '#4a2a18'; ctx.fillRect(x - 2, base - 8, 4, 8)
+    ctx.fillStyle = color
+    for (let k = 0; k < 3; k++) {
+      const ancho = h * (0.32 - k * 0.07)
+      const y1 = base - 8 - k * h * 0.27
+      ctx.beginPath(); ctx.moveTo(x - ancho, y1); ctx.lineTo(x + ancho, y1); ctx.lineTo(x, y1 - h * 0.42); ctx.closePath(); ctx.fill()
+    }
+  }
+
+  function torre(x, base) {
+    ctx.fillStyle = '#9a6a5c'; ctx.fillRect(x - 13, base - 78, 26, 78)
+    ctx.fillStyle = '#7b2f2f'
+    ctx.beginPath(); ctx.moveTo(x - 18, base - 78); ctx.lineTo(x + 18, base - 78); ctx.lineTo(x, base - 112); ctx.closePath(); ctx.fill()
+    ctx.fillStyle = '#ffd27a'; ctx.fillRect(x - 3, base - 62, 6, 10); ctx.fillRect(x - 3, base - 36, 6, 10)
+  }
+
+  function fondo(sueloY) {
+    // cielo de tarde: azul arriba, durazno en el horizonte
+    const g = ctx.createLinearGradient(0, 0, 0, sueloY)
+    g.addColorStop(0, '#6fb1dc'); g.addColorStop(0.55, '#b9dbe9'); g.addColorStop(0.85, '#f7dcae'); g.addColorStop(1, '#f4b878')
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H)
+    // luna grande, como en el póster
+    const lx = W * 0.76; const ly = H * 0.13
+    const halo = ctx.createRadialGradient(lx, ly, 20, lx, ly, 90)
+    halo.addColorStop(0, 'rgba(255,243,208,.55)'); halo.addColorStop(1, 'rgba(255,243,208,0)')
+    ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(lx, ly, 90, 0, 6.283); ctx.fill()
+    ctx.fillStyle = '#FFF3D0'; ctx.beginPath(); ctx.arc(lx, ly, 42, 0, 6.283); ctx.fill()
+    ctx.fillStyle = 'rgba(226,203,150,.55)'
+    for (const [dx, dy, r] of [[-14, -10, 8], [12, 6, 11], [-6, 18, 6], [16, -18, 5]]) { ctx.beginPath(); ctx.arc(lx + dx, ly + dy, r, 0, 6.283); ctx.fill() }
+    // nubes
+    for (const n of NUBES) {
+      const px = ((n.x - e.t * 6 - e.dist * 0.04) % (W + 260) + (W + 260)) % (W + 260) - 130
+      nube(px, n.y * H + 30, n.s)
+    }
+    // colinas, torre y bosque otoñal
+    colina(sueloY, '#d6a07a', e.dist * 0.1, 14, 70)
+    const tx = ((240 - e.dist * 0.16) % 900 + 900) % 900 - 60
+    torre(tx, sueloY - 62)
+    colina(sueloY, '#b9764a', e.dist * 0.2, 12, 38)
+    const desp = e.dist * 0.34
+    for (let b = -1; b <= 1; b++) {
+      for (const a of ARBOLES) {
+        const x = a.x + b * PERIODO_BOSQUE - (desp % PERIODO_BOSQUE)
+        if (x > -30 && x < W + 30) pino(x, sueloY - 4, a.h, a.c)
+      }
+    }
+    // murciélagos y fantasma de fondo
     for (let i = 0; i < 2; i++) {
       const im = imgs[i ? 'murcielago-1' : 'murcielago-2']
       if (!im) continue
       const ancho = i ? 34 : 44
       const bx = ((e.t * (28 + i * 14) + i * 210) % (W + 120)) - 60
       const by = H * 0.3 + i * 46 + Math.sin(e.t * 2 + i) * 14
-      ctx.save(); ctx.translate(bx, by); ctx.scale(1, 0.72 + 0.28 * Math.sin(e.t * 16 + i)); ctx.globalAlpha = 0.85
+      ctx.save(); ctx.translate(bx, by); ctx.scale(1, 0.72 + 0.28 * Math.sin(e.t * 16 + i)); ctx.globalAlpha = 0.9
       ctx.drawImage(im, -ancho / 2, 0, ancho, ancho * im.height / im.width); ctx.restore()
     }
-    // fantasma flotando
-    if (imgs['fantasma-3']) {
-      const fx = W * 0.3 + Math.sin(e.t * 0.7) * 30
-      ctx.globalAlpha = 0.5
-      ctx.drawImage(imgs['fantasma-3'], fx, H * 0.4 + Math.sin(e.t * 1.6) * 10, 40, 40 * imgs['fantasma-3'].height / imgs['fantasma-3'].width)
+    const fa = imgs['fantasma-3']
+    if (fa) {
+      ctx.globalAlpha = 0.7
+      ctx.drawImage(fa, W * 0.28 + Math.sin(e.t * 0.7) * 30, H * 0.4 + Math.sin(e.t * 1.6) * 10, 40, 40 * fa.height / fa.width)
       ctx.globalAlpha = 1
     }
-    // papel picado arriba
-    const pp = imgs['papel-picado']
-    if (pp) {
-      const ph = 50; const pw = ph * pp.width / pp.height
-      const off = -((e.t * 16 + e.dist * 0.05) % pw)
-      for (let x = off; x < W; x += pw) ctx.drawImage(pp, x, 0, pw, ph)
+    // rama de otoño en la esquina, como el árbol del póster
+    const hg = imgs['hoja-grande']; const h2 = imgs['hoja-2']
+    if (hg) { ctx.save(); ctx.translate(-8, -6); ctx.rotate(0.35 + Math.sin(e.t * 0.8) * 0.03); ctx.drawImage(hg, 0, 0, 82, 82 * hg.height / hg.width); ctx.restore() }
+    if (h2) { ctx.save(); ctx.translate(54, -4); ctx.rotate(-0.4 + Math.sin(e.t * 0.9) * 0.04); ctx.drawImage(h2, 0, 0, 40, 40 * h2.height / h2.width); ctx.restore() }
+  }
+
+  function suelo(sueloY) {
+    // piso de tablones de madera con paja encima
+    ctx.fillStyle = '#7a4524'; ctx.fillRect(0, sueloY, W, SUELO)
+    ctx.fillStyle = '#b87333'; ctx.fillRect(0, sueloY, W, 16)
+    ctx.fillStyle = '#d9954f'; ctx.fillRect(0, sueloY, W, 3)
+    ctx.fillStyle = '#5a3119'; ctx.fillRect(0, sueloY + 56, W, 6)
+    ctx.strokeStyle = 'rgba(60,30,14,.55)'; ctx.lineWidth = 2
+    const base = Math.floor(e.dist / 64) * 64
+    for (let x = base - e.dist; x < W + 64; x += 64) {
+      ctx.beginPath(); ctx.moveTo(x, sueloY + 16); ctx.lineTo(x, H); ctx.stroke()
     }
-    // suelo
-    ctx.fillStyle = '#3b2118'; ctx.fillRect(0, sueloY, W, SUELO)
-    ctx.fillStyle = '#8a4b1f'; ctx.fillRect(0, sueloY, W, 9)
-    ctx.fillStyle = '#c9772a'; ctx.fillRect(0, sueloY, W, 3)
+    ctx.strokeStyle = '#e9b94a'; ctx.lineWidth = 2; ctx.lineCap = 'round'
+    const paso = 14
+    for (let x = Math.floor(e.dist / paso) * paso - e.dist; x < W + paso; x += paso) {
+      const i = Math.round((x + e.dist) / paso)
+      const largo = 6 + azar(i) * 8; const inc = (azar(i + 7) - 0.5) * 8
+      ctx.beginPath(); ctx.moveTo(x, sueloY + 2); ctx.lineTo(x + inc, sueloY - largo); ctx.stroke()
+    }
     for (const a of ADORNOS_SUELO) {
       const im = imgs[a.img]
       if (!im) continue
       const h = a.w * im.height / im.width
-      const base = (((a.x - e.dist) % PERIODO_SUELO) + PERIODO_SUELO) % PERIODO_SUELO - 60
-      for (let x = base; x < W + 60; x += PERIODO_SUELO) ctx.drawImage(im, x, sueloY + a.y - h / 2, a.w, h)
+      const b = (((a.x - e.dist) % PERIODO_SUELO) + PERIODO_SUELO) % PERIODO_SUELO - 60
+      for (let x = b; x < W + 60; x += PERIODO_SUELO) ctx.drawImage(im, x, sueloY + a.y + 8 - h / 2, a.w, h)
     }
+  }
+
+  function dibujar() {
+    ctx.setTransform(escala, 0, 0, escala, 0, 0)
+    const sueloY = H - SUELO
+    fondo(sueloY)
+    suelo(sueloY)
     // obstáculos
     for (const o of e.obstaculos) {
       const sx = o.x - e.dist
       if (sx > W) break
       const im = imgs[o.img]
-      ctx.fillStyle = 'rgba(0,0,0,.28)'
+      ctx.fillStyle = 'rgba(0,0,0,.22)'
       ctx.beginPath(); ctx.ellipse(sx + o.w / 2, sueloY + 3, o.w * 0.5, 5, 0, 0, 6.283); ctx.fill()
       if (im) ctx.drawImage(im, sx, sueloY - o.h, o.w, o.h)
     }
@@ -282,12 +375,11 @@ export function crearJuego(canvas, imgs, personajeId, { onFin, sonidoActivo }) {
       if (sx > W + 20) break
       dulce(sx, sueloY - c.h + Math.sin(e.t * 4 + c.f) * 3, 11, c.c, Math.sin(e.t * 3 + c.f) * 0.3)
     }
-    // gallina
+    // gallina (con su borde blanco de sticker)
     const px = X_JUGADOR + spriteAncho / 2
-    const alto = e.y
-    ctx.fillStyle = `rgba(0,0,0,${Math.max(0.08, 0.3 - alto / 500)})`
-    ctx.beginPath(); ctx.ellipse(px, sueloY + 3, spriteAncho * 0.38 * (1 - alto / 400), 5, 0, 0, 6.283); ctx.fill()
-    if (sprite) {
+    ctx.fillStyle = `rgba(0,0,0,${Math.max(0.08, 0.28 - e.y / 500)})`
+    ctx.beginPath(); ctx.ellipse(px, sueloY + 3, spriteAncho * 0.38 * (1 - e.y / 400), 5, 0, 0, 6.283); ctx.fill()
+    if (sticker) {
       ctx.save()
       const rebote = e.enSuelo && e.vivo ? Math.abs(Math.sin(e.t * 14)) * 5 : 0
       ctx.translate(px, sueloY - e.y - rebote)
@@ -297,8 +389,18 @@ export function crearJuego(canvas, imgs, personajeId, { onFin, sonidoActivo }) {
       else ang = Math.max(-0.3, Math.min(0.35, -e.vy / 1800))
       ctx.rotate(ang)
       if (e.enSuelo && e.vivo) ctx.scale(1 + Math.sin(e.t * 28) * 0.02, 1 - Math.sin(e.t * 28) * 0.03)
-      ctx.drawImage(sprite, -spriteAncho / 2, -spriteAlto, spriteAncho, spriteAlto)
+      const b = sticker.borde
+      ctx.drawImage(sticker.lienzo, -spriteAncho / 2 - b, -spriteAlto - b, spriteAncho + b * 2, spriteAlto + b * 2)
       ctx.restore()
+    }
+    // hojas cayendo
+    for (const h of HOJAS_CAYENDO) {
+      const im = imgs[h.img]
+      if (!im) continue
+      const x = W + 30 - ((e.t * h.vx + e.dist * 0.05 + h.f) % (W + 60))
+      const y = ((e.t * h.vy + h.f * 2.3) % (H * 0.85)) - 10
+      ctx.save(); ctx.translate(x, y); ctx.rotate(e.t * (1 + h.vx / 30) + h.f)
+      ctx.drawImage(im, -h.w / 2, -h.w / 2, h.w, h.w * im.height / im.width); ctx.restore()
     }
     for (const p of e.particulas) {
       ctx.globalAlpha = Math.max(0, p.vida / 0.45)
@@ -306,25 +408,28 @@ export function crearJuego(canvas, imgs, personajeId, { onFin, sonidoActivo }) {
       ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, 6.283); ctx.fill()
     }
     ctx.globalAlpha = 1
-    // marcador
+    // marcador en madera
     ctx.font = '800 20px "Plus Jakarta Sans", system-ui, sans-serif'
     ctx.textBaseline = 'middle'
-    const metros = Math.floor(e.dist / PX_POR_M)
-    const txtM = `${metros} m`
+    const txtM = `${Math.floor(e.dist / PX_POR_M)} m`
     const txtD = `${e.dulces}`
     const wM = ctx.measureText(txtM).width + 28
     const wD = ctx.measureText(txtD).width + 52
-    ctx.fillStyle = 'rgba(20,8,24,.55)'
-    ctx.beginPath(); ctx.roundRect(W - wM - 12, 58, wM, 34, 17); ctx.fill()
-    ctx.beginPath(); ctx.roundRect(12, 58, wD, 34, 17); ctx.fill()
+    for (const [x, ancho] of [[W - wM - 12, wM], [12, wD]]) {
+      ctx.fillStyle = '#4b2012'; ctx.beginPath(); ctx.roundRect(x, 14, ancho, 34, 17); ctx.fill()
+      ctx.strokeStyle = '#d9954f'; ctx.lineWidth = 2; ctx.stroke()
+    }
     ctx.fillStyle = '#FFE9B8'; ctx.textAlign = 'center'
-    ctx.fillText(txtM, W - wM / 2 - 12, 76)
-    dulce(33, 75, 7, '#FF8A1F')
-    ctx.textAlign = 'left'; ctx.fillText(txtD, 50, 76)
+    ctx.fillText(txtM, W - wM / 2 - 12, 32)
+    dulce(33, 31, 7, '#FF8A1F')
+    ctx.textAlign = 'left'; ctx.fillText(txtD, 50, 32)
     if (e.pista) {
-      ctx.globalAlpha = 0.6 + 0.4 * Math.sin(e.t * 5)
-      ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = '800 22px "Plus Jakarta Sans", system-ui, sans-serif'
-      ctx.fillText('¡Toca abajo para saltar!', W / 2, sueloY - 190)
+      ctx.globalAlpha = 0.7 + 0.3 * Math.sin(e.t * 5)
+      ctx.font = '800 22px "Plus Jakarta Sans", system-ui, sans-serif'
+      ctx.textAlign = 'center'
+      ctx.lineJoin = 'round'; ctx.lineWidth = 6; ctx.strokeStyle = '#5a2a1a'
+      ctx.strokeText('¡Toca abajo para saltar!', W / 2, sueloY - 190)
+      ctx.fillStyle = '#FFF3D0'; ctx.fillText('¡Toca abajo para saltar!', W / 2, sueloY - 190)
       ctx.globalAlpha = 1
     }
   }
