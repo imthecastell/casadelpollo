@@ -64,25 +64,56 @@
 @keyframes jg-cruza { 0% { transform: translate(0, 0) rotate(-6deg); } 25% { transform: translate(calc(var(--e) * 280px), -18px) rotate(6deg); } 50% { transform: translate(calc(var(--e) * 560px), 12px) rotate(-6deg); } 75% { transform: translate(calc(var(--e) * 840px), -14px) rotate(6deg); } 100% { transform: translate(calc(var(--e) * 1120px), 6px) rotate(0deg); } }
 @keyframes jg-cruza-inv { 0% { transform: translate(0, 0) rotate(6deg); } 25% { transform: translate(calc(var(--e) * -280px), -14px) rotate(-6deg); } 50% { transform: translate(calc(var(--e) * -560px), 10px) rotate(6deg); } 75% { transform: translate(calc(var(--e) * -840px), -12px) rotate(-6deg); } 100% { transform: translate(calc(var(--e) * -1120px), 4px) rotate(0deg); } }
 
-/* gallinas: cada una es un botón (zona ovalada) con su dibujo encima; todas respiran, la elegida salta */
-.jg-zona {
-  position: absolute; border: none; background: transparent; padding: 0; cursor: pointer; outline: none; display: block;
-  -webkit-tap-highlight-color: transparent;
+/* carrusel infinito de gallinas: se desliza, las de los lados se achican y la del centro respira y brilla */
+.jg-carrusel { position: absolute; left: 0; width: 100%; cursor: grab; touch-action: pan-y; -webkit-tap-highlight-color: transparent; }
+.jg-carrusel:active { cursor: grabbing; }
+.jg-item { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); will-change: transform, left; }
+.jg-item img {
+  display: block; width: 100%; height: auto; pointer-events: none; user-select: none;
+  filter: drop-shadow(0 4px 5px rgba(40,10,5,.45)) brightness(.86) saturate(.9); transition: filter .25s;
 }
-.jg-zona img {
-  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); height: auto; pointer-events: none;
-  filter: drop-shadow(0 4px 5px rgba(40,10,5,.45)) brightness(.92) saturate(.94); transition: filter .2s, transform .2s;
-  animation: jg-respira 2.2s ease-in-out infinite alternate;
+.jg-item.centro img { filter: drop-shadow(0 0 3px #fff) drop-shadow(0 0 14px #FFD84A) drop-shadow(0 6px 6px rgba(40,10,5,.4)); animation: jg-bota .8s ease-in-out infinite alternate; }
+@keyframes jg-bota { from { transform: translateY(0); } to { transform: translateY(calc(var(--e) * -18px)); } }
+.jg-item.aterriza img { animation: jg-aterriza .7s cubic-bezier(.3,1.6,.5,1) both; }
+@keyframes jg-aterriza { 0% { transform: scale(1) rotate(0); } 35% { transform: scale(1.22) rotate(-6deg); } 70% { transform: scale(.96) rotate(3deg); } 100% { transform: scale(1) rotate(0); } }
+
+.jg-flecha {
+  position: absolute; z-index: 6; width: 44px; height: 44px; border-radius: 50%; border: 3px solid #7a3a10; cursor: pointer; padding: 0 0 4px;
+  background: linear-gradient(180deg, #fbe0a0, #ecb85e); color: #7a1f14; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 800; font-size: 30px; line-height: 1;
+  box-shadow: 0 4px 0 #7a3a10, 0 8px 14px rgba(40,10,5,.4); -webkit-tap-highlight-color: transparent;
 }
-@keyframes jg-respira { from { margin-top: 0; } to { margin-top: calc(var(--e) * -9px); } }
-.jg-zona:active img { transform: translate(-50%, -50%) scale(.94); }
-.jg-zona.on { z-index: 2; }
-.jg-zona.on img { transform: translate(-50%, -50%) scale(1.1); filter: drop-shadow(0 0 3px #fff) drop-shadow(0 0 14px #FFD84A) drop-shadow(0 6px 6px rgba(40,10,5,.4)); animation: jg-bota .7s ease-in-out infinite alternate; }
-@keyframes jg-bota { from { margin-top: 0; } to { margin-top: calc(var(--e) * -22px); } }
-.jg-zona-nombre {
-  position: absolute; left: 50%; top: 4%; transform: translateX(-50%); background: #4b2012; color: #FFE9B8; border: 2px solid #FFE066; border-radius: 99px; padding: 4px 12px;
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 800; font-size: 13px; white-space: nowrap; z-index: 3;
+.jg-flecha-izq { left: 2.5%; }
+.jg-flecha-der { right: 2.5%; }
+.jg-flecha:active { transform: translateY(3px); box-shadow: 0 1px 0 #7a3a10; }
+.jg-flecha:disabled { opacity: .45; }
+
+/* nombre del personaje (o el aviso del azar) y puntos del carrusel */
+.jg-nombre-caja { position: absolute; left: 0; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; z-index: 5; }
+.jg-nombre {
+  background: #4b2012; color: #FFE9B8; border: 2.5px solid #FFE066; border-radius: 99px; padding: 5px 20px; white-space: nowrap;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 800; font-size: 19px; animation: jg-pop .45s cubic-bezier(.3,1.7,.5,1) both;
 }
+.jg-nombre.aviso { background: #F28C1B; color: #3a1608; border-color: #fff3c4; box-shadow: 0 0 18px 4px rgba(255,216,74,.7); }
+@keyframes jg-pop { 0% { transform: scale(.6); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.jg-puntos { display: flex; gap: 7px; }
+.jg-puntos span { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,233,184,.55); transition: transform .2s, background .2s; }
+.jg-puntos span.on { background: #F28C1B; transform: scale(1.35); box-shadow: 0 0 0 2px #fff3c4; }
+
+/* botón "Al azar": el dado se menea y, al girar, da vueltas */
+.jg-azar {
+  position: absolute; left: 50%; transform: translateX(-50%); z-index: 6; display: flex; align-items: center; gap: 8px; cursor: pointer; white-space: nowrap;
+  background: linear-gradient(180deg, #fbe0a0, #ecb85e); color: #7a1f14; border: 3px solid #7a3a10; border-radius: 99px; padding: 5px 18px 5px 10px;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 800; font-size: 16px; box-shadow: 0 4px 0 #7a3a10, 0 8px 14px rgba(40,10,5,.4);
+  -webkit-tap-highlight-color: transparent; animation: jg-azar-late 1.6s ease-in-out infinite alternate;
+}
+@keyframes jg-azar-late { from { box-shadow: 0 4px 0 #7a3a10, 0 8px 14px rgba(40,10,5,.4); } to { box-shadow: 0 4px 0 #7a3a10, 0 0 18px 4px rgba(255,216,74,.75); } }
+.jg-azar:active { transform: translateX(-50%) translateY(3px); box-shadow: 0 1px 0 #7a3a10; }
+.jg-dado { width: 30px; height: 30px; flex: none; animation: jg-menea 2.4s ease-in-out infinite; transform-origin: 50% 60%; }
+@keyframes jg-menea { 0%, 60%, 100% { transform: rotate(0); } 68% { transform: rotate(-16deg) scale(1.1); } 76% { transform: rotate(14deg) scale(1.1); } 84% { transform: rotate(-9deg); } 92% { transform: rotate(5deg); } }
+.jg-azar.girando { animation: none; box-shadow: 0 1px 0 #7a3a10, 0 0 22px 6px rgba(255,216,74,.9); filter: brightness(1.05); }
+.jg-azar.girando .jg-dado { animation: jg-gira .55s linear infinite; }
+@keyframes jg-gira { from { transform: rotate(0) scale(1.15); } to { transform: rotate(360deg) scale(1.15); } }
+.jg-azar:disabled { cursor: default; }
 
 /* ¡JUGAR! (late) y la tabla "Disponible solo en tiendas" (se mece) */
 .jg-jugar { position: absolute; z-index: 5; border: none; background: transparent; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
@@ -129,7 +160,7 @@
 .jg-fin-det { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .jg-tap-flecha, .jg-zona img, .jg-zona.on img, .jg-titulo img, .jg-jugar img, .jg-tabla, .jg-chispa { animation: none; }
+  .jg-tap-flecha, .jg-item.centro img, .jg-azar, .jg-dado, .jg-titulo img, .jg-jugar img, .jg-tabla, .jg-chispa { animation: none; }
   .jg-chispa { opacity: .9; }
   .jg-ambiente { display: none; }
 }

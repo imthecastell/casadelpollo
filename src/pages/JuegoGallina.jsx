@@ -1,22 +1,22 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { PERSONAJES, cargarImagenes, crearJuego } from '../data/juegoGallina.js'
+import { PERSONAJES, cargarImagenes, crearJuego, tono } from '../data/juegoGallina.js'
 import '../styles/juego.css'
 
 /* Página /juego: "El Salto del Pollo", minijuego para entretener al cliente mientras espera su pedido (se llega
-   escaneando un QR). Portada con el fondo del póster oficial y las gallinas como botones individuales → correr →
-   resultado.
+   escaneando un QR). Portada con el fondo del póster oficial y un carrusel infinito de gallinas (se desliza, tiene
+   flechas y un botón "al azar" que las hace girar) → correr → resultado.
    Todo vive en este dispositivo: el mejor récord y el personaje se guardan en localStorage; no hay backend ni cuenta. */
 const BASE = import.meta.env.BASE_URL
 const POSTER = { ancho: 941, alto: 1672 }
 
-// cada gallina sobre el fondo: centro y radios de su zona tocable, y ancho del dibujo (todo en píxeles del póster)
-const ZONAS = {
-  bruja: { cx: 490, cy: 690, rx: 140, ry: 170, w: 350 },
-  calabaza: { cx: 270, cy: 835, rx: 150, ry: 160, w: 325 },
-  fantasma: { cx: 690, cy: 840, rx: 150, ry: 160, w: 335 },
-  esqueleto: { cx: 360, cy: 1075, rx: 125, ry: 140, w: 295 },
-  catrina: { cx: 615, cy: 1085, rx: 145, ry: 160, w: 325 },
-}
+// carrusel: distancia entre gallinas y ancho de cada una, en píxeles del póster
+const N = PERSONAJES.length
+const ESPACIO = 290
+const ANCHO_GALLINA = 330
+const envolver = (x) => ((x % N) + N) % N
+const relativa = (i, p) => { let d = envolver(i - p); if (d > N / 2) d -= N; return d }
+const suave = (k) => 1 - (1 - k) ** 3
+const frenado = (k) => 1 - (1 - k) ** 4
 
 // hojas que caen y murciélagos que cruzan la portada (posición, tamaño y ritmo de cada una)
 const HOJAS = ['hoja-a', 'hoja-d', 'hoja-g', 'hoja-b', 'hoja-h', 'hoja-e', 'hoja-c', 'hoja-f'].map((n, i) => ({ n, x: 6 + i * 12.5, w: 26 + (i % 3) * 9, dur: 9 + (i % 4) * 2.2, retraso: -i * 1.7 }))
@@ -41,6 +41,11 @@ export default function JuegoGallina() {
   const marcoRef = useRef(null)
   const sonidoRef = useRef(sonido)
   const juegoRef = useRef(null)
+  const carruselRef = useRef(null)
+  const itemsRef = useRef([])
+  const ctrlRef = useRef(null)
+  const [girando, setGirando] = useState(false)
+  const [aviso, setAviso] = useState('')
 
   useEffect(() => { sonidoRef.current = sonido; guardar('cdp_juego_sonido', sonido ? '1' : '0') }, [sonido])
   useEffect(() => {
@@ -63,6 +68,115 @@ export default function JuegoGallina() {
     ro.observe(el)
     return () => ro.disconnect()
   }, [])
+
+  // carrusel infinito: la posición (pos) es un número con decimales; la gallina más cercana al centro es la elegida
+  useEffect(() => {
+    if (pantalla !== 'elegir') return
+    const cont = carruselRef.current
+    if (!cont) return
+    const pos = { v: Math.max(0, PERSONAJES.findIndex(p => p.id === personaje)) }
+    let anim = null
+    let drag = null
+    let ultimoId = null
+    let ultimoCruce = Math.round(pos.v)
+    let raf = 0
+    let avisoT = 0
+
+    const pintar = () => {
+      const cercano = envolver(Math.round(pos.v))
+      itemsRef.current.forEach((el, i) => {
+        if (!el) return
+        const d = relativa(i, pos.v)
+        const a = Math.abs(d)
+        el.style.left = `${50 + (d * ESPACIO / POSTER.ancho) * 100}%`
+        el.style.opacity = a > 2.3 ? '0' : String(1 - 0.36 * a)
+        el.style.zIndex = String(Math.round(100 - a * 10))
+        el.style.transform = `translateX(-50%) scale(${1 - 0.32 * Math.min(a, 1.6)})`
+        el.classList.toggle('centro', i === cercano)
+      })
+      const id = PERSONAJES[cercano].id
+      if (id !== ultimoId) { ultimoId = id; setPersonaje(id) }
+    }
+
+    const animarA = (destino, dur, ease, alTerminar) => {
+      anim = { desde: pos.v, hasta: destino, t0: performance.now(), dur, ease, alTerminar }
+    }
+
+    const cuadro = (ahora) => {
+      if (anim) {
+        const k = Math.min(1, (ahora - anim.t0) / anim.dur)
+        pos.v = anim.desde + (anim.hasta - anim.desde) * anim.ease(k)
+        const cruce = Math.round(pos.v)
+        if (cruce !== ultimoCruce) { ultimoCruce = cruce; if (anim.dur > 1000) tono(() => sonidoRef.current, 760, 560, 0.04, 'square', 0.03) }
+        if (k >= 1) { const fin = anim.alTerminar; anim = null; pos.v = envolver(pos.v); ultimoCruce = Math.round(pos.v); fin?.() }
+      }
+      pintar()
+      raf = requestAnimationFrame(cuadro)
+    }
+
+    const ir = (delta) => { if (drag || (anim && anim.dur > 1000)) return; animarA(Math.round(pos.v) + delta, 320, suave) }
+    const azar = () => {
+      if (anim && anim.dur > 1000) return
+      const base = Math.round(pos.v)
+      const objetivo = Math.floor(Math.random() * N)
+      const avance = envolver(objetivo - base) + N * 3
+      setGirando(true); setAviso('')
+      clearTimeout(avisoT)
+      animarA(base + avance, 2800, frenado, () => {
+        setGirando(false)
+        const el = itemsRef.current[objetivo]
+        if (el) { el.classList.remove('aterriza'); void el.offsetWidth; el.classList.add('aterriza') }
+        tono(() => sonidoRef.current, 520, 1040, 0.22, 'triangle', 0.06)
+        setAviso(`¡Te tocó ${PERSONAJES[objetivo].nombre}!`)
+        avisoT = setTimeout(() => setAviso(''), 2400)
+      })
+    }
+    ctrlRef.current = { ir, azar }
+
+    const espacioPx = () => ESPACIO * (cont.clientWidth / POSTER.ancho)
+    const alBajar = (ev) => {
+      if (anim && anim.dur > 1000) return   // no se puede agarrar mientras gira
+      anim = null
+      drag = { x0: ev.clientX, p0: pos.v, x: ev.clientX, t: performance.now(), v: 0, movido: false, id: ev.pointerId }
+      try { cont.setPointerCapture(ev.pointerId) } catch { /* ya liberado */ }
+    }
+    const alMover = (ev) => {
+      if (!drag || ev.pointerId !== drag.id) return
+      const dx = ev.clientX - drag.x0
+      if (Math.abs(dx) > 6) drag.movido = true
+      if (!drag.movido) return
+      pos.v = drag.p0 - dx / espacioPx()
+      const ahora = performance.now()
+      const dt = Math.max(1, ahora - drag.t)
+      drag.v = 0.7 * drag.v + 0.3 * (-(ev.clientX - drag.x) / espacioPx() / (dt / 1000))
+      drag.x = ev.clientX; drag.t = ahora
+    }
+    const alSoltar = (ev) => {
+      if (!drag || ev.pointerId !== drag.id) return
+      const d = drag; drag = null
+      if (!d.movido) {
+        const el = ev.target.closest?.('[data-i]')
+        if (el) { const dd = relativa(Number(el.dataset.i), pos.v); if (Math.abs(dd) > 0.3) animarA(pos.v + dd, 340, suave) }
+        return
+      }
+      const meta = Math.round(pos.v + Math.max(-2, Math.min(2, d.v * 0.18)))
+      animarA(meta, 380, suave)
+    }
+    cont.addEventListener('pointerdown', alBajar)
+    cont.addEventListener('pointermove', alMover)
+    cont.addEventListener('pointerup', alSoltar)
+    cont.addEventListener('pointercancel', alSoltar)
+    raf = requestAnimationFrame(cuadro)
+    return () => {
+      cancelAnimationFrame(raf); clearTimeout(avisoT)
+      cont.removeEventListener('pointerdown', alBajar); cont.removeEventListener('pointermove', alMover)
+      cont.removeEventListener('pointerup', alSoltar); cont.removeEventListener('pointercancel', alSoltar)
+      ctrlRef.current = null
+      setGirando(false); setAviso('')
+    }
+    // la posición inicial sale del personaje guardado; después el carrusel manda
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pantalla])
 
   useEffect(() => {
     if (pantalla !== 'jugando' || !imgs || !canvasRef.current) return
@@ -123,18 +237,27 @@ export default function JuegoGallina() {
                 <img key={c.n} className="jg-chispa" src={`${BASE}juego/${c.n}.png`} alt="" aria-hidden="true" draggable="false"
                   style={{ left: pct(c.x, POSTER.ancho), top: pct(c.y, POSTER.alto), width: pct(c.w, POSTER.ancho), animationDelay: `${i * 0.7}s` }} />
               ))}
-              {PERSONAJES.map((p, i) => {
-                const z = ZONAS[p.id]
-                const on = p.id === personaje
-                return (
-                  <button key={p.id} type="button" aria-pressed={on} aria-label={`Elegir a ${p.nombre}`}
-                    className={`jg-zona${on ? ' on' : ''}`} onClick={() => setPersonaje(p.id)}
-                    style={{ left: pct(z.cx - z.rx, POSTER.ancho), top: pct(z.cy - z.ry, POSTER.alto), width: pct(z.rx * 2, POSTER.ancho), height: pct(z.ry * 2, POSTER.alto) }}>
-                    <img src={`${BASE}juego/pj-${p.id}.png`} alt="" draggable="false" style={{ width: `${(z.w / (z.rx * 2)) * 100}%`, animationDelay: `${-i * 0.5}s` }} />
-                    {on && <span className="jg-zona-nombre">{p.nombre} ✓</span>}
-                  </button>
-                )
-              })}
+              <div className="jg-carrusel" ref={carruselRef} style={{ top: pct(500, POSTER.alto), height: pct(430, POSTER.alto) }} aria-label="Elige tu personaje: desliza a los lados">
+                {PERSONAJES.map((p, i) => (
+                  <div key={p.id} data-i={i} className="jg-item" ref={el => { itemsRef.current[i] = el }} style={{ width: pct(ANCHO_GALLINA, POSTER.ancho) }}>
+                    <img src={`${BASE}juego/pj-${p.id}.png`} alt={p.nombre} draggable="false" />
+                  </div>
+                ))}
+              </div>
+              <div className="jg-nombre-caja" style={{ top: pct(945, POSTER.alto) }}>
+                <div key={girando ? 'girando' : `${actual.id}-${aviso}`} className={`jg-nombre${aviso ? ' aviso' : ''}`}>{aviso || actual.nombre}</div>
+                <div className="jg-puntos" aria-hidden="true">
+                  {PERSONAJES.map(p => <span key={p.id} className={p.id === personaje ? 'on' : ''} />)}
+                </div>
+              </div>
+              <button type="button" className={`jg-azar${girando ? ' girando' : ''}`} disabled={girando} onClick={() => ctrlRef.current?.azar()}
+                style={{ top: pct(1080, POSTER.alto) }}>
+                <svg className="jg-dado" viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="2.5" y="2.5" width="19" height="19" rx="4.5" fill="#fff6dc" stroke="#7a1f14" strokeWidth="2" />
+                  {[[8, 8], [16, 8], [12, 12], [8, 16], [16, 16]].map(([x, y]) => <circle key={`${x}${y}`} cx={x} cy={y} r="1.7" fill="#7a1f14" />)}
+                </svg>
+                <span>{girando ? 'Girando…' : 'Al azar'}</span>
+              </button>
               <button type="button" className="jg-jugar" disabled={!imgs} onClick={correr} aria-label={`Jugar con ${actual.nombre}`}
                 style={{ left: pct(210, POSTER.ancho), top: pct(1232, POSTER.alto), width: pct(520, POSTER.ancho) }}>
                 <img src={`${BASE}juego/jugar.png`} alt="" draggable="false" />
@@ -142,6 +265,8 @@ export default function JuegoGallina() {
               <img className="jg-tabla" src={`${BASE}juego/tabla.png`} alt="Disponible solo en tiendas" draggable="false"
                 style={{ left: pct(235, POSTER.ancho), top: pct(1470, POSTER.alto), width: pct(470, POSTER.ancho) }} />
             </div>
+            <button type="button" className="jg-flecha jg-flecha-izq" aria-label="Personaje anterior" disabled={girando} onClick={() => ctrlRef.current?.ir(-1)} style={{ top: 690 * escala - 22 }}>‹</button>
+            <button type="button" className="jg-flecha jg-flecha-der" aria-label="Personaje siguiente" disabled={girando} onClick={() => ctrlRef.current?.ir(1)} style={{ top: 690 * escala - 22 }}>›</button>
             {mejor && (
               <div className="jg-mejor" aria-label={`Tu mejor carrera: ${mejor.metros} metros`}>
                 <img src={`${BASE}juego/btn-record.png`} alt="" draggable="false" />
