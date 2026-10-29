@@ -8,6 +8,8 @@ import PieV2 from '../Components/PieV2.jsx'
 import EncuestaPedido from '../Components/EncuestaPedido.jsx'
 import AvisoAirfryer from '../Components/AvisoAirfryer.jsx'
 import AvisoEvento from '../Components/AvisoEvento.jsx'
+import SkinMuertos from '../Components/SkinMuertos.jsx'
+import { skinActivo } from '../data/skin.js'
 import { tagsDe } from '../data/productTags'
 import { MarimadoImg } from '../Components/SeccionMarinados.jsx'
 import { GuiaCocinaPanel, guiaDisponible } from '../Components/GuiaCocina.jsx'
@@ -552,6 +554,7 @@ export default function HomeV2Preview() {
   const [heroIdxSucursal, setHeroIdxSucursal] = useState(0)
   const timerRef = useRef(null)
   const topbarRef = useRef(null)
+  const [skin] = useState(skinActivo)
   const contenidoRef = useRef(null)
 
   // Slideshow del fondo del selector de sucursal — solo corre mientras esa
@@ -1531,9 +1534,10 @@ export default function HomeV2Preview() {
     // tokens de marca reescalados de la Propuesta 3 (paleta intensificada);
     // al no tener position/opacity/transform no crea un stacking context
     // nuevo, así que no reintroduce ese bug.
-    <div className="v2-shell-root">
+    <div className={`v2-shell-root${skin ? ` skin-${skin}` : ''}`}>
     <AvisoEvento />
     <div className="v2-shell" style={colorTopbar ? { '--cab-color': colorTopbar } : undefined}>
+      {skin === 'muertos' && <SkinMuertos />}
 
       <div className="v2-topbar" ref={topbarRef}>
         <div className="v2-tb-pill">
