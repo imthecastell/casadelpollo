@@ -5,7 +5,7 @@
    - Para probarla en cualquier momento: agregar ?skin=<id> al enlace de la tienda (queda recordada en esa pestaña).
      ?skin=off la apaga en esa pestaña, aunque esté en su ventana de fechas. */
 const SKINS = [
-  { id: 'muertos', desde: '2026-10-29', hasta: '2026-11-03', auto: false },
+  { id: 'muertos', desde: '2026-10-29', hasta: '2026-11-03', auto: true },
 ]
 
 const LLAVE = 'cdp_skin'
