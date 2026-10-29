@@ -12,6 +12,7 @@ const X_JUGADOR = 78         // posición fija de la gallina en pantalla
 const GRAV = 2000
 const SALTO = 780            // altura máxima ≈ 152, tiempo en el aire ≈ 0.78 s
 const PX_POR_M = 40
+const DESENFOQUE = 0.32      // el fondo se dibuja a esta fracción de la resolución y se estira: sale borroso
 const J_ALTO = 70
 
 export const PERSONAJES = [
@@ -107,7 +108,10 @@ function pegatina(im, ancho, alto) {
 }
 
 export function crearJuego(canvas, imgs, personajeId, { onFin, sonidoActivo }) {
-  const ctx = canvas.getContext('2d')
+  const ctxPrincipal = canvas.getContext('2d')
+  let ctx = ctxPrincipal
+  const lienzoFondo = document.createElement('canvas')
+  const ctxFondo = lienzoFondo.getContext('2d')
   const pj = PERSONAJES.find(p => p.id === personajeId) || PERSONAJES[0]
   const sprite = imgs[pj.img]
   const spriteAlto = J_ALTO
@@ -128,6 +132,7 @@ export function crearJuego(canvas, imgs, personajeId, { onFin, sonidoActivo }) {
     canvas.height = Math.max(1, Math.round(r.height * dpr))
     escala = canvas.width / W
     H = canvas.height / escala
+    lienzoFondo.width = Math.max(1, Math.round(canvas.width * DESENFOQUE)); lienzoFondo.height = Math.max(1, Math.round(canvas.height * DESENFOQUE))
   }
 
   function saltar() {
@@ -356,9 +361,19 @@ export function crearJuego(canvas, imgs, personajeId, { onFin, sonidoActivo }) {
   }
 
   function dibujar() {
-    ctx.setTransform(escala, 0, 0, escala, 0, 0)
     const sueloY = H - SUELO
+    // el fondo (cielo, bosque, torre...) se pinta pequeño y se estira: queda desenfocado y se separa del primer plano
+    ctx = ctxFondo
+    ctx.setTransform(escala * DESENFOQUE, 0, 0, escala * DESENFOQUE, 0, 0)
     fondo(sueloY)
+    const neblina = ctx.createLinearGradient(0, sueloY - 170, 0, sueloY)
+    neblina.addColorStop(0, 'rgba(247,220,174,0)'); neblina.addColorStop(1, 'rgba(247,220,174,.45)')
+    ctx.fillStyle = neblina; ctx.fillRect(0, sueloY - 170, W, 170)
+    ctx = ctxPrincipal
+    ctx.setTransform(1, 0, 0, 1, 0, 0)
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'
+    ctx.drawImage(lienzoFondo, 0, 0, canvas.width, canvas.height)
+    ctx.setTransform(escala, 0, 0, escala, 0, 0)
     suelo(sueloY)
     // obstáculos
     for (const o of e.obstaculos) {
