@@ -13,8 +13,6 @@ const ADORNOS = [
   { n: 'hoja-2', clase: 'skin-adorno skin-hoja-medio' },
   { n: 'calabazas', clase: 'skin-adorno skin-calabazas' },
   { n: 'fantasma-2', clase: 'skin-adorno skin-fantasma' },
-  { n: 'murcielago-1', clase: 'skin-adorno skin-murcielago' },
-  { n: 'murcielago-3', clase: 'skin-adorno skin-murcielago skin-murcielago-2' },
 ]
 
 export default function SkinMuertos() {
@@ -34,6 +32,9 @@ export default function SkinMuertos() {
   return (
     <div className="skin-capa" ref={capa} aria-hidden="true">
       {ADORNOS.map(a => <img key={a.n} className={a.clase} src={img(a.n)} alt="" draggable="false" />)}
+      {/* murciélagos: cada uno vuela en una dirección y se inclina según sube o baja; el aleteo va en la imagen */}
+      <span className="skin-vuelo skin-vuelo-ida"><img src={img('murcielago-2')} alt="" draggable="false" /></span>
+      <span className="skin-vuelo skin-vuelo-vuelta"><img src={img('murcielago-1')} alt="" draggable="false" /></span>
     </div>
   )
 }
