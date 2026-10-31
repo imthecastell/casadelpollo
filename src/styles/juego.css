@@ -145,6 +145,16 @@
   width: 100%; max-width: 340px; min-height: 46px; border: 2.5px solid #5a2a1a; border-radius: 14px; background: transparent;
   color: #4b2012; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 800; font-size: 15px; cursor: pointer;
 }
+.jg-ig {
+  width: 100%; max-width: 340px; min-height: 52px; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 6px 12px;
+  border: 3px solid #5a2a1a; border-radius: 16px; background: linear-gradient(135deg, #8a2a5c, #c2371f 55%, #e8892a); color: #fff8ea;
+  text-decoration: none; box-shadow: 0 4px 0 #4b2012; font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+.jg-ig:active { transform: translateY(2px); box-shadow: 0 2px 0 #4b2012; }
+.jg-ig svg { flex: none; }
+.jg-ig-txt { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; text-align: left; }
+.jg-ig-txt b { font-size: 15px; font-weight: 800; }
+.jg-ig-txt small { font-size: 13px; font-weight: 700; opacity: .92; }
 .jg-link { color: #4b2012; font-size: 14px; font-weight: 800; text-decoration: underline; padding: 8px; }
 
 /* ---- resultado: tablón claro como el letrero del póster ---- */
