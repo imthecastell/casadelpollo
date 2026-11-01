@@ -1,11 +1,25 @@
 /* Minijuego "El Salto del Pollo" (/juego). Pantalla completa, columna de máx. 480 px. Paleta del póster oficial:
    madera oscura, crema, naranja de cempasúchil. */
 .jg-raiz {
-  position: fixed; inset: 0; background: #2a1209; display: flex; justify-content: center;
+  position: fixed; inset: 0; background: #2a1209; display: flex; justify-content: center; overflow: hidden;
   font-family: 'DM Sans', system-ui, sans-serif; color: #FFE9B8;
   -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
 }
-.jg-marco { position: relative; width: 100%; max-width: 480px; height: 100%; overflow: hidden; background: #6fb1dc; display: flex; flex-direction: column; }
+/* en pantallas anchas (iPad, computadora) lo que sobra a los lados es el mismo paisaje del póster, difuminado */
+.jg-raiz::before {
+  content: ''; position: absolute; inset: -30px; background: #2a1209 url('/juego/fondo.webp') center / cover; filter: blur(14px) brightness(.6) saturate(1.1);
+}
+/* el marco tiene la proporción del póster (941×1672): en un iPad se ve completo, sin recortar; en un teléfono ocupa todo el ancho */
+.jg-marco {
+  position: relative; z-index: 1; flex: none; width: min(100%, max(480px, 56.28vh)); width: min(100%, max(480px, 56.28dvh));
+  height: 100%; overflow: hidden; background: #6fb1dc; display: flex; flex-direction: column; box-shadow: 0 0 40px rgba(20, 6, 2, .55);
+}
+/* stickers de Instagram en los costados; solo si caben (container query), si no, se ocultan */
+.jg-lado { position: relative; z-index: 1; flex: 1 1 0; min-width: 0; container-type: inline-size; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.jg-lado img { display: block; width: min(100%, 340px); height: auto; max-height: 62vh; object-fit: contain; padding: 0 14px; box-sizing: border-box; filter: drop-shadow(0 8px 14px rgba(20, 6, 2, .5)); animation: jg-ig-flota 3.6s ease-in-out infinite alternate; }
+.jg-lado-der img { animation-delay: -1.8s; }
+@container (max-width: 169px) { .jg-lado img { display: none; } }
+@keyframes jg-ig-flota { from { transform: translateY(6px) rotate(-1.2deg); } to { transform: translateY(-8px) rotate(1.2deg); } }
 .jg-canvas { flex: 2 1 0; min-height: 0; width: 100%; display: block; touch-action: none; }
 
 /* tercio inferior: zona de toque para saltar (tablón de madera) */
