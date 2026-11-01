@@ -217,7 +217,12 @@ export default function JuegoGallina() {
 
   return (
     <div className="jg-raiz">
-      <div className="jg-lado jg-lado-izq" aria-hidden="true"><img src={`${BASE}juego/ig-bruja.webp`} alt="" draggable="false" /></div>
+      <div className="jg-lado jg-lado-izq" aria-hidden="true">
+        <div className="jg-ig-tarjeta">
+          <img src={`${BASE}juego/ig-bruja.webp`} alt="" draggable="false" />
+          <span className="jg-ig-usuario">@casadelpollolm</span>
+        </div>
+      </div>
       <div className="jg-marco" ref={marcoRef}>
         {pantalla !== 'elegir' && (
           <>
@@ -314,7 +319,12 @@ export default function JuegoGallina() {
           </div>
         )}
       </div>
-      <div className="jg-lado jg-lado-der" aria-hidden="true"><img src={`${BASE}juego/ig-grupo.webp`} alt="" draggable="false" /></div>
+      <div className="jg-lado jg-lado-der" aria-hidden="true">
+        <div className="jg-ig-tarjeta">
+          <img src={`${BASE}juego/ig-grupo.webp`} alt="" draggable="false" />
+          <span className="jg-ig-usuario">@casadelpollolm</span>
+        </div>
+      </div>
     </div>
   )
 }

@@ -16,9 +16,14 @@
 }
 /* stickers de Instagram en los costados; solo si caben (container query), si no, se ocultan */
 .jg-lado { position: relative; z-index: 1; flex: 1 1 0; min-width: 0; container-type: inline-size; display: flex; align-items: center; justify-content: center; pointer-events: none; }
-.jg-lado img { display: block; width: min(100%, 340px); height: auto; max-height: 62vh; object-fit: contain; padding: 0 14px; box-sizing: border-box; filter: drop-shadow(0 8px 14px rgba(20, 6, 2, .5)); animation: jg-ig-flota 3.6s ease-in-out infinite alternate; }
-.jg-lado-der img { animation-delay: -1.8s; }
-@container (max-width: 169px) { .jg-lado img { display: none; } }
+.jg-ig-tarjeta { display: flex; flex-direction: column; align-items: center; gap: 6px; width: min(100%, 340px); animation: jg-ig-flota 3.6s ease-in-out infinite alternate; }
+.jg-lado img { display: block; width: 100%; height: auto; max-height: 56vh; object-fit: contain; padding: 0 14px; box-sizing: border-box; filter: drop-shadow(0 8px 14px rgba(20, 6, 2, .5)); }
+.jg-ig-usuario {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 800; font-size: clamp(16px, 2.2vw, 24px); color: #fff3d6; letter-spacing: .01em;
+  text-shadow: 0 2px 0 #4b2012, 0 0 8px rgba(20, 6, 2, .8), 0 3px 10px rgba(20, 6, 2, .6);
+}
+.jg-lado-der .jg-ig-tarjeta { animation-delay: -1.8s; }
+@container (max-width: 169px) { .jg-ig-tarjeta { display: none; } }
 @keyframes jg-ig-flota { from { transform: translateY(6px) rotate(-1.2deg); } to { transform: translateY(-8px) rotate(1.2deg); } }
 .jg-canvas { flex: 2 1 0; min-height: 0; width: 100%; display: block; touch-action: none; }
 
