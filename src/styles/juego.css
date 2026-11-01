@@ -19,8 +19,11 @@
 .jg-ig-tarjeta { display: flex; flex-direction: column; align-items: center; gap: 6px; width: min(100%, 340px); animation: jg-ig-flota 3.6s ease-in-out infinite alternate; }
 .jg-lado img { display: block; width: 100%; height: auto; max-height: 56vh; object-fit: contain; padding: 0 14px; box-sizing: border-box; filter: drop-shadow(0 8px 14px rgba(20, 6, 2, .5)); }
 .jg-ig-usuario {
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 800; font-size: clamp(16px, 2.2vw, 24px); color: #fff3d6; letter-spacing: .01em;
-  text-shadow: 0 2px 0 #4b2012, 0 0 8px rgba(20, 6, 2, .8), 0 3px 10px rgba(20, 6, 2, .6);
+  margin-top: 4px; padding: 10px 22px; border: 3px solid #5a2a1a; border-radius: 99px; white-space: nowrap;
+  background: linear-gradient(135deg, #d6249f, #fd1d1d 55%, #fcb045); color: #fff;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-weight: 800; font-size: clamp(16px, 2.1vw, 22px); letter-spacing: .01em;
+  text-shadow: 0 1px 2px rgba(75, 20, 10, .55);
+  box-shadow: 0 5px 0 #4b2012, 0 10px 20px rgba(20, 6, 2, .5), inset 0 2px 0 rgba(255, 255, 255, .28);
 }
 .jg-lado-der .jg-ig-tarjeta { animation-delay: -1.8s; }
 @container (max-width: 169px) { .jg-ig-tarjeta { display: none; } }
