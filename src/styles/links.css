@@ -52,3 +52,12 @@
 .lk-resena-txt { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
 .lk-resena-txt b { font-size: 15px; }
 .lk-resena-txt small { font-size: 12px; font-weight: 500; color: #7B5850; margin-top: 2px; }
+
+/* Tarjeta «Trabaja con nosotros» de la página de Links (solo si hay vacantes abiertas). */
+.lk-trabajo { width: 100%; max-width: 960px; margin-top: 22px; display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--texto, #1A0806); background: #fff; border: 1.5px solid #F0D49A; border-radius: 18px; padding: 14px 18px; box-shadow: var(--sombra, 0 2px 14px rgba(26,8,6,.08)); }
+.lk-trabajo svg { flex: none; color: var(--rojo, #C62A1B); }
+.lk-trabajo span { display: flex; flex-direction: column; line-height: 1.25; }
+.lk-trabajo b { font-family: var(--font-title, sans-serif); font-weight: 800; font-size: 16px; }
+.lk-trabajo small { font-size: 12.5px; color: #7B5850; }
+.lk-trabajo:hover { background: #FFF9EC; }
+.lk-trabajo:focus-visible { outline: 3px solid var(--dorado, #F0A020); outline-offset: 2px; }
