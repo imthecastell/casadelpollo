@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import Icono from '../Components/Icono.jsx'
 import { estadoHorario } from '../data/horario.js'
+import { useVacantes } from '../data/vacantes.js'
 import '../styles/homeV2.css'
 import '../styles/links.css'
 
@@ -16,6 +17,7 @@ export default function LinksPage() {
   const [config, setConfig] = useState(null)
   const [cargando, setCargando] = useState(true)
   const [horarios, setHorarios] = useState({}) // por nombre normalizado de sucursal
+  const { vacantes } = useVacantes()
 
   useEffect(() => {
     let vigente = true
@@ -68,6 +70,13 @@ export default function LinksPage() {
           </div>
         )}
       </main>
+
+      {vacantes.length > 0 && (
+        <a className="lk-trabajo" href={`${BASE}vacantes`}>
+          <Icono nombre="storefront" tam="22px" />
+          <span><b>Trabaja con nosotros</b><small>{vacantes.length === 1 ? 'Hay 1 vacante abierta' : `Hay ${vacantes.length} vacantes abiertas`}</small></span>
+        </a>
+      )}
 
       <footer className="lk-pie">{title}</footer>
     </div>

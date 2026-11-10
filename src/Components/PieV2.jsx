@@ -1,5 +1,6 @@
 import Icono from './Icono.jsx'
 import { estadoHorario, hora12 } from '../data/horario.js'
+import { useVacantes } from '../data/vacantes.js'
 
 /* Pie de la tienda V2: datos de la sucursal activa (dirección, horario y si está abierta,
    servicios), cómo se paga y redes. */
@@ -40,6 +41,7 @@ function gruposHorario(schedule) {
 }
 
 export default function PieV2({ sucursal, enlaces, schedule, productos, bowlsActivo, clase = '' }) {
+  const { vacantes } = useVacantes()
   if (!sucursal) return null
   const estado = estadoHorario(schedule)
   const grupos = gruposHorario(schedule)
@@ -100,7 +102,10 @@ export default function PieV2({ sucursal, enlaces, schedule, productos, bowlsAct
           <a href={FACEBOOK_URL} target="_blank" rel="noopener noreferrer" aria-label="Facebook de Casa del Pollo"><Icono nombre="facebook-logo" /></a>
           <a href={instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram de Casa del Pollo"><Icono nombre="instagram-logo" /></a>
         </div>
-        <p>© Casa del Pollo</p>
+        <div className="v2-pie-legal">
+          {vacantes.length > 0 && <a className="v2-pie-trabajo" href={`${import.meta.env.BASE_URL}vacantes`}>Trabaja con nosotros</a>}
+          <p>© Casa del Pollo</p>
+        </div>
       </div>
     </footer>
   )
