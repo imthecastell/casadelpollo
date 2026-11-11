@@ -113,7 +113,7 @@ function Vacante({ v, yaEnviada, onPostular }) {
 const DISPONIBILIDAD = ['Inmediata', 'En una semana', 'En dos semanas o más']
 
 function Formulario({ vacante, onCerrar, onEnviada }) {
-  const [f, setF] = useState({ nombre: '', telefono: '', edad: '', experiencia: '', disponibilidad: DISPONIBILIDAD[0], mensaje: '', sitio_web: '' })
+  const [f, setF] = useState({ nombre: '', telefono: '', edad: '', experiencia: '', disponibilidad: DISPONIBILIDAD[0], expectativa_salarial: '', mensaje: '', sitio_web: '' })
   const [acepta, setAcepta] = useState(false)
   const [error, setError] = useState('')
   const [enviando, setEnviando] = useState(false)
@@ -175,6 +175,9 @@ function Formulario({ vacante, onCerrar, onEnviada }) {
               <select value={f.disponibilidad} onChange={cambia('disponibilidad')}>
                 {DISPONIBILIDAD.map(d => <option key={d}>{d}</option>)}
               </select>
+            </label>
+            <label className="vb-campo">Expectativa salarial (opcional)
+              <input type="text" inputMode="text" maxLength={80} value={f.expectativa_salarial} onChange={cambia('expectativa_salarial')} placeholder="Ej. $2,000 a la semana" />
             </label>
             <label className="vb-campo">Experiencia (opcional)
               <textarea rows={3} maxLength={600} value={f.experiencia} onChange={cambia('experiencia')} placeholder="Dónde has trabajado o qué sabes hacer" />
