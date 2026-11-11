@@ -10,9 +10,8 @@
 .vb-tarjeta .lk-tipo { display: inline-flex; align-items: center; gap: 4px; }
 .vb-etiquetas { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 7px; }
 .vb-etiquetas li { font-size: 12.5px; font-weight: 700; color: #6B3A12; background: #FFF1D6; border: 1px solid #F0D49A; border-radius: 99px; padding: 5px 11px; display: inline-flex; align-items: center; gap: 5px; }
-.vb-etiquetas li.urgente { color: #fff; background: var(--rojo, #C0281C); border-color: var(--rojo, #C0281C); }
-.vb-urgente { border: 2px solid var(--rojo, #C0281C); box-shadow: 0 8px 24px rgba(192, 40, 28, .18); }
-.vb-urgente-cinta { align-self: flex-start; font-size: 12px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: #fff; background: var(--rojo, #C0281C); border-radius: 99px; padding: 5px 12px; }
+.vb-destacada { border: 2px solid var(--dorado, #C8841A); box-shadow: 0 8px 24px rgba(200, 132, 26, .20); }
+.vb-cinta { align-self: flex-start; font-size: 12px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: #fff; background: var(--dorado, #C8841A); border-radius: 99px; padding: 5px 12px; }
 .vb-etiquetas li.horario { color: var(--texto, #1A0806); background: #F6EFE6; border-color: #E6D9C9; }
 .vb-resumen { margin: 0; font-size: 14.5px; line-height: 1.5; color: #4A322B; }
 .vb-detalle { display: flex; flex-direction: column; gap: 14px; padding-top: 4px; border-top: 1px solid #F0E6DA; }
