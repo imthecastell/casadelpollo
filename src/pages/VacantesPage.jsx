@@ -7,15 +7,15 @@ import '../styles/vacantes.css'
 
 const BASE = import.meta.env.BASE_URL
 
-/* Una vacante con la etiqueta «Urgente» (la escribe quien administra, en las etiquetas visibles) va primero
-   y se resalta. El resto conserva el orden en que llega del servidor. */
-const esUrgente = (v) => (v.etiquetas || []).some(t => /^urgente/i.test(String(t).trim()))
+/* Una vacante con la etiqueta «Nueva» (la escribe quien administra, en las etiquetas visibles) va primero
+   y se resalta con una cinta. El resto conserva el orden en que llega del servidor. */
+const esDestacada = (v) => (v.etiquetas || []).some(t => /^nueva$/i.test(String(t).trim()))
 
 /* Bolsa de trabajo pública: las vacantes abiertas con sus condiciones visibles y un formulario corto
    para dejar los datos. La solicitud en papel se entrega en la sucursal (lo dice cada vacante). */
 export default function VacantesPage() {
   const { vacantes: lista, cargando } = useVacantes()
-  const vacantes = [...lista].sort((a, b) => Number(esUrgente(b)) - Number(esUrgente(a)))
+  const vacantes = [...lista].sort((a, b) => Number(esDestacada(b)) - Number(esDestacada(a)))
   const [postulando, setPostulando] = useState(null) // vacante elegida
   const [enviada, setEnviada] = useState(null)       // vacante a la que ya se postuló en esta visita
 
@@ -76,17 +76,17 @@ function Vacante({ v, yaEnviada, onPostular }) {
   const [abierta, setAbierta] = useState(false)
   const actividades = Array.isArray(v.actividades) ? v.actividades : []
   return (
-    <article className={'lk-tarjeta vb-tarjeta' + (esUrgente(v) ? ' vb-urgente' : '')}>
-      {esUrgente(v) && <div className="vb-urgente-cinta">Contratación urgente</div>}
+    <article className={'lk-tarjeta vb-tarjeta' + (esDestacada(v) ? ' vb-destacada' : '')}>
+      {esDestacada(v) && <div className="vb-cinta">Nueva vacante</div>}
       <div className="lk-tarjeta-cab">
         <h2>{v.puesto}</h2>
         {v.sucursal && <span className="lk-tipo"><Icono nombre="map-pin" tam="13px" /> {v.sucursal}</span>}
       </div>
 
-      {(v.etiquetas?.length > 0 || v.horario) && (
+      {((v.etiquetas || []).some(t => !/^nueva$/i.test(String(t).trim())) || v.horario) && (
         <ul className="vb-etiquetas">
           {v.horario && <li className="horario"><Icono nombre="clock" tam="15px" /> {v.horario}</li>}
-          {(v.etiquetas || []).map((t, i) => <li key={i} className={/^urgente/i.test(String(t).trim()) ? 'urgente' : undefined}>{t}</li>)}
+          {(v.etiquetas || []).filter(t => !/^nueva$/i.test(String(t).trim())).map((t, i) => <li key={i}>{t}</li>)}
         </ul>
       )}
 
