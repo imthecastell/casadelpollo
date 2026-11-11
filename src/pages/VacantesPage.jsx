@@ -7,10 +7,15 @@ import '../styles/vacantes.css'
 
 const BASE = import.meta.env.BASE_URL
 
+/* Una vacante con la etiqueta «Urgente» (la escribe quien administra, en las etiquetas visibles) va primero
+   y se resalta. El resto conserva el orden en que llega del servidor. */
+const esUrgente = (v) => (v.etiquetas || []).some(t => /^urgente/i.test(String(t).trim()))
+
 /* Bolsa de trabajo pública: las vacantes abiertas con sus condiciones visibles y un formulario corto
    para dejar los datos. La solicitud en papel se entrega en la sucursal (lo dice cada vacante). */
 export default function VacantesPage() {
-  const { vacantes, cargando } = useVacantes()
+  const { vacantes: lista, cargando } = useVacantes()
+  const vacantes = [...lista].sort((a, b) => Number(esUrgente(b)) - Number(esUrgente(a)))
   const [postulando, setPostulando] = useState(null) // vacante elegida
   const [enviada, setEnviada] = useState(null)       // vacante a la que ya se postuló en esta visita
 
@@ -71,7 +76,8 @@ function Vacante({ v, yaEnviada, onPostular }) {
   const [abierta, setAbierta] = useState(false)
   const actividades = Array.isArray(v.actividades) ? v.actividades : []
   return (
-    <article className="lk-tarjeta vb-tarjeta">
+    <article className={'lk-tarjeta vb-tarjeta' + (esUrgente(v) ? ' vb-urgente' : '')}>
+      {esUrgente(v) && <div className="vb-urgente-cinta">Contratación urgente</div>}
       <div className="lk-tarjeta-cab">
         <h2>{v.puesto}</h2>
         {v.sucursal && <span className="lk-tipo"><Icono nombre="map-pin" tam="13px" /> {v.sucursal}</span>}
@@ -80,7 +86,7 @@ function Vacante({ v, yaEnviada, onPostular }) {
       {(v.etiquetas?.length > 0 || v.horario) && (
         <ul className="vb-etiquetas">
           {v.horario && <li className="horario"><Icono nombre="clock" tam="15px" /> {v.horario}</li>}
-          {(v.etiquetas || []).map((t, i) => <li key={i}>{t}</li>)}
+          {(v.etiquetas || []).map((t, i) => <li key={i} className={/^urgente/i.test(String(t).trim()) ? 'urgente' : undefined}>{t}</li>)}
         </ul>
       )}
 
