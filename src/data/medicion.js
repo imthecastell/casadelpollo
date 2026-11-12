@@ -4,10 +4,10 @@ import { API_URL } from './vacantes.js'
    precio de cada platillo. No se manda nombre, teléfono ni nada que identifique a la persona:
    solo el tipo de evento y el id del platillo.
 
-   Está APAGADA (`activa: false`) porque todavía no existe dónde guardar los datos: hace falta un
-   endpoint en el backend (POST /api/cenas/eventos) y una vista en el admin. Cuando existan, basta
-   con poner `activa: true`; la página ya llama a `registrarEvento` en los lugares correctos. */
-export const MEDICION = { activa: false }
+   Los eventos se guardan en el backend (POST /api/cenas/eventos) y se ven en el admin, en
+   «Cenas de fin de año». Si el endpoint aún no existe o falla, la petición se ignora en silencio
+   y la página funciona igual. Para apagar la medición, pon `activa: false`. */
+export const MEDICION = { activa: true }
 
 const CLAVE_SESION = 'cdp-cenas-visita'
 
