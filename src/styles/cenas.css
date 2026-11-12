@@ -42,6 +42,10 @@
 .cn-lista { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr; gap: 12px; }
 .cn-platillo { display: flex; gap: 14px; align-items: flex-start; background: #fff; border: 1px solid var(--cn-crema-2); border-radius: 20px; padding: 16px; box-shadow: 0 2px 12px rgba(91, 22, 32, .06); min-width: 0; }
 .cn-ico { flex: none; width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; color: var(--cn-terracota); background: #FCE9DA; }
+/* Platillo con foto: la foto va arriba, a todo el ancho de la tarjeta. */
+.cn-platillo.cn-con-foto { flex-direction: column; gap: 0; padding: 0; overflow: hidden; }
+.cn-foto { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; background: var(--cn-vino); }
+.cn-con-foto .cn-platillo-txt { padding: 14px 16px 16px; align-items: flex-start; }
 .cn-platillo-txt { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .cn-platillo h4 { margin: 0; font-family: var(--cn-serif); font-weight: 700; font-size: 19px; line-height: 1.2; color: var(--cn-vino); display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
 .cn-platillo h4 small { font-family: var(--font-body, sans-serif); font-size: 11.5px; font-weight: 700; color: #6B3A12; background: #FFF1D6; border: 1px solid #F0D49A; border-radius: 99px; padding: 2px 9px; }
@@ -77,6 +81,7 @@
 
 @media (min-width: 720px) {
   .cn-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cn-lista-fotos { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .cn-sucursales { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .cn-reservar { padding: 36px 28px 28px; }
   .cn-intro p { font-size: 18px; }

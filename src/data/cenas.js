@@ -37,10 +37,13 @@ export const CENAS = {
       titulo: 'Platos fuertes',
       items: [
         { id: 'pechugas', nombre: 'Pechugas rellenas', icono: 'flame', medida: 'Por kg', precio: '', catalogo: /^pechuga rellena/i,
+          foto: 'pechugas.webp', fotoAlt: 'Pechuga rellena de mozzarella y espinacas, envuelta en tocino',
           detalle: 'Rellenas de jamón y queso, o de mozzarella con espinacas. Tú eliges el relleno.' },
         { id: 'medallones', nombre: 'Medallones con tocino', icono: 'flame', medida: 'Por kg', precio: '', catalogo: /medall[oó]n/i,
+          foto: 'medallones.webp', fotoAlt: 'Medallón con tocino sobre puré de papa y espárragos',
           detalle: 'Medallones envueltos en tocino, para llevar al horno.' },
         { id: 'rollo', nombre: 'Rollo relleno de jamón y queso', icono: 'flame', medida: 'Por kg', precio: '', catalogo: /^rollo relleno/i,
+          foto: 'rollo.webp', fotoAlt: 'Rollo relleno de jamón y queso, rebanado',
           detalle: 'Un rollo para rebanar y compartir, relleno de jamón y queso.' },
       ],
     },
