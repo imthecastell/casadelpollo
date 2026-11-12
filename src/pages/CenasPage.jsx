@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Icono from '../Components/Icono.jsx'
 import { CENAS, CONDICIONES, useSucursalesCenas, usePreciosCatalogo, enlaceWhatsapp } from '../data/cenas.js'
 import { registrarEvento, registrarVisitaUnaVez } from '../data/medicion.js'
@@ -43,7 +43,7 @@ export default function CenasPage() {
           {CENAS.grupos.map(g => (
             <div key={g.id} className="cn-grupo">
               <h3>{g.titulo}</h3>
-              <ul className={'cn-lista' + (g.items.every(it => it.foto || it.fotos) ? ' cn-lista-fotos' : '')}>
+              <ul className={'cn-lista' + (g.items.every(it => it.foto || it.fotos) ? (g.items.length === 1 ? ' cn-lista-unica' : ' cn-lista-fotos') : '')}>
                 {g.items.map(it => (
                   <li key={it.id} className={'cn-platillo' + (it.foto || it.fotos ? ' cn-con-foto' : '') + (it.fotos ? ' cn-platillo-ancho' : '')}>
                     {it.fotos ? (
@@ -111,38 +111,67 @@ export default function CenasPage() {
   )
 }
 
-/* El precio se ve al tocar «Ver precio»: así se cuenta cada consulta por platillo. Para dificultar las
-   capturas de pantalla (no se pueden bloquear en una página web) el precio no se puede seleccionar ni
-   copiar, lleva una marca de agua, no sale al imprimir y vuelve a ocultarse si la página pasa a segundo
-   plano o pasan 20 segundos. */
+/* El precio solo existe en la página MIENTRAS SE MANTIENE PRESIONADO el botón: al soltar, al cambiar de
+   pestaña o de app, o al salir del botón con el dedo o el cursor, desaparece del documento (no está
+   oculto con CSS: ni siquiera está en el HTML). Así una captura normal no lo trae, y capturarlo exige
+   mantener el dedo en el botón mientras se aprietan los botones del teléfono. Es una barrera, no un
+   candado: una web no puede impedir una captura del sistema ni una foto a la pantalla. Además el
+   precio no se puede seleccionar ni copiar, lleva una marca de agua tenue y no sale al imprimir.
+   Cada vez que se presiona se cuenta una consulta de precio del platillo. */
 function Precio({ id, texto }) {
   const [visible, setVisible] = useState(false)
+  const activo = useRef(false)
+
+  const mostrar = () => {
+    if (activo.current) return
+    activo.current = true
+    setVisible(true)
+    registrarEvento('precio', id)
+  }
+  const ocultar = () => { activo.current = false; setVisible(false) }
 
   useEffect(() => {
     if (!visible) return
-    const ocultar = () => setVisible(false)
     const alCambiar = () => { if (document.hidden) ocultar() }
     document.addEventListener('visibilitychange', alCambiar)
     window.addEventListener('blur', ocultar)
-    const t = setTimeout(ocultar, 20000)
+    window.addEventListener('pointerup', ocultar)
+    window.addEventListener('pointercancel', ocultar)
     return () => {
       document.removeEventListener('visibilitychange', alCambiar)
       window.removeEventListener('blur', ocultar)
-      clearTimeout(t)
+      window.removeEventListener('pointerup', ocultar)
+      window.removeEventListener('pointercancel', ocultar)
     }
   }, [visible])
 
-  if (!visible) {
-    return (
-      <button type="button" className="cn-ver-precio" onClick={() => { setVisible(true); registrarEvento('precio', id) }}>
-        <Icono nombre="money" tam="18px" /> Ver precio
-      </button>
-    )
-  }
+  // Teclado: mantener Espacio o Enter. Lectores de pantalla (clic sin presión sostenida, detail 0):
+  // se muestra 6 segundos.
+  const alTeclear = (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); mostrar() } }
+  const alSoltarTecla = (e) => { if (e.key === ' ' || e.key === 'Enter') ocultar() }
+  const alClicSinPuntero = (e) => { if (e.detail === 0 && !visible) { mostrar(); setTimeout(ocultar, 6000) } }
+
   return (
-    <p className="cn-precio" role="status" onContextMenu={e => e.preventDefault()} onCopy={e => e.preventDefault()} onDragStart={e => e.preventDefault()}>
-      <span>{texto}</span>
-    </p>
+    <button
+      type="button"
+      className={'cn-ver-precio' + (visible ? ' cn-ver-precio-on' : '')}
+      aria-label={visible ? `Precio: ${texto}` : 'Mantén presionado para ver el precio'}
+      onPointerDown={(e) => { if (e.pointerType === 'mouse' && e.button !== 0) return; mostrar() }}
+      onPointerLeave={ocultar}
+      onKeyDown={alTeclear}
+      onKeyUp={alSoltarTecla}
+      onBlur={ocultar}
+      onClick={alClicSinPuntero}
+      onContextMenu={e => e.preventDefault()}
+      onCopy={e => e.preventDefault()}
+      onDragStart={e => e.preventDefault()}
+    >
+      {/* La etiqueta siempre ocupa su lugar (invisible mientras se ve el precio) para que el botón no cambie de tamaño. */}
+      <span className="cn-precio-etiqueta" style={visible ? { visibility: 'hidden' } : undefined}>
+        <Icono nombre="money" tam="18px" /> Mantén presionado para ver el precio
+      </span>
+      {visible && <span className="cn-precio-valor">{texto}</span>}
+    </button>
   )
 }
 

@@ -100,6 +100,21 @@
 .cn-ver-precio { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; min-height: 40px; padding: 8px 14px; border-radius: 12px; border: 1.5px solid var(--cn-terracota); background: transparent; color: var(--cn-terracota); font: inherit; font-weight: 800; font-size: 14px; cursor: pointer; }
 .cn-ver-precio:hover { background: #FCE9DA; }
 .cn-ver-precio:focus-visible { outline: 3px solid var(--cn-dorado); outline-offset: 2px; }
-.cn-platillo p.cn-precio { position: relative; align-self: flex-start; margin: 6px 0 0; padding: 8px 14px; border-radius: 12px; overflow: hidden; background: #FFF1D6; border: 1px solid #F0D49A; color: var(--cn-vino); font-weight: 800; font-size: 17px; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
-.cn-precio::after { content: 'Casa del Pollo · Casa del Pollo · Casa del Pollo · Casa del Pollo'; position: absolute; inset: -30% -10%; display: block; transform: rotate(-18deg); font-size: 10px; font-weight: 700; line-height: 1.9; letter-spacing: .08em; text-transform: uppercase; word-spacing: 6px; color: rgba(91, 22, 32, .16); pointer-events: none; overflow: hidden; }
-@media print { .cn-precio, .cn-ver-precio { display: none !important; } }
+/* El botón mide siempre lo mismo (reserva el espacio del precio) para que nada salte al soltar. */
+.cn-ver-precio { position: relative; overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; text-align: left; line-height: 1.2; }
+.cn-ver-precio-on { background: #FFF1D6; border-color: #C58B2B; color: var(--cn-vino); }
+.cn-precio-valor { font-size: 17px; font-weight: 800; }
+.cn-ver-precio { display: inline-grid; align-items: center; }
+.cn-precio-etiqueta, .cn-precio-valor { grid-area: 1 / 1; }
+.cn-precio-etiqueta { display: inline-flex; align-items: center; gap: 6px; }
+.cn-precio-valor { position: relative; z-index: 1; }
+.cn-ver-precio-on::after { content: 'Casa del Pollo · Casa del Pollo · Casa del Pollo · Casa del Pollo'; position: absolute; inset: -30% -10%; display: block; transform: rotate(-18deg); font-size: 10px; font-weight: 700; line-height: 1.9; letter-spacing: .08em; text-transform: uppercase; word-spacing: 6px; color: rgba(91, 22, 32, .10); pointer-events: none; overflow: hidden; }
+@media print { .cn-ver-precio { display: none !important; } }
+
+/* Grupo con un solo platillo con foto (rosca): tarjeta ancha, foto a la izquierda en escritorio. */
+.cn-lista-unica { grid-template-columns: 1fr; }
+@media (min-width: 720px) {
+  .cn-lista-unica .cn-platillo.cn-con-foto { flex-direction: row; align-items: stretch; }
+  .cn-lista-unica .cn-foto { width: 50%; aspect-ratio: auto; height: auto; min-height: 220px; }
+  .cn-lista-unica .cn-platillo-txt { justify-content: center; padding: 20px 24px; }
+}
