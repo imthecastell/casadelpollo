@@ -7,6 +7,7 @@ import Feedback from './pages/Feedback.jsx'
 import LinksPage from './pages/LinksPage.jsx'
 import JuegoGallina from './pages/JuegoGallina.jsx'
 import VacantesPage from './pages/VacantesPage.jsx'
+import CenasPage from './pages/CenasPage.jsx'
 import HomeV2Preview from './pages/HomeV2Preview.jsx'
 import InstalarApp from './Components/InstalarApp.jsx'
 import './styles/global.css'
@@ -26,6 +27,7 @@ export default function App() {
   if (/\/links\/?$/.test(window.location.pathname)) return <LinksPage />
   if (/\/juego\/?$/.test(window.location.pathname)) return <JuegoGallina />
   if (/\/vacantes\/?$/.test(window.location.pathname)) return <VacantesPage />
+  if (/\/cenas\/?$/.test(window.location.pathname)) return <CenasPage />
 
   return (
     <AppProvider>
