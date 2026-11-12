@@ -52,10 +52,13 @@ export const CENAS = {
       titulo: 'Complementos',
       items: [
         { id: 'verduritas', nombre: 'Verduritas', icono: 'basket', etiqueta: 'Listas para cocinar', medida: 'Por pack', precio: '',
+          foto: 'verduritas.webp', fotoAlt: 'Verduritas en cuencos: brócoli, coliflor, calabacita y zanahoria',
           detalle: 'Verduras en corte especial, listas para cocinar.' },
         { id: 'pure', nombre: 'Puré de papa', icono: 'cooking-pot', etiqueta: 'Ya cocinado', medida: LITROS, precio: '',
+          foto: 'pure.webp', fotoAlt: 'Tazón de puré de papa a la mantequilla',
           detalle: 'Cremoso y a la mantequilla, listo para servir.' },
         { id: 'pasta', nombre: 'Pasta poblana con elotes', icono: 'chef-hat', etiqueta: 'Ya cocinada', medida: LITROS, precio: '',
+          foto: 'pasta.webp', fotoAlt: 'Tazón de pasta poblana con granos de elote',
           detalle: 'Pasta en salsa poblana con granos de elote, lista para servir.' },
         { id: 'crema', nombre: 'Crema a elegir', icono: 'bowl-food', etiqueta: 'Ya cocinada', medida: LITROS, precio: '',
           detalle: 'Elige tu sabor: piña con chipotle, champiñones o poblana.' },
