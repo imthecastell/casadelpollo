@@ -61,6 +61,11 @@ export const CENAS = {
           foto: 'pasta.webp', fotoAlt: 'Tazón de pasta poblana con granos de elote',
           detalle: 'Pasta en salsa poblana con granos de elote, lista para servir.' },
         { id: 'crema', nombre: 'Crema a elegir', icono: 'bowl-food', etiqueta: 'Ya cocinada', medida: LITROS, precio: '',
+          fotos: [
+            { archivo: 'crema-pina.webp', nombre: 'Piña con chipotle', alt: 'Crema de piña con chipotle, con trozos de piña y chiles chipotle' },
+            { archivo: 'crema-poblana.webp', nombre: 'Poblana', alt: 'Crema poblana, con chile poblano y cilantro' },
+            { archivo: 'crema-champinones.webp', nombre: 'Champiñones', alt: 'Crema de champiñones, con champiñones frescos y tomillo' },
+          ],
           detalle: 'Elige tu sabor: piña con chipotle, champiñones o poblana.' },
       ],
     },

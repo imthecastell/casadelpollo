@@ -45,6 +45,11 @@
 /* Platillo con foto: la foto va arriba, a todo el ancho de la tarjeta. */
 .cn-platillo.cn-con-foto { flex-direction: column; gap: 0; padding: 0; overflow: hidden; }
 .cn-foto { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; background: var(--cn-vino); }
+/* Varias fotos de un mismo platillo (crema a elegir): tira de tres con el nombre de cada sabor. */
+.cn-trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; background: var(--cn-vino); }
+.cn-trio figure { margin: 0; background: var(--cn-crema); display: flex; flex-direction: column; min-width: 0; }
+.cn-trio .cn-foto { aspect-ratio: 4 / 3; }
+.cn-trio figcaption { font-size: 12px; font-weight: 800; text-align: center; color: var(--cn-vino); padding: 7px 4px 8px; line-height: 1.2; text-wrap: balance; }
 .cn-con-foto .cn-platillo-txt { padding: 14px 16px 16px; align-items: flex-start; }
 .cn-platillo-txt { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 .cn-platillo h4 { margin: 0; font-family: var(--cn-serif); font-weight: 700; font-size: 19px; line-height: 1.2; color: var(--cn-vino); display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
@@ -83,6 +88,8 @@
   .cn-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .cn-lista-fotos { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .cn-lista:not(.cn-lista-fotos) { align-items: start; }
+  .cn-platillo-ancho { grid-column: 1 / -1; }
+  .cn-trio figcaption { font-size: 14px; }
   .cn-sucursales { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .cn-reservar { padding: 36px 28px 28px; }
   .cn-intro p { font-size: 18px; }

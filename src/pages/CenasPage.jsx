@@ -43,12 +43,23 @@ export default function CenasPage() {
           {CENAS.grupos.map(g => (
             <div key={g.id} className="cn-grupo">
               <h3>{g.titulo}</h3>
-              <ul className={'cn-lista' + (g.items.every(it => it.foto) ? ' cn-lista-fotos' : '')}>
+              <ul className={'cn-lista' + (g.items.every(it => it.foto || it.fotos) ? ' cn-lista-fotos' : '')}>
                 {g.items.map(it => (
-                  <li key={it.id} className={'cn-platillo' + (it.foto ? ' cn-con-foto' : '')}>
-                    {it.foto
-                      ? <img className="cn-foto" src={`${BASE}cenas/${it.foto}`} width="800" height="600" loading="lazy" alt={it.fotoAlt || it.nombre} />
-                      : <span className="cn-ico"><Icono nombre={it.icono} tam="26px" /></span>}
+                  <li key={it.id} className={'cn-platillo' + (it.foto || it.fotos ? ' cn-con-foto' : '') + (it.fotos ? ' cn-platillo-ancho' : '')}>
+                    {it.fotos ? (
+                      <div className="cn-trio">
+                        {it.fotos.map(f => (
+                          <figure key={f.archivo}>
+                            <img className="cn-foto" src={`${BASE}cenas/${f.archivo}`} width="600" height="450" loading="lazy" alt={f.alt || f.nombre} />
+                            <figcaption>{f.nombre}</figcaption>
+                          </figure>
+                        ))}
+                      </div>
+                    ) : it.foto ? (
+                      <img className="cn-foto" src={`${BASE}cenas/${it.foto}`} width="800" height="600" loading="lazy" alt={it.fotoAlt || it.nombre} />
+                    ) : (
+                      <span className="cn-ico"><Icono nombre={it.icono} tam="26px" /></span>
+                    )}
                     <div className="cn-platillo-txt">
                       <h4>{it.nombre}{it.etiqueta && <small>{it.etiqueta}</small>}</h4>
                       <p>{it.detalle}</p>
