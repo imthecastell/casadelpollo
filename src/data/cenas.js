@@ -3,7 +3,10 @@ import { API_URL } from './vacantes.js'
 
 /* Cenas de fin de año (página /cenas). Aquí vive TODO lo que se edita de la campaña: el texto,
    el menú, las medidas y los precios. Un campo vacío ('') simplemente no se muestra:
-   - precio de cada platillo → junto a la medida (p. ej. '$180 el ½ litro · $320 el litro')
+   - precio de cada platillo → tras tocar «Ver precio» (p. ej. precio: '$180 el ½ litro · $320 el litro').
+     Si el platillo trae `catalogo` (una expresión que coincide con el nombre de un producto de la
+     tienda), el precio se lee del catálogo (así sigue los cambios de precio del admin) y se muestra
+     «$265 por kg». `precio` queda como respaldo por si el catálogo no responde.
    - fechaLimite, entrega, anticipo, minimo → filas de «Condiciones de la reserva»
    La reserva no se guarda en ningún servidor: el botón abre WhatsApp con la sucursal elegida. */
 
@@ -33,11 +36,11 @@ export const CENAS = {
       id: 'fuertes',
       titulo: 'Platos fuertes',
       items: [
-        { id: 'pechugas', nombre: 'Pechugas rellenas', icono: 'flame', medida: LITROS, precio: '',
+        { id: 'pechugas', nombre: 'Pechugas rellenas', icono: 'flame', medida: 'Por kg', precio: '', catalogo: /^pechuga rellena/i,
           detalle: 'Rellenas de jamón y queso, o de mozzarella con espinacas. Tú eliges el relleno.' },
-        { id: 'medallones', nombre: 'Medallones con tocino', icono: 'flame', medida: LITROS, precio: '',
+        { id: 'medallones', nombre: 'Medallones con tocino', icono: 'flame', medida: 'Por kg', precio: '', catalogo: /medall[oó]n/i,
           detalle: 'Medallones envueltos en tocino, para llevar al horno.' },
-        { id: 'rollo', nombre: 'Rollo relleno de jamón y queso', icono: 'flame', medida: LITROS, precio: '',
+        { id: 'rollo', nombre: 'Rollo relleno de jamón y queso', icono: 'flame', medida: 'Por kg', precio: '', catalogo: /^rollo relleno/i,
           detalle: 'Un rollo para rebanar y compartir, relleno de jamón y queso.' },
       ],
     },
@@ -64,6 +67,33 @@ export const CENAS = {
       ],
     },
   ],
+}
+
+// Precio por kg leído del catálogo de la primera sucursal activa (los preparados se venden por kg).
+// { [idPlatillo]: '$265 por kg' }; vacío mientras carga o si el catálogo no responde.
+export function usePreciosCatalogo() {
+  const [precios, setPrecios] = useState({})
+  useEffect(() => {
+    let vigente = true
+    const conCatalogo = CENAS.grupos.flatMap(g => g.items).filter(i => i.catalogo)
+    ;(async () => {
+      try {
+        const ramas = await (await fetch(`${API_URL}/api/branches`)).json()
+        const rama = (Array.isArray(ramas) ? ramas : []).find(b => b.active !== false)
+        if (!rama) return
+        const productos = await (await fetch(`${API_URL}/api/products/branch/${rama.id}`)).json()
+        if (!Array.isArray(productos)) return
+        const nuevos = {}
+        conCatalogo.forEach(it => {
+          const montos = productos.filter(p => p.active !== false && it.catalogo.test(p.name)).map(p => Number(p.price)).filter(n => n > 0)
+          if (montos.length) nuevos[it.id] = `$${Math.min(...montos).toLocaleString('es-MX')} por kg`
+        })
+        if (vigente) setPrecios(nuevos)
+      } catch { /* sin catálogo se usa el `precio` de respaldo */ }
+    })()
+    return () => { vigente = false }
+  }, [])
+  return precios
 }
 
 // ¿Se muestran la tarjeta del inicio y la de /links?

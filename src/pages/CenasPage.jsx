@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import Icono from '../Components/Icono.jsx'
-import { CENAS, CONDICIONES, useSucursalesCenas, enlaceWhatsapp } from '../data/cenas.js'
+import { CENAS, CONDICIONES, useSucursalesCenas, usePreciosCatalogo, enlaceWhatsapp } from '../data/cenas.js'
 import { registrarEvento, registrarVisitaUnaVez } from '../data/medicion.js'
 import '../styles/homeV2.css'
 import '../styles/links.css'
@@ -13,6 +13,7 @@ const BASE = import.meta.env.BASE_URL
    está en data/cenas.js. */
 export default function CenasPage() {
   const { sucursales, cargando } = useSucursalesCenas()
+  const preciosCatalogo = usePreciosCatalogo()
 
   useEffect(() => { document.title = 'Cenas de fin de año · Casa del Pollo'; registrarVisitaUnaVez() }, [])
 
@@ -23,7 +24,7 @@ export default function CenasPage() {
           className="cn-escena-img"
           src={`${BASE}cenas/plato-horizontal.webp`}
           width="1300" height="975"
-          alt="Cena de fin de año de Casa del Pollo: pechuga rellena con pasta, verduras, puré de papa y rosca de pan danés"
+          alt="Mesa de cena de fin de año: pechuga rellena con pasta poblana, verduras, puré de papa, copa de vino y rosca de pan danés"
           fetchPriority="high"
         />
         <a className="cn-volver" href={BASE}>← Ir a la tienda</a>
@@ -50,7 +51,7 @@ export default function CenasPage() {
                       <h4>{it.nombre}{it.etiqueta && <small>{it.etiqueta}</small>}</h4>
                       <p>{it.detalle}</p>
                       <p className="cn-medida"><b>{it.medida}</b></p>
-                      {it.precio && <Precio id={it.id} texto={it.precio} />}
+                      {(preciosCatalogo[it.id] || it.precio) && <Precio id={it.id} texto={preciosCatalogo[it.id] || it.precio} />}
                     </div>
                   </li>
                 ))}
