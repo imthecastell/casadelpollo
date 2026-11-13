@@ -26,8 +26,9 @@ const LITROS = '½ litro y 1 litro'
 export const CENAS = {
   activa: true,
   // Después de esta fecha la tarjeta del inicio y la de /links dejan de mostrarse
-  // (la página /cenas sigue existiendo). Para retirarlas antes, pon `activa: false`.
-  visibleHasta: '2027-01-01T00:00:00-07:00', // hora de Los Mochis
+  // (la página /cenas sigue existiendo). Es el final del 21 de diciembre, último día para reservar.
+  // Para retirarlas antes, pon `activa: false`.
+  visibleHasta: '2026-12-22T00:00:00-07:00', // hora de Los Mochis
 
   titulo: 'Cenas de fin de año',
   texto: [
@@ -37,7 +38,7 @@ export const CENAS = {
   mensajeWhatsapp: 'Hola, buen día. Quiero reservar mi cena de fin de año.',
 
   // Condiciones: texto libre, p. ej. fechaLimite: 'Hasta el 20 de diciembre'. Vacío = no se muestra.
-  fechaLimite: '',
+  fechaLimite: 'Hasta el 21 de diciembre',
   entrega: '',
   anticipo: '',
   minimo: '',
@@ -84,8 +85,8 @@ export const CENAS = {
       id: 'pan',
       titulo: 'Para compartir',
       items: [
-        { id: 'rosca', nombre: 'Rosca de pan danés', icono: 'gift', medida: 'Por unidad · rinde unas 25 porciones', precio: '$145 por pieza',
-          detalle: 'Una rosca de pan danés para acompañar la cena y compartir en la mesa.' },
+        { id: 'rosca', nombre: 'Pan danés', icono: 'gift', etiqueta: 'La rosca de pan', medida: 'Por pieza · rinde unas 25 porciones', precio: '$145 por pieza',
+          detalle: 'Nuestro pan danés, el que muchos conocen como «rosca de pan», para acompañar la cena y compartir en la mesa.' },
       ],
     },
   ],

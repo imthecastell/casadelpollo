@@ -24,7 +24,7 @@ export default function CenasPage() {
           className="cn-escena-img"
           src={`${BASE}cenas/plato-horizontal.webp`}
           width="1300" height="975"
-          alt="Mesa de cena de fin de año: pechuga rellena con pasta poblana, verduras, puré de papa, copa de vino y rosca de pan danés"
+          alt="Mesa de cena de fin de año: pechuga rellena con pasta poblana, verduras, puré de papa, copa de vino y pan danés"
           fetchPriority="high"
         />
         <a className="cn-volver" href={BASE}>← Ir a la tienda</a>
