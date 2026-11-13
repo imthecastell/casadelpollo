@@ -43,6 +43,43 @@ export const CENAS = {
   anticipo: '',
   minimo: '',
 
+  // Paquetes completos. El precio es aproximado (se muestra «Aprox.»): se calculó con los precios de los
+  // platillos sueltos y varía un poco porque las pechugas se pesan y se cobra el excedente sobre el kilo.
+  // Para cambiarlo, edita `precio`. La nota de abajo se muestra en ambos paquetes.
+  notaPrecioPaquetes: 'Precio aproximado: las pechugas se pesan y se cobra el excedente.',
+  paquetes: [
+    {
+      id: 'paquete-grande', nombre: 'Paquete grande', rinde: 'Alcanza para 10 a 12 personas, según cómo se sirva',
+      foto: 'plato-horizontal.webp', fotoAlt: 'Mesa de cena con pechugas rellenas, pasta, verduras, puré y pan danés',
+      incluye: [
+        '10 pechugas rellenas (jamón y queso, o mozzarella con espinacas)',
+        '1 litro de puré de papa',
+        '1 litro de pasta poblana con elotes',
+        '1 litro de crema, del sabor que elijas',
+        '1 paquete de verduritas',
+        '2 panes danés (rosca de pan)',
+        'Charola para hornear incluida',
+      ],
+      eliges: 'Tú eliges el tipo de pechuga rellena y el sabor de la crema.',
+      precio: 'Aprox. $1,500',
+    },
+    {
+      id: 'paquete-chico', nombre: 'Paquete chico', rinde: 'Alcanza para 5 a 6 personas',
+      foto: 'linterna.webp', fotoPos: '50% 62%', fotoAlt: 'Plato de cena con pechuga rellena, pasta poblana, verduritas y puré',
+      incluye: [
+        '5 pechugas rellenas (jamón y queso, o mozzarella con espinacas)',
+        '½ litro de puré de papa',
+        '½ litro de pasta poblana con elotes',
+        '½ litro de crema, del sabor que elijas',
+        '1 paquete de verduritas',
+        '1 pan danés (rosca de pan)',
+        'Charola para hornear incluida',
+      ],
+      eliges: 'Tú eliges el tipo de pechuga rellena y el sabor de la crema.',
+      precio: 'Aprox. $800',
+    },
+  ],
+
   grupos: [
     {
       id: 'fuertes',
@@ -149,6 +186,13 @@ export function useSucursalesCenas() {
     return () => { vigente = false }
   }, [])
   return estado
+}
+
+// Mensaje de WhatsApp: el general, o el del paquete elegido.
+export function mensajeReserva(paquete) {
+  if (!paquete) return CENAS.mensajeWhatsapp
+  return `Hola, buen día. Quiero reservar el ${paquete.nombre} de cenas de fin de año. `
+    + 'Les indico el relleno de las pechugas y el sabor de la crema. ¿Me confirman disponibilidad? Gracias.'
 }
 
 // Cambia el texto prellenado del enlace de WhatsApp de la sucursal por el de la reserva.

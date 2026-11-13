@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import Icono from '../Components/Icono.jsx'
-import { CENAS, CONDICIONES, useSucursalesCenas, usePreciosCatalogo, enlaceWhatsapp } from '../data/cenas.js'
+import { CENAS, CONDICIONES, useSucursalesCenas, usePreciosCatalogo, enlaceWhatsapp, mensajeReserva } from '../data/cenas.js'
 import { registrarEvento, registrarVisitaUnaVez } from '../data/medicion.js'
 import '../styles/homeV2.css'
 import '../styles/links.css'
@@ -14,6 +14,12 @@ const BASE = import.meta.env.BASE_URL
 export default function CenasPage() {
   const { sucursales, cargando } = useSucursalesCenas()
   const preciosCatalogo = usePreciosCatalogo()
+  const [paquete, setPaquete] = useState(null) // paquete elegido para el mensaje de WhatsApp
+
+  const elegirPaquete = (p) => {
+    setPaquete(p)
+    document.getElementById('reservar')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   useEffect(() => { document.title = 'Cenas de fin de año · Casa del Pollo'; registrarVisitaUnaVez() }, [])
 
@@ -36,6 +42,34 @@ export default function CenasPage() {
           <h1>{CENAS.titulo}</h1>
           {CENAS.texto.map((t, i) => <p key={i}>{t}</p>)}
           <a className="cn-boton" href="#reservar"><Icono nombre="whatsapp-logo" tam="20px" /> Reservar mi cena</a>
+        </section>
+
+        <section className="cn-paquetes" aria-labelledby="cn-paquetes-t">
+          <h2 id="cn-paquetes-t" className="cn-titulo">Paquetes para tu cena</h2>
+          <p className="cn-paquetes-sub">Todo lo que necesitas para la mesa, en un solo pedido.</p>
+          <div className="cn-paquetes-grid">
+            {CENAS.paquetes.map(p => (
+              <article key={p.id} className="cn-paquete">
+                <img className="cn-foto" src={`${BASE}cenas/${p.foto}`} width="800" height="600" loading="lazy"
+                  style={p.fotoPos ? { objectPosition: p.fotoPos } : undefined} alt={p.fotoAlt || p.nombre} />
+                <div className="cn-paquete-txt">
+                  <h3>{p.nombre}</h3>
+                  <p className="cn-rinde"><Icono nombre="fork-knife" tam="18px" /> {p.rinde}</p>
+                  <ul className="cn-incluye">
+                    {p.incluye.map(t => <li key={t}><Icono nombre="check-circle" tam="18px" /><span>{t}</span></li>)}
+                  </ul>
+                  {p.eliges && <p className="cn-eliges"><b>{p.eliges}</b></p>}
+                  <div className="cn-paquete-pie">
+                    <Precio id={p.id} texto={p.precio} />
+                    {CENAS.notaPrecioPaquetes && <p className="cn-nota-precio">{CENAS.notaPrecioPaquetes}</p>}
+                    <button type="button" className="cn-boton cn-boton-chico" onClick={() => elegirPaquete(p)}>
+                      <Icono nombre="whatsapp-logo" tam="20px" /> Quiero este paquete
+                    </button>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
         </section>
 
         <section className="cn-menu" aria-labelledby="cn-ofrecemos">
@@ -87,6 +121,14 @@ export default function CenasPage() {
             </dl>
           )}
 
+          {paquete && (
+            <p className="cn-elegido" role="status">
+              <Icono nombre="check-circle" tam="20px" />
+              <span>Tu mensaje será para el <b>{paquete.nombre}</b>.</span>
+              <button type="button" onClick={() => setPaquete(null)}>Quitar</button>
+            </p>
+          )}
+
           {cargando ? (
             <div className="cn-sucursales" aria-busy="true">
               {[0, 1, 2, 3].map(i => <div key={i} className="cn-sucursal lk-esqueleto" />)}
@@ -95,7 +137,7 @@ export default function CenasPage() {
             <p className="cn-vacio">No pudimos cargar las sucursales. Vuelve a intentarlo en un momento.</p>
           ) : (
             <div className="cn-sucursales">
-              {sucursales.map(s => <Sucursal key={s.id || s.name} suc={s} />)}
+              {sucursales.map(s => <Sucursal key={s.id || s.name} suc={s} mensaje={mensajeReserva(paquete)} />)}
             </div>
           )}
         </section>
@@ -175,14 +217,14 @@ function Precio({ id, texto }) {
   )
 }
 
-function Sucursal({ suc }) {
+function Sucursal({ suc, mensaje }) {
   // El WhatsApp de Viñedos está asistido por IA: no garantiza que la tienda se entere (igual que en /links).
   const esVinedos = /vi[ñn]ed/i.test(suc.name || '')
   return (
     <article className="cn-sucursal">
       <h3>{suc.name}</h3>
       {suc.direccion && <p className="cn-dir"><Icono nombre="map-pin" tam="16px" />{suc.direccion}</p>}
-      <a className="lk-btn wa" href={enlaceWhatsapp(suc.whatsapp)} target="_blank" rel="noopener noreferrer">
+      <a className="lk-btn wa" href={enlaceWhatsapp(suc.whatsapp, mensaje)} target="_blank" rel="noopener noreferrer">
         <Icono nombre="whatsapp-logo" tam="20px" /> Reservar por WhatsApp
       </a>
       {esVinedos && (

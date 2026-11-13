@@ -118,3 +118,25 @@
   .cn-lista-unica .cn-foto { width: 50%; aspect-ratio: auto; height: auto; min-height: 220px; }
   .cn-lista-unica .cn-platillo-txt { justify-content: center; padding: 20px 24px; }
 }
+
+/* Paquetes (grande y chico) */
+.cn-paquetes-sub { text-align: center; margin: 0 0 18px; color: #4A2A22; font-size: 15px; }
+.cn-paquetes-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.cn-paquete { background: #fff; border: 1.5px solid var(--cn-dorado); border-radius: 24px; overflow: hidden; box-shadow: 0 6px 22px rgba(91, 22, 32, .12); display: flex; flex-direction: column; min-width: 0; }
+.cn-paquete .cn-foto { aspect-ratio: 16 / 10; }
+.cn-paquete-txt { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.cn-paquete h3 { margin: 0; font-family: var(--cn-serif); font-weight: 700; font-size: 26px; color: var(--cn-vino); }
+.cn-rinde { display: flex; align-items: flex-start; gap: 6px; margin: 0; font-size: 14px; font-weight: 700; color: var(--cn-terracota); line-height: 1.35; }
+.cn-rinde svg { flex: none; margin-top: 1px; }
+.cn-incluye { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+.cn-incluye li { display: flex; gap: 8px; align-items: flex-start; font-size: 14.5px; line-height: 1.4; color: #4A2A22; }
+.cn-incluye li svg { flex: none; margin-top: 1px; color: var(--cn-terracota); }
+.cn-paquete-pie { margin-top: auto; padding-top: 6px; display: flex; flex-direction: column; gap: 10px; }
+.cn-paquete-pie .cn-ver-precio { align-self: stretch; justify-content: center; text-align: center; }
+.cn-boton-chico { margin-top: 0; min-height: 48px; font-size: 15px; border: 0; cursor: pointer; font-family: inherit; }
+.cn-elegido { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 14px; padding: 10px 14px; border-radius: 12px; background: rgba(255, 255, 255, .12); color: #fff; font-size: 14.5px; }
+.cn-elegido svg { color: #F4C97A; flex: none; }
+.cn-elegido button { margin-left: auto; background: none; border: 0; color: #F4C97A; font: inherit; font-weight: 800; text-decoration: underline; cursor: pointer; padding: 4px; }
+@media (min-width: 720px) { .cn-paquetes-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.cn-eliges { margin: 2px 0 0; font-size: 13.5px; line-height: 1.4; color: var(--cn-vino); background: #FFF1D6; border: 1px solid #F0D49A; border-radius: 10px; padding: 8px 10px; }
+.cn-nota-precio { margin: -4px 0 0; font-size: 12.5px; line-height: 1.4; color: #7B5850; text-align: center; }
