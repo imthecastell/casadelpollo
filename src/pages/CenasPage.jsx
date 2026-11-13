@@ -60,8 +60,8 @@ export default function CenasPage() {
                   </ul>
                   {p.eliges && <p className="cn-eliges"><b>{p.eliges}</b></p>}
                   <div className="cn-paquete-pie">
-                    <Precio id={p.id} texto={p.precio} />
-                    {CENAS.notaPrecioPaquetes && <p className="cn-nota-precio">{CENAS.notaPrecioPaquetes}</p>}
+                    {CENAS.mostrarPrecios && p.precio && <Precio id={p.id} texto={p.precio} />}
+                    {CENAS.mostrarPrecios && p.precio && CENAS.notaPrecioPaquetes && <p className="cn-nota-precio">{CENAS.notaPrecioPaquetes}</p>}
                     <button type="button" className="cn-boton cn-boton-chico" onClick={() => elegirPaquete(p)}>
                       <Icono nombre="whatsapp-logo" tam="20px" /> Quiero este paquete
                     </button>
@@ -81,7 +81,7 @@ export default function CenasPage() {
                 {g.items.map(it => (
                   <li key={it.id} className={'cn-platillo' + (it.foto || it.fotos ? ' cn-con-foto' : '') + (it.fotos ? ' cn-platillo-ancho' : '')}>
                     {it.fotos ? (
-                      <div className="cn-trio">
+                      <div className="cn-trio" style={{ gridTemplateColumns: `repeat(${it.fotos.length}, minmax(0, 1fr))` }}>
                         {it.fotos.map(f => (
                           <figure key={f.archivo}>
                             <img className="cn-foto" src={`${BASE}cenas/${f.archivo}`} width="600" height="450" loading="lazy" alt={f.alt || f.nombre} />
@@ -98,7 +98,7 @@ export default function CenasPage() {
                       <h4>{it.nombre}{it.etiqueta && <small>{it.etiqueta}</small>}</h4>
                       <p>{it.detalle}</p>
                       <p className="cn-medida"><b>{it.medida}</b></p>
-                      {(preciosCatalogo[it.id] || it.precio) && <Precio id={it.id} texto={preciosCatalogo[it.id] || it.precio} />}
+                      {CENAS.mostrarPrecios && (preciosCatalogo[it.id] || it.precio) && <Precio id={it.id} texto={preciosCatalogo[it.id] || it.precio} />}
                     </div>
                   </li>
                 ))}
