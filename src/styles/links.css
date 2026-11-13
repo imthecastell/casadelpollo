@@ -61,3 +61,11 @@
 .lk-trabajo small { font-size: 12.5px; color: #7B5850; }
 .lk-trabajo:hover { background: #FFF9EC; }
 .lk-trabajo:focus-visible { outline: 3px solid var(--dorado, #F0A020); outline-offset: 2px; }
+/* Tarjeta «Cenas de fin de año» de la página de Links (campaña temporal). */
+.lk-cenas { margin-top: 10px; width: 100%; max-width: 420px; display: flex; align-items: center; justify-content: center; gap: 12px; text-decoration: none; color: #FBF0E2; background: #5B1620; border: 1.5px solid #C58B2B; border-radius: 18px; padding: 13px 20px; box-shadow: 0 6px 20px rgba(91,22,32,.28); text-align: left; }
+.lk-cenas svg { flex: none; color: #F4C97A; }
+.lk-cenas span { display: flex; flex-direction: column; line-height: 1.2; }
+.lk-cenas b { font-family: var(--font-title, sans-serif); font-weight: 800; font-size: 17px; }
+.lk-cenas small { font-size: 12.5px; opacity: .9; }
+.lk-cenas:hover { filter: brightness(1.12); }
+.lk-cenas:focus-visible { outline: 3px solid var(--dorado, #F0A020); outline-offset: 2px; }

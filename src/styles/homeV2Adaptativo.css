@@ -95,6 +95,8 @@
   /* El fondo café es el de la foto vertical en teléfono; en el héroe ancho el lado del texto queda crema. */
   .v2-promo-slide-bowl { background: transparent; }
   .v2-promo-slide-bowl .v2-promo-foto-completa { height: 100%; bottom: auto; object-position: var(--foco-bowl, 50% 80%); }
+  .v2-promo-slide-cenas { background: transparent; }
+  .v2-promo-slide-cenas .v2-promo-foto-completa { height: 100%; bottom: auto; object-position: 50% 62%; }
   .v2-promo-slide-lealtad { background: transparent; }
   .v2-promo-slide-lealtad .v2-promo-foto-completa { height: 100%; bottom: auto; object-position: 62% 78%; }
   .v2-promo-tarjeta {

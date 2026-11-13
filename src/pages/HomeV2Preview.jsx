@@ -8,6 +8,7 @@ import PieV2 from '../Components/PieV2.jsx'
 import EncuestaPedido from '../Components/EncuestaPedido.jsx'
 import AvisoAirfryer from '../Components/AvisoAirfryer.jsx'
 import AvisoEvento from '../Components/AvisoEvento.jsx'
+import { cenasVisibles } from '../data/cenas.js'
 import SkinMuertos from '../Components/SkinMuertos.jsx'
 import { skinActivo } from '../data/skin.js'
 import { tagsDe } from '../data/productTags'
@@ -876,6 +877,13 @@ export default function HomeV2Preview() {
   const poolMarinadosHero = barajar(unicosPorImagen(marinadosImg.filter(libreDeFavoritos)), semillaCarga + 4)
 
   const slotsHero = [
+    // Campaña de fin de año: lleva a la página /cenas (se retira sola en la fecha de data/cenas.js).
+    cenasVisibles() && { id: 'cenas', fija: {
+      badge: 'CENAS DE FIN DE AÑO', titulo: 'Reserva tu cena', desc: 'Para posadas, Navidad y Año Nuevo. Listo para cocinar o para servir.',
+      cta: 'Ver cenas', imagen: `${import.meta.env.BASE_URL}cenas/plato-horizontal.webp`,
+      clase: 'v2-promo-slide-cenas',
+      accion: () => window.location.assign(`${import.meta.env.BASE_URL}cenas`),
+    } },
     { id: 'favorito', pool: poolFavoritos, armar: (p) => ({
       badge: 'FAVORITO', titulo: p.name, desc: 'Favorito del momento. Pruébalo hoy.',
       cta: 'Elegir', imagen: img(p), accion: () => abrirSeleccion(p),

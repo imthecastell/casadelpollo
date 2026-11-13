@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Icono from '../Components/Icono.jsx'
 import { estadoHorario } from '../data/horario.js'
 import { useVacantes } from '../data/vacantes.js'
+import { cenasVisibles } from '../data/cenas.js'
 import '../styles/homeV2.css'
 import '../styles/links.css'
 
@@ -50,6 +51,12 @@ export default function LinksPage() {
         <div className="lk-logo"><img src={`${BASE}logo.png`} alt={title} /></div>
         <h1>{title}</h1>
         {subtitle && <p>{subtitle}</p>}
+        {cenasVisibles() && (
+          <a className="lk-cenas" href={`${BASE}cenas`}>
+            <Icono nombre="gift" tam="22px" />
+            <span><b>Cenas de fin de año</b><small>Reserva para posadas, Navidad y Año Nuevo</small></span>
+          </a>
+        )}
         <a className="lk-pedir" href={BASE}>
           <Icono nombre="shopping-cart" tam="22px" />
           <span><b>Pedir en línea</b><small>Listo en minutos · pagas en la sucursal</small></span>
