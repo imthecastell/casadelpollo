@@ -86,6 +86,7 @@ export const CENAS = {
       titulo: 'Para compartir',
       items: [
         { id: 'rosca', nombre: 'Pan danés', icono: 'gift', etiqueta: 'La rosca de pan', medida: 'Por pieza · rinde unas 25 porciones', precio: '$145 por pieza',
+          foto: 'pan.webp', fotoAlt: 'Pan danés: la rosca de pan con ajonjolí, dorada y lista para compartir',
           detalle: 'Nuestro pan danés, el que muchos conocen como «rosca de pan», para acompañar la cena y compartir en la mesa.' },
       ],
     },
