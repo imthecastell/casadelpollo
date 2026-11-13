@@ -10,6 +10,16 @@ import { API_URL } from './vacantes.js'
    - fechaLimite, entrega, anticipo, minimo → filas de «Condiciones de la reserva»
    La reserva no se guarda en ningún servidor: el botón abre WhatsApp con la sucursal elegida. */
 
+/* REFERENCIA: precios del cartel «Cena de Navidad» del AÑO PASADO. NO se publican: son solo una guía
+   para cargar los de este año cuando se confirmen (en el campo `precio` de cada platillo de abajo).
+   Pendiente de confirmar: si cambian este año (el ajuste general de la tienda ronda +7%).
+   - Pechugas rellenas: $250 por kg (aprox. 4-5 pz)   → este año se lee del catálogo ($265/kg)
+   - Rosca de pan danés: $130 por pieza
+   - Cremas (champiñones, piña con chipotle, poblana): $210 el litro · $110 el medio litro
+   - Verduritas (desinfectadas, listas para cocinar): $90 la caja
+   - Pasta poblana: $130 el litro · $65 el medio litro
+   - Puré de papa: $130 el litro · $65 el medio litro
+   Formato sugerido para `precio`: '$130 el litro · $65 el medio litro'. */
 const LITROS = '½ litro y 1 litro'
 
 export const CENAS = {
