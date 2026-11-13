@@ -10,9 +10,9 @@ import { API_URL } from './vacantes.js'
    - fechaLimite, entrega, anticipo, minimo → filas de «Condiciones de la reserva»
    La reserva no se guarda en ningún servidor: el botón abre WhatsApp con la sucursal elegida. */
 
-/* PRECIOS DE ESTE AÑO: los del cartel «Cena de Navidad» del año pasado con un incremento de 10%,
-   redondeado al peso (decisión del dueño). Están cargados en el campo `precio` de cada platillo de
-   abajo. Pechugas, medallones y rollo no llevan precio aquí: se leen del catálogo de la tienda.
+/* PRECIOS DE ESTE AÑO: los del cartel «Cena de Navidad» del año pasado con un incremento de
+   alrededor de 10%, redondeados por el dueño. Están cargados en el campo `precio` de cada platillo
+   de abajo. Pechugas, medallones y rollo no llevan precio aquí: se leen del catálogo de la tienda.
    Precios del año pasado, de referencia:
    - Pechugas rellenas: $250 por kg (aprox. 4-5 pz)   → este año se lee del catálogo ($265/kg)
    - Rosca de pan danés: $130 por pieza
@@ -62,16 +62,16 @@ export const CENAS = {
       id: 'complementos',
       titulo: 'Complementos',
       items: [
-        { id: 'verduritas', nombre: 'Verduritas', icono: 'basket', etiqueta: 'Listas para cocinar', medida: 'Por pack', precio: '$99 por pack',
+        { id: 'verduritas', nombre: 'Verduritas', icono: 'basket', etiqueta: 'Listas para cocinar', medida: 'Por paquete (cajita)', precio: '$100 por paquete',
           foto: 'verduritas.webp', fotoAlt: 'Verduritas en cuencos: brócoli, coliflor, calabacita y zanahoria',
           detalle: 'Verduras en corte especial, listas para cocinar.' },
-        { id: 'pure', nombre: 'Puré de papa', icono: 'cooking-pot', etiqueta: 'Ya cocinado', medida: LITROS, precio: '$143 el litro · $72 el medio litro',
+        { id: 'pure', nombre: 'Puré de papa', icono: 'cooking-pot', etiqueta: 'Ya cocinado', medida: LITROS, precio: '$145 el litro · $75 el medio litro',
           foto: 'pure.webp', fotoAlt: 'Tazón de puré de papa a la mantequilla',
           detalle: 'Cremoso y a la mantequilla, listo para servir.' },
-        { id: 'pasta', nombre: 'Pasta poblana con elotes', icono: 'chef-hat', etiqueta: 'Ya cocinada', medida: LITROS, precio: '$143 el litro · $72 el medio litro',
+        { id: 'pasta', nombre: 'Pasta poblana con elotes', icono: 'chef-hat', etiqueta: 'Ya cocinada', medida: LITROS, precio: '$140 el litro · $70 el medio litro',
           foto: 'pasta.webp', fotoAlt: 'Tazón de pasta poblana con granos de elote',
           detalle: 'Pasta en salsa poblana con granos de elote, lista para servir.' },
-        { id: 'crema', nombre: 'Crema a elegir', icono: 'bowl-food', etiqueta: 'Ya cocinada', medida: LITROS, precio: '$231 el litro · $121 el medio litro',
+        { id: 'crema', nombre: 'Crema a elegir', icono: 'bowl-food', etiqueta: 'Ya cocinada', medida: LITROS, precio: '$230 el litro · $120 el medio litro',
           fotos: [
             { archivo: 'crema-pina.webp', nombre: 'Piña con chipotle', alt: 'Crema de piña con chipotle, con trozos de piña y chiles chipotle' },
             { archivo: 'crema-poblana.webp', nombre: 'Poblana', alt: 'Crema poblana, con chile poblano y cilantro' },
@@ -84,7 +84,7 @@ export const CENAS = {
       id: 'pan',
       titulo: 'Para compartir',
       items: [
-        { id: 'rosca', nombre: 'Rosca de pan danés', icono: 'gift', medida: 'Por unidad · rinde unas 25 porciones', precio: '$143 por pieza',
+        { id: 'rosca', nombre: 'Rosca de pan danés', icono: 'gift', medida: 'Por unidad · rinde unas 25 porciones', precio: '$145 por pieza',
           detalle: 'Una rosca de pan danés para acompañar la cena y compartir en la mesa.' },
       ],
     },
