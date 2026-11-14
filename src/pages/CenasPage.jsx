@@ -33,6 +33,8 @@ export default function CenasPage() {
           alt="Mesa de cena de fin de año: pechuga rellena con pasta poblana, verduras, puré de papa, copa de vino y pan danés"
           fetchPriority="high"
         />
+        {/* Logo flotando sobre la imagen (el título «Cenas de fin de año» sigue en el texto de abajo). */}
+        <img className="cn-logo" src={`${BASE}cenas/logo-cenas.webp`} width="1000" height="405" alt="" aria-hidden="true" />
         <a className="cn-volver" href={BASE}>← Ir a la tienda</a>
       </header>
 
@@ -77,7 +79,7 @@ export default function CenasPage() {
           {CENAS.grupos.map(g => (
             <div key={g.id} className="cn-grupo">
               <h3>{g.titulo}</h3>
-              <ul className={'cn-lista' + (g.items.every(it => it.foto || it.fotos) ? (g.items.length === 1 ? ' cn-lista-unica' : ' cn-lista-fotos') : '')}>
+              <ul className={'cn-lista' + (g.items.every(it => it.foto || it.fotos) ? (g.items.length === 1 && !g.items[0].fotos ? ' cn-lista-unica' : ' cn-lista-fotos') : '')}>
                 {g.items.map(it => (
                   <li key={it.id} className={'cn-platillo' + (it.foto || it.fotos ? ' cn-con-foto' : '') + (it.fotos ? ' cn-platillo-ancho' : '')}>
                     {it.fotos ? (

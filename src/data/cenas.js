@@ -12,11 +12,13 @@ import { API_URL } from './vacantes.js'
 
 /* PRECIOS DE ESTE AÑO: los del cartel «Cena de Navidad» del año pasado con un incremento de
    alrededor de 10%, redondeados por el dueño. Están cargados en el campo `precio` de cada platillo
-   de abajo. Pechugas, medallones y rollo no llevan precio aquí: se leen del catálogo de la tienda.
+   de abajo. Pechugas, medallones y rollo van fijos a $275 por kg (el aumento de 10% sobre los $250 del
+   año pasado); el catálogo de la tienda todavía dice $265 y por eso esta página ya no lo lee (se puede
+   volver a ligar con `catalogo`, ver arriba). Paquetes: aprox. $1,525 y $825, calculados con $275/kg.
    Precios del año pasado, de referencia:
-   - Pechugas rellenas: $250 por kg (aprox. 4-5 pz)   → este año se lee del catálogo ($265/kg)
+   - Pechugas rellenas: $250 por kg (aprox. 4-5 pz)
    - Rosca de pan danés: $130 por pieza
-   - Cremas (champiñones, piña con chipotle; este año ya no hay poblana): $210 el litro · $110 el medio litro
+   - Cremas (champiñones, piña con chipotle, poblana): $210 el litro · $110 el medio litro
    - Verduritas (desinfectadas, listas para cocinar): $90 la caja
    - Pasta poblana: $130 el litro · $65 el medio litro
    - Puré de papa: $130 el litro · $65 el medio litro
@@ -46,10 +48,9 @@ export const CENAS = {
   // Paquetes completos. El precio es aproximado (se muestra «Aprox.»): se calculó con los precios de los
   // platillos sueltos y varía un poco porque las pechugas se pesan y se cobra el excedente sobre el kilo.
   // Para cambiarlo, edita `precio`. La nota de abajo se muestra en ambos paquetes.
-  // Interruptor de precios: con `false` la página NO muestra ningún precio (ni botón, ni «Aprox.», ni nota,
-  // ni totales) y no consulta el catálogo. Los campos `precio` de abajo quedan listos para cuando se
-  // publiquen: basta con ponerlo en `true`.
-  mostrarPrecios: false,
+  // Interruptor de precios: con `true` se muestran (tras tocar «Mantén presionado»); con `false` la página
+  // NO muestra ningún precio (ni botón, ni «Aprox.», ni nota) y no consulta el catálogo.
+  mostrarPrecios: true,
   notaPrecioPaquetes: 'Precio aproximado: las pechugas se pesan y se cobra el excedente.',
   paquetes: [
     {
@@ -65,7 +66,7 @@ export const CENAS = {
         'Charola para hornear incluida',
       ],
       eliges: 'Tú eliges el tipo de pechuga rellena y el sabor de la crema.',
-      precio: 'Aprox. $1,500',
+      precio: 'Aprox. $1,525',
     },
     {
       id: 'paquete-chico', nombre: 'Paquete chico', rinde: 'Alcanza para 5 a 6 personas',
@@ -80,7 +81,7 @@ export const CENAS = {
         'Charola para hornear incluida',
       ],
       eliges: 'Tú eliges el tipo de pechuga rellena y el sabor de la crema.',
-      precio: 'Aprox. $800',
+      precio: 'Aprox. $825',
     },
   ],
 
@@ -89,15 +90,28 @@ export const CENAS = {
       id: 'fuertes',
       titulo: 'Platos fuertes',
       items: [
-        { id: 'pechugas', nombre: 'Pechugas rellenas', icono: 'flame', medida: 'Por kg', precio: '', catalogo: /^pechuga rellena/i,
+        { id: 'pechugas', nombre: 'Pechugas rellenas', icono: 'flame', medida: 'Por kg', precio: '$275 por kg',
           foto: 'pechugas.webp', fotoAlt: 'Pechuga rellena de mozzarella y espinacas, envuelta en tocino',
           detalle: 'Rellenas de jamón y queso, o de mozzarella con espinacas. Tú eliges el relleno.' },
-        { id: 'medallones', nombre: 'Medallones con tocino', icono: 'flame', medida: 'Por kg', precio: '', catalogo: /medall[oó]n/i,
+        { id: 'medallones', nombre: 'Medallones con tocino', icono: 'flame', medida: 'Por kg', precio: '$275 por kg',
           foto: 'medallones.webp', fotoAlt: 'Medallón con tocino sobre puré de papa y espárragos',
           detalle: 'Medallones envueltos en tocino, para llevar al horno.' },
-        { id: 'rollo', nombre: 'Rollo relleno de jamón y queso', icono: 'flame', medida: 'Por kg', precio: '', catalogo: /^rollo relleno/i,
+        { id: 'rollo', nombre: 'Rollo relleno de jamón y queso', icono: 'flame', medida: 'Por kg', precio: '$275 por kg',
           foto: 'rollo.webp', fotoAlt: 'Rollo relleno de jamón y queso, rebanado',
           detalle: 'Un rollo para rebanar y compartir, relleno de jamón y queso.' },
+      ],
+    },
+    {
+      id: 'cremas',
+      titulo: 'Cremas',
+      items: [
+        { id: 'crema', nombre: 'Crema a elegir', icono: 'bowl-food', etiqueta: 'Ya cocinada', medida: LITROS, precio: '$230 el litro · $120 el medio litro',
+          fotos: [
+            { archivo: 'crema-pina.webp', nombre: 'Piña con chipotle', alt: 'Crema de piña con chipotle, con trozos de piña y chiles chipotle' },
+            { archivo: 'crema-poblana.webp', nombre: 'Poblana', alt: 'Crema poblana, con chile poblano y cilantro' },
+            { archivo: 'crema-champinones.webp', nombre: 'Champiñones', alt: 'Crema de champiñones, con champiñones frescos y tomillo' },
+          ],
+          detalle: 'Elige tu sabor: piña con chipotle, poblana o champiñones.' },
       ],
     },
     {
@@ -113,12 +127,6 @@ export const CENAS = {
         { id: 'pasta', nombre: 'Pasta poblana con elotes', icono: 'chef-hat', etiqueta: 'Ya cocinada', medida: LITROS, precio: '$140 el litro · $70 el medio litro',
           foto: 'pasta.webp', fotoAlt: 'Tazón de pasta poblana con granos de elote',
           detalle: 'Pasta en salsa poblana con granos de elote, lista para servir.' },
-        { id: 'crema', nombre: 'Crema a elegir', icono: 'bowl-food', etiqueta: 'Ya cocinada', medida: LITROS, precio: '$230 el litro · $120 el medio litro',
-          fotos: [
-            { archivo: 'crema-pina.webp', nombre: 'Piña con chipotle', alt: 'Crema de piña con chipotle, con trozos de piña y chiles chipotle' },
-            { archivo: 'crema-champinones.webp', nombre: 'Champiñones', alt: 'Crema de champiñones, con champiñones frescos y tomillo' },
-          ],
-          detalle: 'Elige tu sabor: champiñones o piña con chipotle.' },
       ],
     },
     {
@@ -138,9 +146,10 @@ export const CENAS = {
 export function usePreciosCatalogo() {
   const [precios, setPrecios] = useState({})
   useEffect(() => {
-    if (!CENAS.mostrarPrecios) return undefined // sin precios publicados no se consulta el catálogo
-    let vigente = true
     const conCatalogo = CENAS.grupos.flatMap(g => g.items).filter(i => i.catalogo)
+    // Sin precios publicados, o sin platillos ligados al catálogo, no se consulta nada.
+    if (!CENAS.mostrarPrecios || conCatalogo.length === 0) return undefined
+    let vigente = true
     ;(async () => {
       try {
         const ramas = await (await fetch(`${API_URL}/api/branches`)).json()
