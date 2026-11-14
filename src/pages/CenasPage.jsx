@@ -77,7 +77,7 @@ export default function CenasPage() {
           {CENAS.grupos.map(g => (
             <div key={g.id} className="cn-grupo">
               <h3>{g.titulo}</h3>
-              <ul className={'cn-lista' + (g.items.every(it => it.foto || it.fotos) ? (g.items.length === 1 ? ' cn-lista-unica' : ' cn-lista-fotos') : '')}>
+              <ul className={'cn-lista' + (g.items.every(it => it.foto || it.fotos) ? (g.items.length === 1 && !g.items[0].fotos ? ' cn-lista-unica' : ' cn-lista-fotos') : '')}>
                 {g.items.map(it => (
                   <li key={it.id} className={'cn-platillo' + (it.foto || it.fotos ? ' cn-con-foto' : '') + (it.fotos ? ' cn-platillo-ancho' : '')}>
                     {it.fotos ? (

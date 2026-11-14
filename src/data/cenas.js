@@ -16,7 +16,7 @@ import { API_URL } from './vacantes.js'
    Precios del año pasado, de referencia:
    - Pechugas rellenas: $250 por kg (aprox. 4-5 pz)   → este año se lee del catálogo ($265/kg)
    - Rosca de pan danés: $130 por pieza
-   - Cremas (champiñones, piña con chipotle; este año ya no hay poblana): $210 el litro · $110 el medio litro
+   - Cremas (champiñones, piña con chipotle, poblana): $210 el litro · $110 el medio litro
    - Verduritas (desinfectadas, listas para cocinar): $90 la caja
    - Pasta poblana: $130 el litro · $65 el medio litro
    - Puré de papa: $130 el litro · $65 el medio litro
@@ -101,6 +101,19 @@ export const CENAS = {
       ],
     },
     {
+      id: 'cremas',
+      titulo: 'Cremas',
+      items: [
+        { id: 'crema', nombre: 'Crema a elegir', icono: 'bowl-food', etiqueta: 'Ya cocinada', medida: LITROS, precio: '$230 el litro · $120 el medio litro',
+          fotos: [
+            { archivo: 'crema-pina.webp', nombre: 'Piña con chipotle', alt: 'Crema de piña con chipotle, con trozos de piña y chiles chipotle' },
+            { archivo: 'crema-poblana.webp', nombre: 'Poblana', alt: 'Crema poblana, con chile poblano y cilantro' },
+            { archivo: 'crema-champinones.webp', nombre: 'Champiñones', alt: 'Crema de champiñones, con champiñones frescos y tomillo' },
+          ],
+          detalle: 'Elige tu sabor: piña con chipotle, poblana o champiñones.' },
+      ],
+    },
+    {
       id: 'complementos',
       titulo: 'Complementos',
       items: [
@@ -113,12 +126,6 @@ export const CENAS = {
         { id: 'pasta', nombre: 'Pasta poblana con elotes', icono: 'chef-hat', etiqueta: 'Ya cocinada', medida: LITROS, precio: '$140 el litro · $70 el medio litro',
           foto: 'pasta.webp', fotoAlt: 'Tazón de pasta poblana con granos de elote',
           detalle: 'Pasta en salsa poblana con granos de elote, lista para servir.' },
-        { id: 'crema', nombre: 'Crema a elegir', icono: 'bowl-food', etiqueta: 'Ya cocinada', medida: LITROS, precio: '$230 el litro · $120 el medio litro',
-          fotos: [
-            { archivo: 'crema-pina.webp', nombre: 'Piña con chipotle', alt: 'Crema de piña con chipotle, con trozos de piña y chiles chipotle' },
-            { archivo: 'crema-champinones.webp', nombre: 'Champiñones', alt: 'Crema de champiñones, con champiñones frescos y tomillo' },
-          ],
-          detalle: 'Elige tu sabor: champiñones o piña con chipotle.' },
       ],
     },
     {
