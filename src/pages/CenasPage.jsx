@@ -33,6 +33,8 @@ export default function CenasPage() {
           alt="Mesa de cena de fin de año: pechuga rellena con pasta poblana, verduras, puré de papa, copa de vino y pan danés"
           fetchPriority="high"
         />
+        {/* Logo flotando sobre la imagen (el título «Cenas de fin de año» sigue en el texto de abajo). */}
+        <img className="cn-logo" src={`${BASE}cenas/logo-cenas.webp`} width="1000" height="405" alt="" aria-hidden="true" />
         <a className="cn-volver" href={BASE}>← Ir a la tienda</a>
       </header>
 
