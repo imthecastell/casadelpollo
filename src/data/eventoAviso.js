@@ -3,10 +3,11 @@
    (así lo vuelven a ver quienes ya cerraron el anterior). Fuera de las fechas no se muestra nada.
    Para quitar el aviso antes de tiempo, pon `EVENTO_AVISO = null`. */
 export const EVENTO_AVISO = {
-  id: 'calabazar-2026-bowls',
-  titulo: 'Un año de Bowls · Calabazar 2026',
-  imagen: `${import.meta.env.BASE_URL}eventos/calabazar-bowls-2026.jpg`,
-  descripcion: 'Acompáñanos en Calabazar y participa para ganar Un año de Bowls. Sábado 24 y domingo 25 de octubre, de 12:00 pm a 9:00 pm.',
-  desde: '2026-10-06T00:00:00-07:00',
-  hasta: '2026-10-25T21:00:00-07:00',   // termina el domingo 25 a las 9:00 pm, hora de Los Mochis
+  id: 'cenas-fin-de-anio-2026',
+  titulo: 'Cenas de fin de año · Casa del Pollo',
+  imagen: `${import.meta.env.BASE_URL}eventos/cenas-fin-de-anio-2026.webp`,
+  descripcion: 'Cenas de fin de año de Casa del Pollo: paquetes listos para cocinar y servir, para 5 a 6 y 10 a 12 personas, desde $160 por persona. Disponible en todas las sucursales.',
+  enlace: `${import.meta.env.BASE_URL}cenas`,   // opcional: al tocar el póster abre esta página. Sin `enlace`, el aviso solo informa.
+  desde: '2026-11-16T00:00:00-07:00',
+  hasta: '2026-12-21T23:59:00-07:00',   // las reservas de las cenas llegan hasta el 21 de diciembre
 }

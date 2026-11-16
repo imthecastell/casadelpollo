@@ -2,8 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import { EVENTO_AVISO } from '../data/eventoAviso.js'
 
 /* Aviso de un evento próximo: el póster en una ventana al entrar a la tienda, una sola vez al día
-   en este dispositivo, con un botón "Cerrar" grande debajo. Solo informa: no redirige, no tiene
-   enlaces ni botones pequeños, y también se cierra tocando fuera del póster o con Escape.
+   en este dispositivo, con un botón "Cerrar" grande debajo. Por defecto solo informa: no redirige ni
+   tiene enlaces ni botones pequeños. Si EVENTO_AVISO trae `enlace`, el póster entero es un enlace a esa
+   página (para pósters que traen su propio botón dibujado). También se cierra tocando fuera del póster
+   o con Escape.
    Desaparece solo al terminar el evento (EVENTO_AVISO.hasta). */
 
 const CLAVE = 'cdp_aviso_evento'
@@ -43,7 +45,9 @@ export default function AvisoEvento() {
   return (
     <div className="v2-evento-fondo" onClick={() => setAbierto(false)}>
       <div className="v2-evento" role="dialog" aria-modal="true" aria-label={EVENTO_AVISO.titulo} onClick={e => e.stopPropagation()}>
-        <img className="v2-evento-poster" src={EVENTO_AVISO.imagen} alt={EVENTO_AVISO.descripcion} />
+        {EVENTO_AVISO.enlace
+          ? <a className="v2-evento-enlace" href={EVENTO_AVISO.enlace}><img className="v2-evento-poster" src={EVENTO_AVISO.imagen} alt={EVENTO_AVISO.descripcion} /></a>
+          : <img className="v2-evento-poster" src={EVENTO_AVISO.imagen} alt={EVENTO_AVISO.descripcion} />}
         <button ref={botonRef} type="button" className="v2-evento-cerrar" onClick={() => setAbierto(false)}>Cerrar</button>
       </div>
     </div>
