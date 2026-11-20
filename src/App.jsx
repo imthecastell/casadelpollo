@@ -5,7 +5,7 @@ import Carrito from './pages/Carrito.jsx'
 import Confirmado from './pages/Confirmado.jsx'
 import Feedback from './pages/Feedback.jsx'
 import LinksPage from './pages/LinksPage.jsx'
-import JuegoGallina from './pages/JuegoGallina.jsx'
+import JuegoPollitos from './pages/JuegoPollitos.jsx'
 import VacantesPage from './pages/VacantesPage.jsx'
 import CenasPage from './pages/CenasPage.jsx'
 import HomeV2Preview from './pages/HomeV2Preview.jsx'
@@ -23,9 +23,11 @@ function Contenido() {
   return null
 }
 
+// /juego: "Atrapa los pollitos" (temporada navideña). "El Salto del Pollo" (Día de Muertos) quedó archivado en
+// pages/JuegoGallina.jsx: para reactivarlo, importarlo de nuevo y devolverlo en esta misma ruta.
 export default function App() {
   if (/\/links\/?$/.test(window.location.pathname)) return <LinksPage />
-  if (/\/juego\/?$/.test(window.location.pathname)) return <JuegoGallina />
+  if (/\/juego\/?$/.test(window.location.pathname)) return <JuegoPollitos />
   if (/\/vacantes\/?$/.test(window.location.pathname)) return <VacantesPage />
   if (/\/cenas\/?$/.test(window.location.pathname)) return <CenasPage />
 
