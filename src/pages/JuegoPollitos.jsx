@@ -18,7 +18,7 @@ const miles = (n) => n.toLocaleString('es-MX')
 const img = (n) => `${BASE}pollitos/${n}.webp`
 
 const SI = ['pollito-1', 'muslo', 'papas-1', 'moneda-estrella']
-const NO = ['esfera', 'pina', 'liston']
+const NO = ['esfera', 'pina', 'rama', 'regalo']
 
 function titulo(r) {
   if (r.record) return '¡Nuevo récord!'
@@ -158,7 +158,7 @@ export default function JuegoPollitos() {
             <div className="pp-reglas">
               <div className="pp-regla si"><b>Atrapa</b><span>{SI.map(n => <img key={n} src={img(n)} alt="" draggable="false" />)}</span></div>
               <div className="pp-regla no"><b>Esquiva</b><span>{NO.map(n => <img key={n} src={img(n)} alt="" draggable="false" />)}</span></div>
-              <p>Arrastra el dedo de lado a lado para mover la canasta. ¡Los adornos no van en el pedido!</p>
+              <p>Arrastra el dedo de lado a lado para mover la canasta. Los adornos no van en el pedido: ¡llénala para ganar un bono!</p>
             </div>
 
             <button type="button" className="pp-jugar" disabled={!imgs} onClick={jugar}>

@@ -10,6 +10,9 @@ import { sonar } from './pollitosAudio.js'
 const W = 400
 const MOSTRADOR = 92           // alto de la franja del mostrador (suelo)
 const CANASTA_W = 108
+const CANASTA_ALTO = 88         // de la base al borde de la canasta vacía
+const PEDIDO = 18               // piezas y pollitos que llenan un pedido (da un bono y la canasta se vacía)
+const BONO_PEDIDO = 100
 const VEL_CANASTA = 1500       // unidades por segundo
 const VIDAS = 3
 
@@ -30,8 +33,11 @@ const MALOS = [
   { id: 'esfera', w: 46, tipo: 'malo' },
   { id: 'pina', w: 46, tipo: 'malo' },
   { id: 'liston', w: 56, tipo: 'malo' },
+  { id: 'rama', w: 52, tipo: 'malo' },
+  { id: 'regalo', w: 50, tipo: 'malo' },
 ]
-const IMAGENES = ['canasta', ...BUENOS.map(b => b.id), CORAZON.id, ...MALOS.map(m => m.id)]
+const CANASTAS = ['canasta-vacia', 'canasta-media', 'canasta-llena']
+const IMAGENES = [...CANASTAS, ...BUENOS.map(b => b.id), CORAZON.id, ...MALOS.map(m => m.id)]
 
 const COLORES_CHISPA = ['#FFE066', '#FFF3C4', '#F4B63E', '#FF9F43']
 const COLORES_LUZ = ['#FFD36A', '#FF6A5A', '#7FE08A', '#FFD36A', '#FFF1C2']
@@ -68,6 +74,7 @@ export function crearJuego(canvas, imgs, op) {
   let x = W / 2
   let objetivo = W / 2
   let inclina = 0
+  let llenado = 0              // piezas y pollitos en la canasta (decide cuál de los tres dibujos se ve)
   let puntos = 0, vidas = VIDAS, racha = 0, mejorRacha = 0, nPollitos = 0, nPiezas = 0
   let spawnT = 0.6
   let ultimoX = -999
@@ -289,7 +296,7 @@ export function crearJuego(canvas, imgs, op) {
 
   function atrapar(it) {
     it.dentro = 0
-    const bocaY = sueloY() + 12 - (CANASTA_W * 233) / 300 + 18
+    const bocaY = sueloY() + 12 - CANASTA_ALTO + 18
     if (it.malo) {
       if (estado === 'jugando') {
         vidas -= 1; racha = 0; sacudida = 0.5; destello = 0.55
@@ -304,6 +311,11 @@ export function crearJuego(canvas, imgs, op) {
     }
     rebote = 1
     chispas(it.x, bocaY, COLORES_CHISPA, 9)
+    let completo = false
+    if (it.tipo === 'pollito' || it.tipo === 'pieza') {
+      llenado += 1
+      if (llenado >= PEDIDO) { llenado = 0; completo = true }
+    }
     if (estado !== 'jugando') return
     if (it.tipo === 'vida') {
       vidas = Math.min(VIDAS, vidas + 1)
@@ -319,6 +331,12 @@ export function crearJuego(canvas, imgs, op) {
     else if (it.tipo === 'pieza') nPiezas += 1
     sonido(it.tipo === 'moneda' || it.tipo === 'estrella' ? 'moneda' : 'atrapa', racha)
     texto(it.x, bocaY - 12, `+${ganado}`, m > 1 ? '#FFE066' : '#FFF3C4', 22 + m * 2)
+    if (completo) {
+      puntos += BONO_PEDIDO
+      sonido('vida')
+      chispas(x, bocaY - 20, COLORES_CHISPA, 26, 260)
+      texto(W / 2, sueloY() - 150, `¡Pedido completo! +${BONO_PEDIDO}`, '#FFE066', 26)
+    }
     avisarPuntos()
   }
 
@@ -332,13 +350,13 @@ export function crearJuego(canvas, imgs, op) {
 
   function terminar() {
     const r = { puntos, pollitos: nPollitos, piezas: nPiezas, racha: mejorRacha, segundos: Math.round(t) }
-    estado = 'demo'; items = []; spawnT = 0.5
+    estado = 'demo'; items = []; spawnT = 0.5; llenado = 0
     op.onFin?.(r)
   }
 
   function iniciar() {
     items = []; particulas = []; textos = []
-    puntos = 0; vidas = VIDAS; racha = 0; mejorRacha = 0; nPollitos = 0; nPiezas = 0
+    llenado = 0; puntos = 0; vidas = VIDAS; racha = 0; mejorRacha = 0; nPollitos = 0; nPiezas = 0
     t = 0; spawnT = 0.7; sacudida = 0; destello = 0
     estado = 'jugando'; pausado = false
     op.onVidas?.(vidas); op.onPuntos?.({ puntos, racha, mult: 1 })
@@ -371,7 +389,7 @@ export function crearJuego(canvas, imgs, op) {
     }
 
     const suelo = sueloY()
-    const bocaY = suelo + 12 - (CANASTA_W * 233) / 300 + 18
+    const bocaY = suelo + 12 - CANASTA_ALTO + 18
     for (const it of items) {
       if (it.dentro >= 0) {
         it.dentro += dt / 0.18
@@ -429,9 +447,9 @@ export function crearJuego(canvas, imgs, op) {
       ctx.restore()
     }
 
-    const cb = imgs.canasta
+    const cb = imgs[llenado >= (PEDIDO * 2) / 3 ? 'canasta-llena' : llenado >= PEDIDO / 3 ? 'canasta-media' : 'canasta-vacia']
     const cw = CANASTA_W
-    const ch = cb ? (cw * cb.naturalHeight) / cb.naturalWidth : 84
+    const ch = cb ? (cw * cb.naturalHeight) / cb.naturalWidth : 114
     if (cb) {
       ctx.save()
       ctx.translate(x, sueloY() + 12)
@@ -498,7 +516,7 @@ export function crearJuego(canvas, imgs, op) {
   return {
     iniciar,
     pausar(v) { pausado = !!v },
-    salir() { estado = 'demo'; pausado = false; items = []; spawnT = 0.5 },
+    salir() { estado = 'demo'; pausado = false; items = []; spawnT = 0.5; llenado = 0 },
     destruir() {
       cancelAnimationFrame(raf); ro.disconnect()
       canvas.removeEventListener('pointerdown', mover)
