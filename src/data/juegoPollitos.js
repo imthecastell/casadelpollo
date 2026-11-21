@@ -23,8 +23,6 @@ const BUENOS = [
   { id: 'muslo', w: 54, tipo: 'pieza', peso: 7 },
   { id: 'ala', w: 52, tipo: 'pieza', peso: 7 },
   { id: 'pechuga', w: 54, tipo: 'pieza', peso: 7 },
-  { id: 'papas-1', w: 42, tipo: 'pieza', peso: 5 },
-  { id: 'papas-2', w: 42, tipo: 'pieza', peso: 5 },
   { id: 'moneda', w: 40, tipo: 'moneda', valor: 25, peso: 4 },
   { id: 'moneda-estrella', w: 42, tipo: 'estrella', valor: 50, peso: 3 },
 ]
