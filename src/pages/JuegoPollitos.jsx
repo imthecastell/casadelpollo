@@ -17,7 +17,7 @@ const leerMejor = () => { try { return JSON.parse(leer('cdp_pollitos_mejor', 'nu
 const miles = (n) => n.toLocaleString('es-MX')
 const img = (n) => `${BASE}pollitos/${n}.webp`
 
-const SI = ['pollito-1', 'muslo', 'papas-1', 'moneda-estrella']
+const SI = ['pollito-1', 'muslo', 'pechuga', 'moneda-estrella']
 const NO = ['esfera', 'pina', 'rama', 'regalo']
 
 function titulo(r) {
