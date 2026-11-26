@@ -6,6 +6,7 @@
 import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import TagsChips from './TagsChips.jsx'
+import { cdn, PEREZOSA } from '../data/cdn.js'
 import { GuiaCocinaInline } from './GuiaCocina.jsx'
 
 // unidad display según precio_tipo del producto
@@ -278,7 +279,7 @@ function NvCardCompact({ p, onClick }) {
     <button className="nv-card" onClick={onClick}>
       <div className="nv-img">
         {thumb
-          ? <img src={thumb} alt={p.name} style={{ opacity: 1 }} />
+          ? <img src={cdn(thumb, 400)} alt={p.name} {...PEREZOSA} style={{ opacity: 1 }} />
           : <div className="nv-img-emoji">{p.emoji}</div>
         }
       </div>
@@ -305,8 +306,8 @@ function NvCardExpandida({ p, recogida, gramos, precioTotal, agregado, onClose, 
       <div className="nv-hero">
         {p.image_url
           ? <>
-              <img src={p.image_url}        alt={p.name}               style={{ opacity: showCooked ? 0 : 1 }} />
-              <img src={p.image_cooked_url} alt={`${p.name} cocinado`} style={{ opacity: showCooked ? 1 : 0 }} />
+              <img src={cdn(p.image_url, 800)}        alt={p.name} {...PEREZOSA}              style={{ opacity: showCooked ? 0 : 1 }} />
+              <img src={cdn(p.image_cooked_url, 800)} alt={`${p.name} cocinado`} {...PEREZOSA} style={{ opacity: showCooked ? 1 : 0 }} />
             </>
           : <div style={{ position: 'absolute', inset: 0, background: 'var(--crema-oscura)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 72 }}>{p.emoji}</div>
         }

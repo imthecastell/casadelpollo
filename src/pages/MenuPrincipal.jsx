@@ -8,6 +8,7 @@ import SeccionPreparados from '../Components/SeccionPreparados.jsx'
 import SeccionComplementos from '../Components/SeccionComplementos.jsx'
 import SeccionBowls from '../Components/SeccionBowls.jsx'
 import SeccionNuevo from '../Components/SeccionNuevo.jsx'
+import { CDN, cdn, PEREZOSA } from '../data/cdn.js'
 import '../styles/menu.css'
 
 /* Shufflea un array sin mutar el original — orden diferente cada sesión */
@@ -20,16 +21,16 @@ function shuffle(arr) {
   return a
 }
 
-const BASE = 'https://res.cloudinary.com/do4juvxio/image/upload'
+const BASE = CDN
 /* crop lado cocinado (derecho) con fl_relative — funciona con cualquier resolución */
 const COOK = (f, ar = '4:3', w = 600) =>
-  `${BASE}/c_crop,fl_relative,x_0.50,y_0.00,w_0.50,h_1.00/ar_${ar},c_fill,w_${w}/${f}`
+  cdn(`${BASE}/c_crop,fl_relative,x_0.50,y_0.00,w_0.50,h_1.00/ar_${ar},c_fill,w_${w}/${f}`)
 /* foto entera sin crop (para imágenes que no son combo) */
 const FULL = (f, ar = '4:3', w = 600) =>
-  `${BASE}/ar_${ar},c_fill,w_${w}/${f}`
+  cdn(`${BASE}/ar_${ar},c_fill,w_${w}/${f}`)
 /* crop lado crudo (izquierdo) */
 const RAW  = (f, ar = '4:3', w = 600) =>
-  `${BASE}/c_crop,fl_relative,x_0.00,y_0.00,w_0.50,h_1.00/ar_${ar},c_fill,w_${w}/${f}`
+  cdn(`${BASE}/c_crop,fl_relative,x_0.00,y_0.00,w_0.50,h_1.00/ar_${ar},c_fill,w_${w}/${f}`)
 
 /* ─── Imágenes que rotan en el hero ─── */
 const HERO_IMGS = [
@@ -363,7 +364,7 @@ export default function MenuPrincipal() {
                   style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', padding: '0 4px', minWidth: 0 }}>
                   <div style={{ width: '100%', aspectRatio: '1', maxWidth: 76, borderRadius: '50%', overflow: 'hidden', boxShadow: '0 3px 12px rgba(0,0,0,0.14)', border: '2.5px solid var(--card-bg)' }}>
                     {cat.img
-                      ? <img src={cat.img} alt={cat.label} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ? <img src={cat.img} alt={cat.label} {...PEREZOSA} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       : <div style={{ width: '100%', height: '100%', background: 'var(--crema-oscura)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>{cat.emoji}</div>
                     }
                   </div>

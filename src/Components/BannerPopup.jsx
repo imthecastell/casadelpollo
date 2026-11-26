@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useApp } from '../data/AppContext.jsx'
+import { cdn } from '../data/cdn.js'
 
 export default function BannerPopup({ delay = 0 }) {
   const { bannersPopup } = useApp()
@@ -58,7 +59,7 @@ export default function BannerPopup({ delay = 0 }) {
 
         {banner.imagen_url && (
           <img
-            src={banner.imagen_url}
+            src={cdn(banner.imagen_url, 800)}
             alt={banner.titulo || ''}
             style={{ width: '100%', display: 'block', maxHeight: 260, objectFit: 'cover' }}
           />

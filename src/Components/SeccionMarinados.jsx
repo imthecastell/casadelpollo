@@ -4,10 +4,11 @@ import AvisoAirfryer from './AvisoAirfryer.jsx'
 import TagsChips from './TagsChips.jsx'
 import { GuiaCocinaInline } from './GuiaCocina.jsx'
 import { fotoCruda, fotoCocinada } from '../data/fotos.js'
+import { PEREZOSA } from '../data/cdn.js'
 
 export function MarimadoImg({ imageUrl, imageCookedUrl, isSelected, recogida }) {
-  const rawSrc    = fotoCruda(imageUrl, imageCookedUrl)
-  const cookedSrc = fotoCocinada(imageUrl, imageCookedUrl)
+  const rawSrc    = fotoCruda(imageUrl, imageCookedUrl, { w: 200 })
+  const cookedSrc = fotoCocinada(imageUrl, imageCookedUrl, { w: 200 })
   const showCooked = !!(isSelected && recogida === 'cocinado' && cookedSrc)
   const size = isSelected ? 90 : 72
   const dur  = '0.38s cubic-bezier(.34,1.56,.64,1)'
@@ -34,8 +35,8 @@ export function MarimadoImg({ imageUrl, imageCookedUrl, isSelected, recogida }) 
       transition: `width ${dur}, height ${dur}`,
       boxShadow: isSelected ? '0 4px 16px rgba(0,0,0,0.18)' : 'none',
     }}>
-      {rawSrc    && <img src={rawSrc}    alt="" style={imgStyle(!showCooked)} />}
-      {cookedSrc && <img src={cookedSrc} alt="" style={imgStyle(showCooked)}  />}
+      {rawSrc    && <img src={rawSrc}    alt="" {...PEREZOSA} style={imgStyle(!showCooked)} />}
+      {cookedSrc && <img src={cookedSrc} alt="" {...PEREZOSA} style={imgStyle(showCooked)}  />}
     </div>
   )
 }

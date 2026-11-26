@@ -14,6 +14,7 @@
  *   placeholderStyle — estilos extra para el placeholder (ej. borde blanco en fondos oscuros)
  */
 import LogoPlaceholder from './LogoPlaceholder.jsx'
+import { cdn } from '../data/cdn.js'
 
 function resolveFilter(mode, customFilter) {
   if (mode === 'blanco')        return 'brightness(0) invert(1)'
@@ -21,6 +22,8 @@ function resolveFilter(mode, customFilter) {
   if (mode === 'personalizado') return customFilter || 'none'
   return 'none' // original
 }
+
+const anchoCdn = (w) => (typeof w === 'number' ? w * 2 : undefined)
 
 export default function LogoSlot({
   type = 'logotipo',
@@ -34,6 +37,7 @@ export default function LogoSlot({
   placeholderStyle = {},
 }) {
   if (src) {
+    const url = cdn(src, anchoCdn(width))
     // modo "tema": usa CSS mask para que el icono tome el color var(--rojo)
     // exactamente igual que los botones de la interfaz
     if (mode === 'tema') {
@@ -44,8 +48,8 @@ export default function LogoSlot({
             height,
             flexShrink: 0,
             background: 'var(--rojo)',
-            WebkitMask: `url(${src}) no-repeat center / contain`,
-            mask:        `url(${src}) no-repeat center / contain`,
+            WebkitMask: `url(${url}) no-repeat center / contain`,
+            mask:        `url(${url}) no-repeat center / contain`,
             ...imgStyle,
           }}
         />
@@ -54,7 +58,7 @@ export default function LogoSlot({
 
     return (
       <img
-        src={src}
+        src={url}
         alt={alt}
         style={{
           width,

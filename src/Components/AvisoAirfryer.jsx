@@ -1,4 +1,5 @@
 import { useApp } from '../data/AppContext.jsx'
+import { cdn } from '../data/cdn.js'
 
 const FALLBACK = {
   titulo: 'Air Fryer, sin grasas',
@@ -50,7 +51,7 @@ export default function AvisoAirfryer({ onCerrar }) {
 
         {aviso.imagen_url && (
           <img
-            src={aviso.imagen_url} alt=""
+            src={cdn(aviso.imagen_url, 160)} alt=""
             style={{ width: 64, height: 64, objectFit: 'contain', marginBottom: 16 }}
           />
         )}

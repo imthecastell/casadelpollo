@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import LogoSlot from '../Components/LogoSlot.jsx'
+import { CDN, cdn } from '../data/cdn.js'
 import '../styles/selector.css'
 
 /* Carrusel de productos cocinados */
-const CDN  = 'https://res.cloudinary.com/do4juvxio/image/upload'
-const COOK = (f) => `${CDN}/c_crop,fl_relative,x_0.50,y_0.00,w_0.50,h_1.00/ar_4:3,c_fill,w_960/${f}`
+const COOK = (f) => cdn(`${CDN}/c_crop,fl_relative,x_0.50,y_0.00,w_0.50,h_1.00/ar_4:3,c_fill,w_960/${f}`)
 const ALL_HERO_ITEMS = [
   { img: COOK('marinados/teriyaki.png'),                     nombre: 'Teriyaki' },
   { img: COOK('marinados/adobado.png'),                      nombre: 'Adobado' },
@@ -146,7 +146,7 @@ export default function SelectorSucursal() {
         {fase === 'banners' && bannerHero?.imagen_url && (
           <div style={{
             position: 'absolute', inset: 0,
-            backgroundImage: `url(${bannerHero.imagen_url})`,
+            backgroundImage: `url(${cdn(bannerHero.imagen_url, 960)})`,
             backgroundSize: 'cover', backgroundPosition: 'center',
             opacity: bannerOpacity,
             transition: 'opacity 0.5s ease',
