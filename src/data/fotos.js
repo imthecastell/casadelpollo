@@ -11,7 +11,7 @@
    Antes todo se partía a la mitad, y con fotos individuales se veía medio
    plato corrido. */
 
-const CDN = 'https://res.cloudinary.com/do4juvxio/image/upload'
+import { CDN, cdn } from './cdn.js'
 
 // Archivo en Cloudinary (v123/carpeta/nombre.ext), sin transformaciones.
 // La versión se conserva para no servir una copia vieja si se resube.
@@ -65,17 +65,17 @@ function sinCostura(recorte, a) {
 
 function conTamano(url, ar, w) {
   const a = archivo(url)
-  if (!a) return url
+  if (!a) return cdn(url, w)
   const recorte = sinCostura(recorteGuardado(url), a)
-  return `${CDN}/${recorte ? `${recorte}/` : ''}ar_${ar},c_fill,w_${w}/${a}`
+  return cdn(`${CDN}/${recorte ? `${recorte}/` : ''}ar_${ar},c_fill,w_${w}/${a}`)
 }
 
 function mitad(url, lado, ar, w) {
   const a = archivo(url)
-  if (!a) return url
+  if (!a) return cdn(url, w)
   const x = lado === 'cruda' ? '0.00' : '0.50'
   const recorte = sinCostura(`c_crop,fl_relative,x_${x},y_0.00,w_0.50,h_1.00`, a)
-  return `${CDN}/${recorte}/ar_${ar},c_fill,w_${w}/${a}`
+  return cdn(`${CDN}/${recorte}/ar_${ar},c_fill,w_${w}/${a}`)
 }
 
 export function fotoCruda(imageUrl, imageCookedUrl, { ar = '4:3', w = 320 } = {}) {

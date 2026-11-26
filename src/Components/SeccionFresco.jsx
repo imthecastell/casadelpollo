@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import { fotoCruda } from '../data/fotos.js'
+import { PEREZOSA } from '../data/cdn.js'
 
 export default function SeccionFresco() {
   const { agregarAlCarrito, productos } = useApp()
@@ -42,11 +43,11 @@ export default function SeccionFresco() {
       <p className="seccion-desc">Precio por kg · se cobra al pesar en el local</p>
       {productosSeccion.map(p => {
         const cantidad = cantidades[p.id] || 0
-        const thumb = fotoCruda(p.image_url, p.image_cooked_url)
+        const thumb = fotoCruda(p.image_url, p.image_cooked_url, { w: 200 })
         return (
           <div key={p.id} className="producto-row">
             {thumb
-              ? <img className="producto-img" src={thumb} alt="" />
+              ? <img className="producto-img" src={thumb} alt="" {...PEREZOSA} />
               : <div className="producto-img-placeholder">🍗</div>
             }
             <div className="producto-info" style={{ flex: 1, minWidth: 0 }}>

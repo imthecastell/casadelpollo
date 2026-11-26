@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import { fotoCocinada } from '../data/fotos.js'
+import { CDN, cdn, PEREZOSA } from '../data/cdn.js'
 
 const TIEMPO_BOWL = 20
 // Respaldo si la sucursal aún no tiene bowl_price configurado (columna nueva).
@@ -10,10 +11,8 @@ const PASO_EXTRA = 50
 const MAX_EXTRA = 400
 
 /* ── Imágenes de bowl ── */
-const CDN = 'https://res.cloudinary.com/do4juvxio/image/upload'
-
 /* Imagen de portada de la sección bowls */
-const BOWL_DEFAULT = `${CDN}/ar_16:9,c_fill,w_900/design/bowl_portada.webp`
+const BOWL_DEFAULT = `${CDN}/ar_16:9,c_fill,w_800/design/bowl_portada.webp`
 
 function calcularLugares(numBowls) {
   return Math.ceil(numBowls / 2)
@@ -30,7 +29,7 @@ function BaseImg({ nombre, imageUrl }) {
     return (
       <div style={{
         position: 'absolute', inset: 0,
-        backgroundImage: `url(${imageUrl})`,
+        backgroundImage: `url(${cdn(imageUrl, 640)})`,
         backgroundSize: 'cover', backgroundPosition: 'center',
       }} />
     )
@@ -47,7 +46,7 @@ function BaseImg({ nombre, imageUrl }) {
 /* ── Hero image del bowl ── */
 function BowlHero({ marinado, base, defaultImg }) {
   const heroImg = useMemo(() => {
-    return fotoCocinada(marinado?.image_url, marinado?.image_cooked_url, { ar: '16:9', w: 900 })
+    return fotoCocinada(marinado?.image_url, marinado?.image_cooked_url, { ar: '16:9', w: 800 })
   }, [marinado])
 
   const showBase = !heroImg && !!base
@@ -57,7 +56,7 @@ function BowlHero({ marinado, base, defaultImg }) {
       {/* Fondo default */}
       <div style={{
         position: 'absolute', inset: 0,
-        backgroundImage: `url(${defaultImg || BOWL_DEFAULT})`,
+        backgroundImage: `url(${cdn(defaultImg || BOWL_DEFAULT, 800)})`,
         backgroundSize: 'cover', backgroundPosition: 'center',
         opacity: heroImg || showBase ? 0 : 1,
         transition: 'opacity 0.9s ease',
@@ -237,7 +236,7 @@ function BowlBuilder({ numero, onAgregar, productos, defaultImg }) {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', background: '#f0f4ff', borderRadius: 8, border: '1.5px solid #4a7fd4', marginBottom: 8 }}>
                 {(marinado.image_cooked_url || marinado.image_url)
-                  ? <img src={marinado.image_cooked_url || marinado.image_url} alt="" style={{ width: 38, height: 30, borderRadius: 5, objectFit: 'cover', flexShrink: 0, border: '1px solid #dde' }} />
+                  ? <img src={cdn(marinado.image_cooked_url || marinado.image_url, 120)} alt="" {...PEREZOSA} style={{ width: 38, height: 30, borderRadius: 5, objectFit: 'cover', flexShrink: 0, border: '1px solid #dde' }} />
                   : <div style={{ width: 38, height: 30, borderRadius: 5, background: '#e8eeff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>🥩</div>
                 }
                 <span style={{ flex: 1, fontWeight: 700, fontSize: 13, color: '#1a3a6b' }}>{marinado.name}</span>
@@ -297,7 +296,7 @@ function BowlBuilder({ numero, onAgregar, productos, defaultImg }) {
                             }}
                             onClick={() => { setMarinadoId(String(item.id)); setMarinadoCat(''); }}>
                             {(item.image_cooked_url || item.image_url)
-                              ? <img src={item.image_cooked_url || item.image_url} alt="" style={{ width: 38, height: 30, borderRadius: 5, objectFit: 'cover', flexShrink: 0, border: '1px solid #eee' }} />
+                              ? <img src={cdn(item.image_cooked_url || item.image_url, 120)} alt="" {...PEREZOSA} style={{ width: 38, height: 30, borderRadius: 5, objectFit: 'cover', flexShrink: 0, border: '1px solid #eee' }} />
                               : <div style={{ width: 38, height: 30, borderRadius: 5, background: '#f5f0e8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, flexShrink: 0 }}>🥩</div>
                             }
                             <span style={{ fontSize: 13, fontWeight: 500, color: '#222' }}>{item.name}</span>

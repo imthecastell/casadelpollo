@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import { fotoCruda, fotoCocinada } from '../data/fotos.js'
+import { CDN, cdn, PEREZOSA } from '../data/cdn.js'
 import AvisoDisponibilidad from './AvisoDisponibilidad.jsx'
 import TagsChips from './TagsChips.jsx'
 import { GuiaCocinaInline } from './GuiaCocina.jsx'
@@ -9,11 +10,11 @@ import { GuiaCocinaInline } from './GuiaCocina.jsx'
 const ORDEN_SIMPLES = ['natural', 'aplanada']
 
 // Imágenes de grupo
-const CDN = 'https://res.cloudinary.com/do4juvxio/image/upload'
 const COOK_HALF = (f) => `${CDN}/c_crop,fl_relative,x_0.50,y_0.00,w_0.50,h_1.00/ar_4:3,c_fill,w_600/${f}`
 const EMPAP_IMG           = COOK_HALF('marinados/empapeladas.png')
 const EMPANIZADAS_IMG     = COOK_HALF('milanesas/empanadas.png')
-const NUGGETS_IMG         = `${CDN}/c_fill,w_600/preparados/nuggets_grupo.png`
+// preparados/nuggets_grupo.png no existe en la nube nueva (hfg4vgan): se usa la foto cocinada de preparados/nuggets.png.
+const NUGGETS_IMG         = COOK_HALF('preparados/nuggets.png')
 const PECHUGA_RELLENA_IMG = COOK_HALF('preparados/pechuga_rellena.png')
 
 const esSimpleMil = (p) => {
@@ -32,8 +33,8 @@ const esAlbondiga    = (nombre) =>
 
 /* ── Imagen con transición crudo ↔ cocinado (igual que en Marinados) ── */
 function PreparadoImg({ imageUrl, imageCookedUrl, isSelected, recogida }) {
-  const rawSrc    = fotoCruda(imageUrl, imageCookedUrl)
-  const cookedSrc = fotoCocinada(imageUrl, imageCookedUrl)
+  const rawSrc    = fotoCruda(imageUrl, imageCookedUrl, { w: 200 })
+  const cookedSrc = fotoCocinada(imageUrl, imageCookedUrl, { w: 200 })
   const showCooked = !!(isSelected && recogida === 'cocinado' && cookedSrc)
   const size = isSelected ? 90 : 72
   const dur  = '0.38s cubic-bezier(.34,1.56,.64,1)'
@@ -60,8 +61,8 @@ function PreparadoImg({ imageUrl, imageCookedUrl, isSelected, recogida }) {
       transition: `width ${dur}, height ${dur}`,
       boxShadow: isSelected ? '0 4px 16px rgba(0,0,0,0.18)' : 'none',
     }}>
-      {rawSrc    && <img src={rawSrc}    alt="" style={imgStyle(!showCooked)} />}
-      {cookedSrc && <img src={cookedSrc} alt="" style={imgStyle(showCooked)}  />}
+      {rawSrc    && <img src={rawSrc}    alt="" {...PEREZOSA} style={imgStyle(!showCooked)} />}
+      {cookedSrc && <img src={cookedSrc} alt="" {...PEREZOSA} style={imgStyle(showCooked)}  />}
     </div>
   )
 }
@@ -171,7 +172,7 @@ function GrupoExpandible({ titulo, precio, unidad = '/kg', imagen, emoji, conteo
         onClick={onToggle}
       >
         {imagen
-          ? <img src={imagen} alt="" style={{ width: 68, height: 68, borderRadius: 14, objectFit: 'cover', flexShrink: 0, order: -1 }} />
+          ? <img src={cdn(imagen, 160)} alt="" {...PEREZOSA} style={{ width: 68, height: 68, borderRadius: 14, objectFit: 'cover', flexShrink: 0, order: -1 }} />
           : <div style={{ width: 68, height: 68, borderRadius: 14, background: 'var(--crema-oscura)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, flexShrink: 0, order: -1 }}>{emoji}</div>
         }
         <div style={{ flex: 1, minWidth: 0 }}>

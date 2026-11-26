@@ -20,6 +20,7 @@ import { estadoHorario } from '../data/horario.js'
 import { armarMensajeWhatsapp } from '../data/pedidoWhatsapp.js'
 import { codificarQR } from '../data/lealtadQR.js'
 import { fotoCruda, fotoCocinada } from '../data/fotos.js'
+import { CDN, cdn, PEREZOSA } from '../data/cdn.js'
 import '../styles/homeV2.css'
 import '../styles/homeV2Estilo.css'
 import '../styles/homeV2Adaptativo.css'
@@ -98,17 +99,17 @@ function calcularTiempoMarinado(gramos) {
   return gramos <= 300 ? base : base + extra
 }
 
-const BOWL_PORTADA_CDN = 'https://res.cloudinary.com/do4juvxio/image/upload/c_limit,w_900/design/bowl_portada.webp'
+const BOWL_PORTADA_CDN = cdn(`${CDN}/c_limit,w_800/design/bowl_portada.webp`)
 
 // Fotos de la galería (categoría Bowls, etiqueta "bowl") para el slideshow de "Arma tu Bowl": primero las de arroz,
-// luego pasta y ensalada, para que se vea la variedad de bases. Se piden ya optimizadas (ancho 900, formato automático).
+// luego pasta y ensalada, para que se vea la variedad de bases. Se piden ya optimizadas (ancho 800, formato automático).
 const ORDEN_BASE_BOWL = ['arroz', 'pasta', 'ensalada']
 function fotosDeBowls(items) {
   const rank = (m) => { const i = ORDEN_BASE_BOWL.findIndex(b => (m.etiquetas || []).includes(b)); return i < 0 ? 99 : i }
   return (Array.isArray(items) ? items : [])
     .filter(m => m.url && (m.etiquetas || []).includes('bowl'))
     .sort((a, b) => rank(a) - rank(b) || String(a.nombre).localeCompare(String(b.nombre), 'es'))
-    .map(m => m.url.replace('/upload/', '/upload/c_limit,w_900,f_auto,q_auto/'))
+    .map(m => cdn(m.url, 800))
 }
 
 // Varias fotos apiladas que se alternan con un fundido; solo avanza mientras `activa` (p. ej. el slide visible).
@@ -218,8 +219,7 @@ const SUCURSAL_CLAVE = 'cdp_v2_sucursal'
 // se puede usar el catálogo real aquí porque todavía no hay sucursal
 // elegida, así que no hay `productos` cargados. El día elige un subconjunto
 // estable (destacadosDelDia) y ese subconjunto rota como slideshow.
-const CDN_HERO = 'https://res.cloudinary.com/do4juvxio/image/upload'
-const COOK_HERO = (f) => `${CDN_HERO}/c_crop,fl_relative,x_0.50,y_0.00,w_0.50,h_1.00/ar_4:3,c_fill,w_960/${f}`
+const COOK_HERO = (f) => cdn(`${CDN}/c_crop,fl_relative,x_0.50,y_0.00,w_0.50,h_1.00/ar_4:3,c_fill,w_960/${f}`)
 const HERO_ITEMS_SUCURSAL = [
   COOK_HERO('marinados/teriyaki.png'),
   COOK_HERO('marinados/adobado.png'),
@@ -381,32 +381,34 @@ function agruparPreparados(lista) {
   }
 }
 
-const imgV2 = (p, postersMap) => {
+// `w` = ancho de la foto que se pide a Cloudinary (~2x el ancho con el que se ve): 640 en tarjetas,
+// 160–200 en miniaturas. Una sola URL por foto y tamaño.
+const imgV2 = (p, postersMap, w = 640) => {
   if (!p) return null
-  const opciones = { w: 800 }
-  if (p.category_name === 'Complementos') return p.image_url || null
+  const opciones = { w }
+  if (p.category_name === 'Complementos') return cdn(p.image_url, w) || null
   if (p.category_name === 'Pollo Fresco') return fotoCruda(p.image_url, p.image_cooked_url, opciones) || null
   if (p.category_name === 'Preparados') {
     if (postersMap) {
       const key = normalizarNombre(p.name)
-      if (postersMap[key]) return postersMap[key]
+      if (postersMap[key]) return cdn(postersMap[key], w)
       const keyNoDe = key.replace(/\bde\b /g, '').replace(/ +/g, ' ').trim()
-      if (postersMap[keyNoDe]) return postersMap[keyNoDe]
+      if (postersMap[keyNoDe]) return cdn(postersMap[keyNoDe], w)
       const match = Object.keys(postersMap).find(k => key.startsWith(k + ' '))
-      if (match) return postersMap[match]
+      if (match) return cdn(postersMap[match], w)
     }
     return fotoCocinada(p.image_url, p.image_cooked_url, opciones) || null
   }
   if (p.image_cooked_url)
     return fotoCocinada(p.image_url, p.image_cooked_url, opciones) || null
   const key = normalizarNombre(p.name)
-  if (postersMap && postersMap[key]) return postersMap[key]
+  if (postersMap && postersMap[key]) return cdn(postersMap[key], w)
   return null
 }
-const img = (p) => {
+const img = (p, w = 640) => {
   if (!p) return ''
-  if (p.category_name === 'Complementos') return p.image_url || ''
-  const opciones = { w: 800 }
+  if (p.category_name === 'Complementos') return cdn(p.image_url, w) || ''
+  const opciones = { w }
   return fotoCocinada(p.image_url, p.image_cooked_url, opciones) || ''
 }
 
@@ -886,7 +888,7 @@ export default function HomeV2Preview() {
     } },
     { id: 'favorito', pool: poolFavoritos, armar: (p) => ({
       badge: 'FAVORITO', titulo: p.name, desc: 'Favorito del momento. Pruébalo hoy.',
-      cta: 'Elegir', imagen: img(p), accion: () => abrirSeleccion(p),
+      cta: 'Elegir', imagen: img(p, 960), accion: () => abrirSeleccion(p),
     }) },
     bowlsActivo && { id: 'bowls', fija: {
       badge: 'BOWLS', titulo: 'Arma tu Bowl', desc: 'Base + marinado + tu toque, listo en minutos.',
@@ -895,11 +897,11 @@ export default function HomeV2Preview() {
     } },
     { id: 'temporada', pool: poolTemporada, armar: (p) => ({
       badge: 'TEMPORADA', titulo: p.name, desc: `$${Number(p.price)}/kg. Disponible hoy en ${sucursalActiva?.name || 'tu sucursal'}.`,
-      cta: 'Ver preparado', imagen: img(p), accion: () => abrirSeleccion(p),
+      cta: 'Ver preparado', imagen: img(p, 960), accion: () => abrirSeleccion(p),
     }) },
     { id: 'marinados', pool: poolMarinadosHero, armar: (p) => ({
       badge: 'MARINADOS', titulo: p.name, desc: `Marinado listo para cocinar. $${Number(p.price)}/kg.`,
-      cta: 'Elegir gramos', imagen: img(p), accion: () => abrirSeleccion(p),
+      cta: 'Elegir gramos', imagen: img(p, 960), accion: () => abrirSeleccion(p),
     }) },
     // Invitación al programa de lealtad: solo para quien aún no tiene tarjeta en este dispositivo.
     !lealtad && { id: 'lealtad', fija: {
@@ -943,13 +945,18 @@ export default function HomeV2Preview() {
       <div className="v2-shell-root">
         <div className="v2-selector-inicial">
           <div className="v2-selector-inicial-fondo">
-            {heroSeleccionSucursal.map((src, i) => (
-              <div
-                key={src}
-                className={`v2-selector-inicial-fondo-img${i === heroIdxSucursal ? ' on' : ''}`}
-                style={{ backgroundImage: `url(${src})` }}
-              />
-            ))}
+            {/* Solo se montan la foto actual, la anterior (que se desvanece) y la siguiente: no se piden las 6 de golpe. */}
+            {heroSeleccionSucursal.map((src, i) => {
+              const n = heroSeleccionSucursal.length
+              const cerca = i === heroIdxSucursal || i === (heroIdxSucursal + 1) % n || i === (heroIdxSucursal + n - 1) % n
+              return cerca && (
+                <div
+                  key={src}
+                  className={`v2-selector-inicial-fondo-img${i === heroIdxSucursal ? ' on' : ''}`}
+                  style={{ backgroundImage: `url(${src})` }}
+                />
+              )
+            })}
             <div className="v2-selector-inicial-fondo-overlay" />
           </div>
           <div className="v2-selector-inicial-contenido">
@@ -995,7 +1002,7 @@ export default function HomeV2Preview() {
     .filter(p => enCategoria(p, catDef) && p.active !== false)
     .sort((a, b) => (catDef.key === 'fresco' ? a.name.localeCompare(b.name, 'es') : 0))
   const fotoTile = p => (catDef.key === 'fresco' && esMilanesaNatural(p)
-    ? fotoCruda(p.image_url, p.image_cooked_url, { w: 800 }) || null
+    ? fotoCruda(p.image_url, p.image_cooked_url, { w: 640 }) || null
     : imgV2(p, postersMap))
 
   // Solo Marinados escala el tiempo de cocción con el peso — Preparados
@@ -1616,7 +1623,7 @@ export default function HomeV2Preview() {
                   {estrellas.map(p => (
                     <div key={p.id} className="v2-tile-mini2" onClick={() => abrirSeleccion(p)}>
                       <div className="v2-card-foto">
-                        {imgV2(p, postersMap) ? <img src={imgV2(p, postersMap)} alt={p.name} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[p.category_name] || '#888' }} />}
+                        {imgV2(p, postersMap) ? <img src={imgV2(p, postersMap)} alt={p.name} {...PEREZOSA} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[p.category_name] || '#888' }} />}
                       </div>
                       <div className="v2-card-barra">
                         <div className="v2-card-barra-nombre">{p.name}</div>
@@ -1649,7 +1656,7 @@ export default function HomeV2Preview() {
                   {destacadosHoy.map(p => (
                     <div key={p.id} className="v2-tile-mini2" onClick={() => abrirSeleccion(p)}>
                       <div className="v2-card-foto">
-                        {imgV2(p, postersMap) ? <img src={imgV2(p, postersMap)} alt={p.name} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[p.category_name] || '#888' }} />}
+                        {imgV2(p, postersMap) ? <img src={imgV2(p, postersMap)} alt={p.name} {...PEREZOSA} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[p.category_name] || '#888' }} />}
                       </div>
                       <div className="v2-card-barra">
                         <div className="v2-card-barra-nombre">{p.name}</div>
@@ -1716,7 +1723,7 @@ export default function HomeV2Preview() {
                   {preparadosStrip.map(item => item._tipo === 'grupo' ? (
                     <div key={item.id} className="v2-tarjeta-grande-strip v2-tarjeta-grupo" onClick={() => setGrupoAbierto(item)}>
                       <div className="v2-card-foto">
-                        {(() => { const src = item.productos.map(p => imgV2(p, postersMap)).find(Boolean); return src ? <img src={src} alt={item.nombre} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR['Preparados'] || '#888' }} /> })()}
+                        {(() => { const src = item.productos.map(p => imgV2(p, postersMap)).find(Boolean); return src ? <img src={src} alt={item.nombre} {...PEREZOSA} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR['Preparados'] || '#888' }} /> })()}
                         <span className="v2-grupo-indicador">&#9660; {item.productos.length} variantes</span>
                       </div>
                       <div className="v2-card-barra">
@@ -1726,7 +1733,7 @@ export default function HomeV2Preview() {
                     </div>
                   ) : (
                     <div key={item.id} className="v2-tarjeta-grande-strip" onClick={() => abrirSeleccion(item)}>
-                      <div className="v2-card-foto">{imgV2(item, postersMap) ? <img src={imgV2(item, postersMap)} alt={item.name} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[item.category_name] || '#888' }} />}</div>
+                      <div className="v2-card-foto">{imgV2(item, postersMap) ? <img src={imgV2(item, postersMap)} alt={item.name} {...PEREZOSA} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[item.category_name] || '#888' }} />}</div>
                       <div className="v2-card-barra">
                         <div className="v2-card-barra-nombre">{item.name}</div>
                         <div className="v2-ts-precio-pill">${Number(item.price)}/kg</div>
@@ -1767,7 +1774,7 @@ export default function HomeV2Preview() {
                   ...preparadosItems.individuales,
                 ].map(item => item._tipo === 'grupo' ? (
                   <div key={item.id} className="v2-tarjeta-simple v2-tarjeta-grupo" onClick={() => setGrupoAbierto(item)}>
-                    {(() => { const src = item.productos.map(p => imgV2(p, postersMap)).find(Boolean); return src ? <img src={src} alt={item.nombre} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR['Preparados'] || '#888', position: 'absolute', inset: 0 }} /> })()}
+                    {(() => { const src = item.productos.map(p => imgV2(p, postersMap)).find(Boolean); return src ? <img src={src} alt={item.nombre} {...PEREZOSA} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR['Preparados'] || '#888', position: 'absolute', inset: 0 }} /> })()}
                     <div className="v2-ts-scrim" />
                     <div className="v2-ts-precio-top">Desde ${Math.min(...item.productos.map(p => Number(p.price)))}</div>
                     <div className="v2-ts-overlay">
@@ -1777,7 +1784,7 @@ export default function HomeV2Preview() {
                   </div>
                 ) : (
                   <div key={item.id} className="v2-tarjeta-simple" onClick={() => abrirSeleccion(item)}>
-                    {imgV2(item, postersMap) ? <img src={imgV2(item, postersMap)} alt={item.name} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[item.category_name] || '#888', position: 'absolute', inset: 0 }} />}
+                    {imgV2(item, postersMap) ? <img src={imgV2(item, postersMap)} alt={item.name} {...PEREZOSA} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[item.category_name] || '#888', position: 'absolute', inset: 0 }} />}
                     <div className="v2-ts-scrim" />
                     <div className="v2-ts-precio-top">${Number(item.price)}/kg</div>
                     <div className="v2-ts-overlay">
@@ -1790,7 +1797,7 @@ export default function HomeV2Preview() {
               <div className="v2-grid-simple">
                 {productosCategoria.map(p => (
                   <div key={p.id} className="v2-tarjeta-simple" onClick={() => abrirSeleccion(p)}>
-                    {fotoTile(p) ? <img src={fotoTile(p)} alt={p.name} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[p.category_name] || '#888', position: 'absolute', inset: 0 }} />}
+                    {fotoTile(p) ? <img src={fotoTile(p)} alt={p.name} {...PEREZOSA} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[p.category_name] || '#888', position: 'absolute', inset: 0 }} />}
                     <div className="v2-ts-scrim" />
                     <div className="v2-ts-precio-top">${Number(p.price)}/kg</div>
                     <div className="v2-ts-overlay">
@@ -2066,7 +2073,7 @@ export default function HomeV2Preview() {
               <div className="v2-grid-simple">
                 {resultadosBusqueda.map(p => (
                   <div key={p.id} className="v2-tarjeta-simple" onClick={() => { abrirSeleccion(p); setMostrarBuscador(false) }}>
-                    {imgV2(p, postersMap) ? <img src={imgV2(p, postersMap)} alt={p.name} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[p.category_name] || '#888', position: 'absolute', inset: 0 }} />}
+                    {imgV2(p, postersMap) ? <img src={imgV2(p, postersMap)} alt={p.name} {...PEREZOSA} /> : <div className="v2-foto-placeholder" style={{ background: PLACEHOLDER_COLOR[p.category_name] || '#888', position: 'absolute', inset: 0 }} />}
                     <div className="v2-ts-scrim" />
                     <div className="v2-ts-precio-top">${Number(p.price)}/kg</div>
                     <div className="v2-ts-overlay">
@@ -2171,7 +2178,7 @@ export default function HomeV2Preview() {
                     return (
                       <div key={comp.id} className={`v2-comp-card${sel ? ' v2-comp-sel' : ''}`} onClick={() => toggleComplemento(comp)}>
                         <div className="v2-comp-foto">
-                          {img(comp) ? <img src={img(comp)} alt={comp.name} /> : <div className="v2-comp-foto-ph" />}
+                          {img(comp) ? <img src={img(comp, 320)} alt={comp.name} {...PEREZOSA} /> : <div className="v2-comp-foto-ph" />}
                           {sel && <span className="v2-comp-check">✓</span>}
                         </div>
                         <span className="v2-comp-nombre">{comp.name}</span>
@@ -2208,7 +2215,7 @@ export default function HomeV2Preview() {
                     const precio = parseFloat(item.precioTotal || item.precio || 0)
                     return (
                       <div key={item.id} className="v2-carrito-item">
-                        {item.imagen_url && <img src={item.imagen_url} alt="" />}
+                        {item.imagen_url && <img src={cdn(item.imagen_url, 160)} alt="" {...PEREZOSA} />}
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div className="v2-carrito-item-nombre">{nombreItem(item)}</div>
                           {item.resumen && <div className="v2-carrito-item-detalle">{item.resumen}</div>}
@@ -2418,7 +2425,7 @@ export default function HomeV2Preview() {
                         className={`v2-asistente-bowl-opcion${asistente.bowlBaseId === String(producto.id) ? ' on' : ''}`}
                         onClick={() => patchAsistente({ bowlBaseId: String(producto.id) })}
                       >
-                        <img src={img(producto)} alt="" />
+                        <img src={img(producto, 200)} alt="" {...PEREZOSA} />
                         {etiqueta}
                       </button>
                     ))}
@@ -2440,7 +2447,7 @@ export default function HomeV2Preview() {
 
                   {bowlMarinadoAsistente ? (
                     <div className="v2-asistente-bowl-seleccionado">
-                      <img src={bowlMarinadoAsistente.image_cooked_url || bowlMarinadoAsistente.image_url} alt="" />
+                      <img src={cdn(bowlMarinadoAsistente.image_cooked_url || bowlMarinadoAsistente.image_url, 320)} alt="" {...PEREZOSA} />
                       <span>{bowlMarinadoAsistente.name}{bowlMarinadoAsistente.category_name === 'Milanesas' ? ' · 1 pz' : ''}</span>
                       <button type="button" onClick={() => patchAsistente({ bowlMarinadoId: '' })}>Cambiar</button>
                     </div>
@@ -2455,7 +2462,7 @@ export default function HomeV2Preview() {
                             className="v2-bowl-mini"
                             onClick={() => patchAsistente({ bowlMarinadoId: String(item.id), bowlMarinadoCat: '', bowlVerTodos: false })}
                           >
-                            <img src={img(item)} alt="" />
+                            <img src={img(item, 200)} alt="" {...PEREZOSA} />
                             <span className="v2-bowl-mini-nombre">{item.name}</span>
                           </button>
                         ))}
@@ -2486,7 +2493,7 @@ export default function HomeV2Preview() {
                             {abierto && (
                               <div style={{ marginTop: 8 }}>
                                 <div className="v2-asistente-bowl-grupo-foto">
-                                  <img src={img(items[0])} alt={catName} />
+                                  <img src={img(items[0], 200)} alt={catName} {...PEREZOSA} />
                                 </div>
                                 <div className="v2-asistente-bowl-grupo-sabores">
                                   {items.map(item => (
@@ -2538,7 +2545,7 @@ export default function HomeV2Preview() {
                 <div className="v2-grid-simple">
                   {productosAsistente.map(p => (
                     <button key={p.id} className="v2-tarjeta-simple v2-asistente-producto" onClick={() => elegirProductoAsistente(p)}>
-                      <img src={img(p)} alt={p.name} />
+                      <img src={img(p)} alt={p.name} {...PEREZOSA} />
                       <div className="v2-ts-scrim" />
                       <div className="v2-ts-precio-top">${Number(p.price)}/kg</div>
                       <div className="v2-ts-overlay">
@@ -2567,7 +2574,7 @@ export default function HomeV2Preview() {
                   <div style={{ flexShrink: 0 }}>
                     <div className="v2-tarjeta-simple v2-tarjeta-relleno v2-tarjeta-relleno-ancha">
                       <div className="v2-tarjeta-relleno-foto">
-                        <img src={img(productoAsistente)} alt={productoAsistente.name} />
+                        <img src={img(productoAsistente)} alt={productoAsistente.name} {...PEREZOSA} />
                         <div className="v2-ts-scrim" />
                       </div>
                     </div>
@@ -2581,7 +2588,7 @@ export default function HomeV2Preview() {
                   </div>
                 ) : (
                   <div className="card-marinado card-marinado-activo" style={{ cursor: 'default' }}>
-                    <img src={img(productoAsistente)} alt={productoAsistente.name} style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'cover', flexShrink: 0 }} />
+                    <img src={img(productoAsistente, 160)} alt={productoAsistente.name} {...PEREZOSA} style={{ width: 56, height: 56, borderRadius: 14, objectFit: 'cover', flexShrink: 0 }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div className="producto-nombre">{productoAsistente.name}</div>
                       <div className="producto-precio">
@@ -2673,7 +2680,7 @@ export default function HomeV2Preview() {
                     return (
                       <div key={p.id} className={`v2-asistente-complemento${cantidad > 0 ? ' on' : ''}${sugerido ? ' sugerido' : ''}`}>
                         {sugerido && <div className="v2-asistente-complemento-badge">Sugerido</div>}
-                        <img src={p.image_url || img(p)} alt={etiqueta} />
+                        <img src={cdn(p.image_url, 320) || img(p, 320)} alt={etiqueta} {...PEREZOSA} />
                         <div className="v2-asistente-complemento-nombre">{etiqueta}</div>
                         <div className="v2-asistente-complemento-precio">${Number(p.price)}</div>
                         <div className="v2-asistente-complemento-stepper">
@@ -2842,7 +2849,7 @@ export default function HomeV2Preview() {
                   {carrito.map(item => (
                     <div key={item.id} className="v2-carrito-item">
                       {item.imagen_url
-                        ? <img src={item.imagen_url} alt="" />
+                        ? <img src={cdn(item.imagen_url, 160)} alt="" {...PEREZOSA} />
                         : <div className="v2-carrito-item-ph" aria-hidden="true">{EMOJI_ITEM[item.tipo] || '🍗'}</div>}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div className="v2-carrito-item-nombre">{nombreItem(item)}</div>
@@ -2891,7 +2898,7 @@ export default function HomeV2Preview() {
                 <div key={p.id} className="v2-variante-card" onClick={() => { abrirSeleccion(p); setGrupoAbierto(null) }}>
                   <div className="v2-variante-foto">
                     {(fotoIngrediente(p) || imgV2(p, postersMap))
-                      ? <img src={fotoIngrediente(p) || imgV2(p, postersMap)} alt={p.name} />
+                      ? <img src={fotoIngrediente(p) || imgV2(p, postersMap)} alt={p.name} {...PEREZOSA} />
                       : <div className="v2-variante-foto-placeholder" style={{ background: PLACEHOLDER_COLOR['Preparados'] }} />}
                   </div>
                   <div className="v2-variante-info">

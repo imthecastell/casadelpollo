@@ -1,6 +1,7 @@
 // Fotos de ingrediente (galería, categoría productos) para distinguir los sabores de empanadas y
 // pechugas rellenas, que comparten la misma foto de producto.
-const CDN = 'https://res.cloudinary.com/do4juvxio/image/upload'
+import { CDN } from './cdn.js'
+
 
 const FOTOS = [
   { sabor: /jam[oó]n y queso/i, id: 'v1790722344/r8fdr9qxsiznm9cvy7nz.jpg' },

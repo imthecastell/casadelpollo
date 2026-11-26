@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
 import LogoSlot from '../Components/LogoSlot.jsx'
+import { cdn, PEREZOSA } from '../data/cdn.js'
 import { generarHorariosDisponibles, ventanaPreparacion, obtenerCocFinEfectivo } from '../data/slots.js'
 import { estadoHorario } from '../data/horario.js'
 
@@ -128,7 +129,7 @@ export default function Carrito() {
                   {(item.imagen_url || item.imagen_referencia) ? (
                     <div style={{ width: 44, height: 44, borderRadius: 10, flexShrink: 0, overflow: 'hidden', background: 'var(--crema-oscura)' }}>
                       <img
-                        src={item.imagen_url || item.imagen_referencia}
+                        src={cdn(item.imagen_url || item.imagen_referencia, 120)} {...PEREZOSA}
                         alt=""
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                         onError={e => { e.target.style.display = 'none' }}

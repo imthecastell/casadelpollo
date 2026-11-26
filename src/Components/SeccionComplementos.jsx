@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useApp } from '../data/AppContext.jsx'
+import { cdn, PEREZOSA } from '../data/cdn.js'
 
 export default function SeccionComplementos() {
   const { agregarAlCarrito, productos } = useApp()
@@ -42,7 +43,7 @@ export default function SeccionComplementos() {
       {productosSeccion.map(p => (
         <div key={p.id} className="producto-row">
           {p.image_url
-            ? <img className="producto-img" src={p.image_url} alt="" />
+            ? <img className="producto-img" src={cdn(p.image_url, 200)} alt="" {...PEREZOSA} />
             : <div className="producto-img-placeholder">🥗</div>
           }
           <div className="producto-info">
