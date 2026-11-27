@@ -8,7 +8,7 @@ import PieV2 from '../Components/PieV2.jsx'
 import EncuestaPedido from '../Components/EncuestaPedido.jsx'
 import AvisoAirfryer from '../Components/AvisoAirfryer.jsx'
 import AvisoEvento from '../Components/AvisoEvento.jsx'
-import { cenasVisibles } from '../data/cenas.js'
+import { CENAS, cenasVisibles } from '../data/cenas.js'
 import SkinMuertos from '../Components/SkinMuertos.jsx'
 import { skinActivo } from '../data/skin.js'
 import { tagsDe } from '../data/productTags'
@@ -1611,6 +1611,22 @@ export default function HomeV2Preview() {
                   {promos.map((_, i) => <div key={i} className={`v2-cdot${i === idxHero ? ' on' : ''}`} />)}
                 </div>
               </div>
+            )}
+
+            {/* Franja de las cenas de fin de año: misma lógica que la diapositiva del carrusel y la tarjeta de /links
+                (interruptor y fecha en data/cenas.js). Lleva a la página /cenas. */}
+            {cenasVisibles() && (
+              <a className="v2-franja-cenas" href={`${import.meta.env.BASE_URL}cenas`}>
+                <div className="v2-franja-cenas-foto">
+                  <img src={`${import.meta.env.BASE_URL}cenas/plato-horizontal.webp`} alt="Mesa de cena con pechugas rellenas, pasta, verduras, puré y pan danés" {...PEREZOSA} />
+                </div>
+                <div className="v2-franja-cenas-texto">
+                  <span className="v2-franja-cenas-etiqueta">Navidad y Año Nuevo</span>
+                  <h3>{CENAS.titulo}</h3>
+                  {CENAS.fechaLimite && <p>{`Reserva ${CENAS.fechaLimite.charAt(0).toLowerCase()}${CENAS.fechaLimite.slice(1)}`}</p>}
+                  <span className="v2-franja-cenas-cta">Ver cenas</span>
+                </div>
+              </a>
             )}
 
             {estrellas.length > 0 && (
