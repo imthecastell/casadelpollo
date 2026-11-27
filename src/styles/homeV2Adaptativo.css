@@ -111,6 +111,16 @@
   .v2-cdot { background: rgba(42,15,11,.2); }
   .v2-cdot.on { background: var(--rojo); }
 
+  /* Franja de las cenas: foto a la izquierda, texto a la derecha, al ancho del contenido. */
+  .v2-franja-cenas { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); margin: 4px 0 40px; border-radius: 28px; min-height: 200px; }
+  .v2-franja-cenas-foto { aspect-ratio: auto; position: relative; }
+  .v2-franja-cenas-foto img { position: absolute; inset: 0; }
+  .v2-franja-cenas-texto { justify-content: center; padding: 28px 44px; }
+  .v2-franja-cenas-etiqueta { font-size: 11px; margin-bottom: 8px; }
+  .v2-franja-cenas h3 { font-size: clamp(26px, 3.2vw, 36px); margin-bottom: 6px; }
+  .v2-franja-cenas p { font-size: 16.5px; margin-bottom: 20px; }
+  .v2-franja-cenas-cta { padding: 13px 26px; font-size: 14.5px; }
+
   /* Bandas de color: siguen de borde a borde, el contenido queda en el ancho máximo. */
   .v2-banda { margin-inline: calc(-1 * var(--v2-gutter)); padding: 36px var(--v2-gutter) 44px; }
   .v2-banda .v2-seccion-titulo { font-size: 24px; }
